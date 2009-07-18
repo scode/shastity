@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+# Copyright (c) 2008 Peter Schuller <peter.schuller@infidyne.com>
+
 from __future__ import absolute_import
 from __future__ import with_statement
 

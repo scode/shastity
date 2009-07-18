@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+# Copyright (c) 2008 Peter Schuller <peter.schuller@infidyne.com>
+
 """
 Provides a simple hashing interface. A "hashers" is a callable, taking
 a bytestring, which returns a tuple (hash_algo_name,

@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+# Copyright (c) 2008 Peter Schuller <peter.schuller@infidyne.com>
+
 """
 Thin wrapper around the standard logging module. The remainder of
 shastity should never refer directly to the standard logging module.
