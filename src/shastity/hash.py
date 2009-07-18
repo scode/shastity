@@ -17,7 +17,7 @@ from __future__ import with_statement
 
 import hashlib
 
-def UnsupportedHashAlgorithm(Exception):
+class UnsupportedHashAlgorithm(Exception):
     pass
 
 _all_supported_hashlib_algos = [ 'sha1', 'sha224', 'sha256', 'sha384', 'sha512', 'md5' ]
