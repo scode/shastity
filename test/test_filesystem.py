@@ -17,6 +17,7 @@ class FileSystemBaseCase(object):
     def test_tempdir(self):
         #with self.fs.tempdir() as tdir:
         #    self.assertTrue(self.fs.exists(tdir), 'tempdir should exist')
+        pass
 
 class LocalFileSystemTests(FileSystemBaseCase, unittest.TestCase):
     def make_file_system(self):
