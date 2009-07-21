@@ -28,6 +28,8 @@ mount points, types, or anything like that.
 from __future__ import absolute_import
 from __future__ import with_statement
 
+import os
+
 class FileSystem(object):
     def mkdir(self, path):
         raise NotImplementedError
@@ -43,3 +45,19 @@ class FileSystem(object):
 
     def open(self, path, mode):
         raise NotImplementedError
+
+class LocalFileSystem(FileSystem):
+    def mkdir(self, path):
+        os.mkdir(path)
+
+    def rmdir(self, path):
+        os.rmdir(path)
+
+    def unlink(self, path):
+        os.unlink(path)
+
+    def symlink(self, src, dst):
+        os.symlink(src, dst)
+
+    def open(self, path, mode):
+        return open(path, mode)
