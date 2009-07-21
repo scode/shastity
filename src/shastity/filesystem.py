@@ -105,7 +105,18 @@ class FileSystem(object):
         symlinks).'''
         raise NotImplementedError
 
-    def tempdir(self):
+    def mkdtemp(self, suffix=None):
+        '''Atomically create/allocate a temporary directory and return
+        its name.
+        
+        @note While similar, this is not identical to python's tempfile.mkdtemp().
+
+        @param suffix: Suffix to apply to the allocated name, if supported.
+
+        @return The absolute path of the temporary directory. '''
+        raise NotImplementedError
+
+    def tempdir(self, suffix=None):
         '''Allocate a temporary directory and return a
         TemporaryDirectory instance backed by this file system.'''
         raise NotImplementedError
@@ -125,3 +136,6 @@ class LocalFileSystem(FileSystem):
 
     def open(self, path, mode):
         return open(path, mode)
+
+    def mkdtemp(self, suffix):
+        return tempfile.mkdtemp(suffix=suffix)
