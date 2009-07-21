@@ -28,19 +28,18 @@ mount points, types, or anything like that.
 from __future__ import absolute_import
 from __future__ import with_statement
 
-class FileSystem:
-    def mkdir(path):
+class FileSystem(object):
+    def mkdir(self, path):
         raise NotImplementedError
 
-    def rmdir(path):
+    def rmdir(self, path):
         raise NotImplementedError
 
-    def unlink(path):
+    def unlink(self, path):
         raise NotImplementedError
 
-    def symlink(src, dst):
+    def symlink(self, src, dst):
         raise NotImplementedError
 
-    def open(path, mode):
+    def open(self, path, mode):
         raise NotImplementedError
-    
