@@ -30,7 +30,17 @@ from __future__ import with_statement
 
 import os
 
+class TemporaryDirectory(object):
+    pass
+
 class FileSystem(object):
+    ''' Abstract base class of file systems (see module documentation
+    for our definition of file system). This defines the interface to
+    be implemented by file systems.
+
+    Unless otherwise noted, methods with obvious POSIX counterparts
+    will have matching semantics.
+    '''
     def mkdir(self, path):
         raise NotImplementedError
 
@@ -47,9 +57,13 @@ class FileSystem(object):
         raise NotImplementedError
 
     def rmtree(self, path):
+        '''Recursively delete the tree rooted at path (not following
+        symlinks).'''
         raise NotImplementedError
 
     def tempdir(self):
+        '''Allocate a temporary directory and return a
+        TemporaryDirectory instance backed by this file system.'''
         raise NotImplementedError
 
 class LocalFileSystem(FileSystem):
