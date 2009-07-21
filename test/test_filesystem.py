@@ -11,13 +11,13 @@ import shastity.filesystem as fs
 
 class FileSystemBaseCase(object):
     def setUp(self):
-        print 'hej'
         self.fs = self.make_file_system() # provided by subclass
 
     def test_tempdir(self):
-        #with self.fs.tempdir() as tdir:
-        #    self.assertTrue(self.fs.exists(tdir), 'tempdir should exist')
-        pass
+        with self.fs.tempdir() as tdir:
+            tpath = tdir.path
+            self.assertTrue(self.fs.exists(tdir.path), 'tempdir should exist')
+        self.assertFalse(self.fs.exists(tpath), 'tempdir should be removed')
 
 class LocalFileSystemTests(FileSystemBaseCase, unittest.TestCase):
     def make_file_system(self):
