@@ -29,6 +29,8 @@ from __future__ import absolute_import
 from __future__ import with_statement
 
 import os
+import os.path
+import shutil
 import tempfile
 
 class StaleTemporaryDirectory(Exception):
@@ -54,7 +56,7 @@ class TemporaryDirectory(object):
         self.__stale = False
 
     def __enter__(self):
-        pass
+        return self
 
     def __exit__(self, type, value, traceback):
         self.close()
@@ -64,12 +66,12 @@ class TemporaryDirectory(object):
             self.__stale = True
             self.__fs.rmtree(self.__path)
 
-    def __get_fs(self, attr):
+    def __get_fs(self):
         if self.__stale:
             raise StaleTemporaryDirectory(self.__path)
         return self.__fs
         
-    def __get_path(self, attr):
+    def __get_path(self):
         if self.__stale:
             raise StaleTemporaryDirectory(self.__path)
         return self.__path
@@ -96,6 +98,9 @@ class FileSystem(object):
 
     def symlink(self, src, dst):
         raise NotImplementedError
+
+    def exists(self, path):
+        return os.path.exists(path)
 
     def open(self, path, mode):
         raise NotImplementedError
@@ -141,5 +146,9 @@ class LocalFileSystem(FileSystem):
     def open(self, path, mode):
         return open(path, mode)
 
-    def mkdtemp(self, suffix):
-        return tempfile.mkdtemp(suffix=suffix)
+    def rmtree(self, path):
+        shutil.rmtree(path)
+
+    def mkdtemp(self, suffix=None):
+        # mkdtemp differentiates between None and no parameter
+        return tempfile.mkdtemp(suffix=('' if suffix is None else suffix))
