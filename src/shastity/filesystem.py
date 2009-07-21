@@ -118,8 +118,12 @@ class FileSystem(object):
 
     def tempdir(self, suffix=None):
         '''Allocate a temporary directory and return a
-        TemporaryDirectory instance backed by this file system.'''
-        raise NotImplementedError
+        TemporaryDirectory instance backed by this file system.
+
+        @note This method has a default implementation in the abstract
+              base class which is implemented in terms of mkdtemp().'''
+        dirname = self.mkdtemp()
+        return TemporaryDirectory(self, dirname)
 
 class LocalFileSystem(FileSystem):
     def mkdir(self, path):
