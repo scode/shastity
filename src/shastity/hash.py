@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (c) 2008 Peter Schuller <peter.schuller@infidyne.com>
+# Copyright (c) 2009 Peter Schuller <peter.schuller@infidyne.com>
 
 """
 Provides a simple hashing interface. A "hashers" is a callable, taking

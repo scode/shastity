@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (c) 2008 Peter Schuller <peter.schuller@infidyne.com>
+# Copyright (c) 2009 Peter Schuller <peter.schuller@infidyne.com>
 
 """
 Thin wrapper around the standard logging module. The remainder of
