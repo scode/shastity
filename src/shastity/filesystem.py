@@ -29,9 +29,53 @@ from __future__ import absolute_import
 from __future__ import with_statement
 
 import os
+import tempfile
+
+class StaleTemporaryDirectory(Exception):
+    '''Raised to indicate that an attempt to use a stale (cleaned up)
+    temporary directory was detected.'''
+    pass
 
 class TemporaryDirectory(object):
-    pass
+    '''An automatically cleaning temporary directory. The preferred
+    use is with the 'with' statement, but calling code may also
+    close() it explicitly. It will also close on GC.
+
+    Most users will only be interested in the 'path' attribute of a
+    temporary directory object.
+
+    @ivar fs The file system with which the temporary directory is associated.
+    @ivar path The path to the temporary directory.'''
+    def __init__(self, fs, path):
+        assert isinstance(fs, FileSystem)
+
+        self.__fs = fs
+        self.__path = path
+        self.__stale = False
+
+    def __enter__(self):
+        pass
+
+    def __exit__(self, type, value, traceback):
+        self.close()
+
+    def close(self):
+        if not self.__stale:
+            self.__stale = True
+            self.__fs.rmtree(self.__path)
+
+    def __get_fs(self, attr):
+        if self.__stale:
+            raise StaleTemporaryDirectory(self.__path)
+        return self.__fs
+        
+    def __get_path(self, attr):
+        if self.__stale:
+            raise StaleTemporaryDirectory(self.__path)
+        return self.__path
+
+    fs = property(__get_fs)
+    path = property(__get_path)
 
 class FileSystem(object):
     ''' Abstract base class of file systems (see module documentation
