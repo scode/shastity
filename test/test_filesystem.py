@@ -34,5 +34,9 @@ class LocalFileSystemTests(FileSystemBaseCase, unittest.TestCase):
     def make_file_system(self):
         return fs.LocalFileSystem()
 
+class MemoryFileSystemTests(FileSystemBaseCase, unittest.TestCase):
+    def make_file_system(self):
+        return fs.MemoryFileSystem()
+
 if __name__ == "__main__":
     unittest.main()
