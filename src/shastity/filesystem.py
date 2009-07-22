@@ -28,6 +28,7 @@ mount points, types, or anything like that.
 from __future__ import absolute_import
 from __future__ import with_statement
 
+import errno
 import os
 import os.path
 import shutil
@@ -172,21 +173,27 @@ class MemoryFileSystem(FileSystem):
         # file contents. (The extra list in the file case is to
         # support in-place file modification.)
 
-        # Start with a completely empty root directory.
+        # Start with a root directory with a /tmp directory.
         self.__tree = dict(tmp=dict())
 
+        # Initialize unique tmp filename counter.
+        self.__tmp_count = 0
+
     def __lookup(self, path):
+        assert path.startswith('/')
+        path = path[1:]
+
         def rec(cur, comps):
-            if not comps:
-                return cur
-            else:
+            if comps and not (len(comps) == 1 and comps[0] == ''):
                 if not isinstance(cur, dict):
                     raise OSError(errno.ENOTDIR, 'not a directory')
                 else:
                     if comps[0] in cur:
-                        rec(cur[comps[0]], comps[1:])
+                        return rec(cur[comps[0]], comps[1:])
                     else:
                         raise OSError(errno.ENOENT, 'file not found')
+            else:
+                return cur
 
         return rec(self.__tree, path.split('/'))
 
@@ -195,14 +202,18 @@ class MemoryFileSystem(FileSystem):
         if not file:
             directory, file = os.path.split(directory)
 
-        assert directory
-        assert file
+        assert directory, 'directory expected on input path %s' % (path,)
+        assert file, 'file expected on input path %s' % (file,)
 
         return (directory, file)
 
     def mkdir(self, path):
         directory, newdir = self.__split_slash_agnostically(path)
-        d = self.__lookup(path)
+        d = self.__lookup(directory)
+
+        if not isinstance(d, dict):
+            raise OSError(errno.ENOTDIR, 'not a directory (%s)' % (directory,))
+
         if newdir in d:
             raise OSError(errno.EEXIST, 'file exists')
         else:
@@ -218,18 +229,45 @@ class MemoryFileSystem(FileSystem):
         raise NotImplementedError
 
     def exists(self, path):
-        return os.path.exists(path)
+        try:
+            self.__lookup(path)
+            return True
+        except OSError, e:
+            if e.errno == errno.ENOENT:
+                return False
+            else:
+                raise
 
     def open(self, path, mode):
         raise NotImplementedError
 
     def rmtree(self, path):
-        raise NotImplementedError
+        if path == '/':
+            raise OSError(errno.EINVAL, 'invalid argument - cannot delete root')
+
+        dname, fname = self.__split_slash_agnostically(path)
+        d = self.__lookup(dname)
+
+        if not fname in d:
+            raise OSError(errno.ENOENT, 'file not found (%s)' % (path,))
+    
+        del(d[fname])
 
     def mkdtemp(self, suffix=None):
-        raise NotImplementedError
+        tmpname = 'tmp%s' % (str(self.__tmp_count),)
+        self.__tmp_count += 1
+
+        # we may legitimately collide since we blindly hope no one
+        # created a matching file, or /tmp could be removed
+        d = self.__lookup('/tmp')
+        fullname = '%s%s' % (tmpname, ('-%s' % (suffix,)) if suffix else '')
+        assert fullname not in d, 'bug, or someone collidied with our temp-allocation'
+
+        d[fullname] = dict()
+
+        return '/tmp/%s' % (fullname,)
 
     def tempdir(self, suffix=None):
-        return TemporaryDirectory(self, dirname)
+        return TemporaryDirectory(self, self.mkdtemp())
     
         
