@@ -86,6 +86,8 @@ class FileSystem(object):
 
     Unless otherwise noted, methods with obvious POSIX counterparts
     will have matching semantics.
+
+    In general, failure cases are those of POSIX.
     '''
     def mkdir(self, path):
         raise NotImplementedError
@@ -152,3 +154,82 @@ class LocalFileSystem(FileSystem):
     def mkdtemp(self, suffix=None):
         # mkdtemp differentiates between None and no parameter
         return tempfile.mkdtemp(suffix=('' if suffix is None else suffix))
+
+class MemoryFileSystem(FileSystem):
+    '''A simple in-memory file system primarily intended for unit testing.'''
+
+    def __init__(self):
+        # internally we represent the file system as follows:
+        #
+        # A directory is a dict, each key being an entry. If the value
+        # is a dict, it represents a directory. If the value is is a
+        # tuple, the first element is a string representing the type,
+        # and the second element is dependent on the type.
+        #
+        # The type can be either a "symlink" or a "file". The second
+        # element in the case of a symlink is the value of the
+        # symlink; for a file, it is a list of one entry which is the
+        # file contents. (The extra list in the file case is to
+        # support in-place file modification.)
+
+        # Start with a completely empty root directory.
+        self.__tree = dict(tmp=dict())
+
+    def __lookup(self, path):
+        def rec(cur, comps):
+            if not comps:
+                return cur
+            else:
+                if not isinstance(cur, dict):
+                    raise OSError(errno.ENOTDIR, 'not a directory')
+                else:
+                    if comps[0] in cur:
+                        rec(cur[comps[0]], comps[1:])
+                    else:
+                        raise OSError(errno.ENOENT, 'file not found')
+
+        return rec(self.__tree, path.split('/'))
+
+    def __split_slash_agnostically(self, path):
+        directory, file = os.path.split(path)
+        if not file:
+            directory, file = os.path.split(directory)
+
+        assert directory
+        assert file
+
+        return (directory, file)
+
+    def mkdir(self, path):
+        directory, newdir = self.__split_slash_agnostically(path)
+        d = self.__lookup(path)
+        if newdir in d:
+            raise OSError(errno.EEXIST, 'file exists')
+        else:
+            d[newdir] = dict()
+
+    def rmdir(self, path):
+        raise NotImplementedError
+
+    def unlink(self, path):
+        raise NotImplementedError
+
+    def symlink(self, src, dst):
+        raise NotImplementedError
+
+    def exists(self, path):
+        return os.path.exists(path)
+
+    def open(self, path, mode):
+        raise NotImplementedError
+
+    def rmtree(self, path):
+        raise NotImplementedError
+
+    def mkdtemp(self, suffix=None):
+        raise NotImplementedError
+
+    def tempdir(self, suffix=None):
+        return TemporaryDirectory(self, dirname)
+    
+        
