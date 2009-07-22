@@ -156,6 +156,95 @@ class LocalFileSystem(FileSystem):
         # mkdtemp differentiates between None and no parameter
         return tempfile.mkdtemp(suffix=('' if suffix is None else suffix))
 
+class MemoryDirectory:
+    def __init__(self, parent):
+        self.parent = parent
+        self.entries = dict()
+
+    def lookup(self, comps, no_follow=False):
+        if comps:
+            if comps[0] in self.entries:
+                # we don't recurse for non-directories mainly because
+                # symlinks don't know their parent
+                entry = self.entries[comps[0]]
+                if isinstance(entry, MemoryDirectory):
+                    return entry.lookup(comps[1:], no_follow=no_follow)
+                elif isinstance(entry, MemoryFile):
+                    if len(comps) > 1:
+                        raise OSError(errno.ENOTDIR, 'not a directory')
+                    else:
+                        return entry
+                elif isinstance(entry, MemorySymlink):
+                    if no_follow:
+                        raise AssertionError('no_follow, but requested demanded follow')
+                    else:
+                        if entry.dest[0] == '/':
+                            seekroot = self.root()
+                        elif entry.dest[0] == '.':
+                            seekroot = self
+                        elif entry.dest[0] == '..':
+                            seekroot = self.parent
+                            if not seekroot:
+                                raise OSError(errno.ENOENT, 'file not found (symlink past root node)')
+                        else:
+                            raise AssertionError('bug - bad start of symlink')
+                        
+                        return seekroot.lookup(entry.dest[1:])
+                else:
+                    raise AssertionError('this code should not be reachable')
+            else:
+                raise OSError(errno.ENOENT, 'file not found')
+        else:
+            return self
+
+    def is_empty(self):
+        return not self.entries
+
+    def deparent(self):
+        self.parent = None
+
+    def link(self, memfile, name):
+        if name in self.entries:
+            raise OSError(errno.EEXIST, 'file exists - cannot link by that name')
+
+        self.entries[name] = memfile
+
+    def unlink(self, name):
+        if not name in self.entries:
+            raise OSError(errno.ENOENT, 'file not found')
+
+        entry = self.entries[name]
+
+        if isinstance(entry, MemoryDirectory):
+            if entry.is_empty():
+                entry.deparent()
+                del(self.entries[name])
+            else:
+                raise OSError(errno.ENOTEMPTY, 'directory not empty')
+        elif isinstance(entry, MemorySymlink):
+            del(self.entries[name])
+        elif isinstance(entry, MemoryFile):
+            del(self.entries[name])
+        else:
+            raise AssertionError('unknown entry type %s' % (entry.__class__,))
+
+class MemorySymlink:
+    def __init__(self, dest):
+        '''@param dest: list (starts with . or /) of components'''
+        self.dest = dest
+
+    def readlink(self):
+        return reduce(os.path.join, self.dest, '')
+
+class MemoryFile:
+    def __init__(self):
+        self.contents = ''
+
+class MemoryFileObject:
+    '''File-like object for the memory file system.'''
+    def __init__(self, memfile):
+        self.memfile = memfile
+
 class MemoryFileSystem(FileSystem):
     '''A simple in-memory file system primarily intended for unit testing.'''
 
