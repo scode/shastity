@@ -5,6 +5,7 @@
 from __future__ import absolute_import
 from __future__ import with_statement
 
+import errno
 import unittest
 
 import shastity.filesystem as fs
@@ -17,6 +18,9 @@ class FileSystemBaseCase(object):
         with self.fs.tempdir() as tdir:
             tpath = tdir.path
             self.assertTrue(self.fs.exists(tdir.path), 'tempdir should exist')
+
+            self.assertRaises(OSError, self.fs.mkdir, tdir.path)
+            
         self.assertFalse(self.fs.exists(tpath), 'tempdir should be removed')
 
 class LocalFileSystemTests(FileSystemBaseCase, unittest.TestCase):
