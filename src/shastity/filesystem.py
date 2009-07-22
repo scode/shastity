@@ -220,7 +220,22 @@ class MemoryFileSystem(FileSystem):
             d[newdir] = dict()
 
     def rmdir(self, path):
-        raise NotImplementedError
+        if path == '/':
+            raise OSError(errno.EINVAL, 'invalid argument - cannot rmdir /')
+
+        dname, fname = self.__split_slash_agnostically(path)
+        d = self.__lookup(dname)
+
+        if fname not in d:
+            raise OSError(errno.ENOENT, 'file not found')
+
+        if not isinstance(d[fname], dict): # todo TEST
+            raise OSError(errno.ENOTDIR, 'not a directory')
+
+        if d[fname]:
+            raise OSError(errno.ENOTEMPTY, 'directory not empty')
+
+        del(d[fname])
 
     def unlink(self, path):
         raise NotImplementedError

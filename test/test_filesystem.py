@@ -6,6 +6,7 @@ from __future__ import absolute_import
 from __future__ import with_statement
 
 import errno
+import os.path
 import unittest
 
 import shastity.filesystem as fs
@@ -24,9 +25,24 @@ class FileSystemBaseCase(object):
     def test_tempdir(self):
         with self.fs.tempdir() as tdir:
             tpath = tdir.path
-            self.assertTrue(self.fs.exists(tdir.path), 'tempdir should exist')
 
+            self.assertTrue(self.fs.exists(tdir.path), 'tempdir should exist')
             self.assertOSError(errno.EEXIST, self.fs.mkdir, tdir.path)
+
+            # successful mkdir() and exists?
+            testdir = os.path.join(tdir.path, 'testdir')
+            self.fs.mkdir(testdir)
+            self.assertTrue(self.fs.exists(testdir))
+            self.assertFalse(self.fs.exists(os.path.join(tdir.path, 'non-existent-testdir')))
+
+            # should not be able to rmdir non-empty dirs
+            self.assertOSError(errno.ENOTEMPTY, self.fs.rmdir, tdir.path)
+
+            # successful rmdir() on empty dir?
+            self.fs.rmdir(testdir)
+
+            # retry, this time we should fail
+            self.assertOSError(errno.ENOENT, self.fs.rmdir, testdir)
             
         self.assertFalse(self.fs.exists(tpath), 'tempdir should be removed')
 
