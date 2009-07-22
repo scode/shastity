@@ -14,12 +14,19 @@ class FileSystemBaseCase(object):
     def setUp(self):
         self.fs = self.make_file_system() # provided by subclass
 
+    def assertOSError(self, errno, fn, *args, **kwargs):
+        try:
+            fn(*args, **kwargs)
+            raise AssertionError('expected OSError with errno %d; got no OSError at all' % (errno,))
+        except OSError, e:
+            self.assertTrue(e.errno == errno, 'errno %d expected, got %d' % (errno, e.errno))
+        
     def test_tempdir(self):
         with self.fs.tempdir() as tdir:
             tpath = tdir.path
             self.assertTrue(self.fs.exists(tdir.path), 'tempdir should exist')
 
-            self.assertRaises(OSError, self.fs.mkdir, tdir.path)
+            self.assertOSError(errno.EEXIST, self.fs.mkdir, tdir.path)
             
         self.assertFalse(self.fs.exists(tpath), 'tempdir should be removed')
 
