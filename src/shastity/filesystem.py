@@ -169,9 +169,9 @@ class MemoryFileSystem(FileSystem):
         #
         # The type can be either a "symlink" or a "file". The second
         # element in the case of a symlink is the value of the
-        # symlink; for a file, it is a list of one entry which is the
-        # file contents. (The extra list in the file case is to
-        # support in-place file modification.)
+        # symlink; for a file, it is a list of two entries, the first
+        # of which is the file meta data (permissions etc), and the
+        # second the file contents.
 
         # Start with a root directory with a /tmp directory.
         self.__tree = dict(tmp=dict())
@@ -238,7 +238,20 @@ class MemoryFileSystem(FileSystem):
         del(d[fname])
 
     def unlink(self, path):
-        raise NotImplementedError
+        # todo: test
+        if path == '/':
+            raise OSError(errno.EINVAL, 'invalid argument - cannot unlink /')
+
+        dname, fname = self.__split_slash_agnostically(path)
+        d = self.__lookup(dname)
+
+        if fname not in d:
+            raise OSError(errno.ENOENT, 'file not found')
+
+        if isinstance(d[fname], dict):
+            raise OSError(errno.EPERM, 'operation not permitted (cannot unlink directory)')
+
+        del(d[fname])
 
     def symlink(self, src, dst):
         raise NotImplementedError
