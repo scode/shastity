@@ -336,7 +336,13 @@ class MemoryFileObject:
         self.memfile = memfile
 
 class MemoryFileSystem(FileSystem):
-    '''A simple in-memory file system primarily intended for unit testing.'''
+    '''A simple in-memory file system primarily intended for unit testing.
+
+    Implementation notes
+    ====================
+
+    TODO: talk about permissions
+    TODO: talk about concurrency'''
 
     def __init__(self):
         # Internally we use MemoryDirectory, MemorySymlink, MemoryFile
