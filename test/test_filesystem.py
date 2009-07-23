@@ -22,7 +22,7 @@ class FileSystemBaseCase(object):
         except EnvironmentError, e:
             self.assertTrue(e.errno == errno, 'errno %d expected, got %d' % (errno, e.errno))
         
-    def test_tempdir(self):
+    def test_misc(self):
         with self.fs.tempdir() as tdir:
             tpath = tdir.path
 
@@ -41,7 +41,7 @@ class FileSystemBaseCase(object):
             # successful exists()?
             self.assertTrue(self.fs.exists(testdir))
             
-            # successful is_dir()? todo: test non-dir
+            # successful is_dir()?
             self.assertTrue(self.fs.is_dir(testdir))
 
             # todo: test symlink creation + testing
@@ -72,7 +72,11 @@ class FileSystemBaseCase(object):
             f = self.fs.open(subfile, 'r')
             self.assertEqual(f.read(), 'hello world')
             f.close()
-            # todo: symlink
+            self.assertFalse(self.fs.is_dir(subfile))
+            self.assertErrnoError(errno.EEXIST, self.fs.symlink, subfile, subfile)
+            self.fs.symlink(subfile, subsym)
+            self.assertTrue(self.fs.is_symlink(subsym))
+            self.assertFalse(self.fs.is_symlink(subfile))
             self.fs.rmtree(subdir)
 
         self.assertFalse(self.fs.exists(tpath), 'tempdir should be removed')
