@@ -161,9 +161,17 @@ class MemoryDirectory:
         self.parent = parent
         self.entries = dict()
 
+    def root(self):
+        if self.parent:
+            return self.parent.root()
+        else:
+            return self
+
     def lookup(self, comps, no_follow=False):
         if comps:
-            if comps[0] in self.entries:
+            if comps[0] == '/':
+                return self.root().lookup(comps[1:], no_follow=no_follow)
+            elif comps[0] in self.entries:
                 # we don't recurse for non-directories mainly because
                 # symlinks don't know their parent
                 entry = self.entries[comps[0]]
@@ -178,18 +186,8 @@ class MemoryDirectory:
                     if no_follow:
                         raise AssertionError('no_follow, but requested demanded follow')
                     else:
-                        if entry.dest[0] == '/':
-                            seekroot = self.root()
-                        elif entry.dest[0] == '.':
-                            seekroot = self
-                        elif entry.dest[0] == '..':
-                            seekroot = self.parent
-                            if not seekroot:
-                                raise OSError(errno.ENOENT, 'file not found (symlink past root node)')
-                        else:
-                            raise AssertionError('bug - bad start of symlink')
-                        
-                        return seekroot.lookup(entry.dest[1:])
+                        # ask symlink to resolve itself relative to us
+                        return entry.resolve(self)
                 else:
                     raise AssertionError('this code should not be reachable')
             else:
@@ -200,8 +198,44 @@ class MemoryDirectory:
     def is_empty(self):
         return not self.entries
 
+    def is_dir(self):
+        return True
+    
     def deparent(self):
         self.parent = None
+
+    def mkdir(self, name):
+        if name in self.entries:
+            raise OSError(errno.EEXIST, 'file exists')
+        self.entries[name] = MemoryDirectory(parent=self)
+
+    def rmdir(self, name):
+        if name not in self.entries:
+            raise OSError(errno.ENOENT, 'file not found')
+        
+        if not isinstance(self.entries[name], MemoryDirectory):
+            raise OSError(errno.ENOTDIR, 'not a directory')
+
+        if not self.entries[name].is_empty():
+            raise OSError(errno.ENOTEMPTY, 'directory not empty')
+        
+        del(self.entries[name])
+
+    def exists(self, name):
+        if not name in self.entries:
+            return False
+
+        entry = self.entries[name]
+        if isinstance(entry, MemorySymlink):
+            try:
+                entry.resolve(self)
+                return True
+            except OSError, e:
+                if e.errno == errno.ENOENT:
+                    return False
+                raise
+        else:
+            return True
 
     def link(self, memfile, name):
         if name in self.entries:
@@ -216,11 +250,7 @@ class MemoryDirectory:
         entry = self.entries[name]
 
         if isinstance(entry, MemoryDirectory):
-            if entry.is_empty():
-                entry.deparent()
-                del(self.entries[name])
-            else:
-                raise OSError(errno.ENOTEMPTY, 'directory not empty')
+            raise OSError(errno.EISDIR, 'cannot unlink directory - use rmdir()')
         elif isinstance(entry, MemorySymlink):
             del(self.entries[name])
         elif isinstance(entry, MemoryFile):
@@ -233,12 +263,33 @@ class MemorySymlink:
         '''@param dest: list (starts with . or /) of components'''
         self.dest = dest
 
+    def is_dir(self):
+        return False
+
+    def resolve(self, reldir):
+        '''Resolve this symlink relative to the given directory.'''
+        if self.dest[0] == '/':
+            next_node = reldir.root()
+        elif entry.dest[0] == '.':
+            next_node = reldir
+        elif entry.dest[0] == '..':
+            next_node = reldir.parent
+            if not next_node:
+                raise OSError(errno.ENOENT, 'file not found (symlink past root node)')
+        else:
+            raise AssertionError('bug - bad start of symlink')
+
+        return next_node.lookup(entry.dest[1:])
+
     def readlink(self):
         return reduce(os.path.join, self.dest, '')
 
 class MemoryFile:
     def __init__(self):
         self.contents = ''
+
+    def is_dir(self):
+        return False
 
 class MemoryFileObject:
     '''File-like object for the memory file system.'''
@@ -249,42 +300,19 @@ class MemoryFileSystem(FileSystem):
     '''A simple in-memory file system primarily intended for unit testing.'''
 
     def __init__(self):
-        # internally we represent the file system as follows:
-        #
-        # A directory is a dict, each key being an entry. If the value
-        # is a dict, it represents a directory. If the value is is a
-        # tuple, the first element is a string representing the type,
-        # and the second element is dependent on the type.
-        #
-        # The type can be either a "symlink" or a "file". The second
-        # element in the case of a symlink is the value of the
-        # symlink; for a file, it is a list of two entries, the first
-        # of which is the file meta data (permissions etc), and the
-        # second the file contents.
+        # Internally we use MemoryDirectory, MemorySymlink, MemoryFile
+        # and MemoryFileObject to accomplish our goal.
+        # 
+        # We are mostly responsible for converting between string
+        # based paths (a/b/c) to component based paths (['a', 'b',
+        # 'c']) and implementing logic which is beyond the scope of
+        # individual instances of the classes mentioned.
 
-        # Start with a root directory with a /tmp directory.
-        self.__tree = dict(tmp=dict())
+        self.__root = MemoryDirectory(parent=None)
+        self.__root.link(MemoryDirectory(parent=self.__root), 'tmp')
 
-        # Initialize unique tmp filename counter.
-        self.__tmp_count = 0
-
-    def __lookup(self, path):
-        assert path.startswith('/')
-        path = path[1:]
-
-        def rec(cur, comps):
-            if comps and not (len(comps) == 1 and comps[0] == ''):
-                if not isinstance(cur, dict):
-                    raise OSError(errno.ENOTDIR, 'not a directory')
-                else:
-                    if comps[0] in cur:
-                        return rec(cur[comps[0]], comps[1:])
-                    else:
-                        raise OSError(errno.ENOENT, 'file not found')
-            else:
-                return cur
-
-        return rec(self.__tree, path.split('/'))
+        self.__tmp_count = 0   # Used to allocate unique temp names
+        self.__cwd = self.__root
 
     def __split_slash_agnostically(self, path):
         directory, file = os.path.split(path)
@@ -296,58 +324,54 @@ class MemoryFileSystem(FileSystem):
 
         return (directory, file)
 
-    def mkdir(self, path):
-        directory, newdir = self.__split_slash_agnostically(path)
-        d = self.__lookup(directory)
+    def __tokenize(self, path):
+        if len(path) > 1 and path.endswith('/'):
+            path = path[0:len(path) - 1]
 
-        if not isinstance(d, dict):
+        while path.find('//') != -1:
+            path.replace('//', '/')
+
+        if path.startswith('/'):
+            if len(path) > 1:
+                return ['/'] + path[1:].split('/')
+            else:
+                return ['/']
+        else:
+            return path.split('/')
+
+    def mkdir(self, path):
+        dname, fname = self.__split_slash_agnostically(path)
+        d = self.__root.lookup(self.__tokenize(dname))
+
+        if not d.is_dir():
             raise OSError(errno.ENOTDIR, 'not a directory (%s)' % (directory,))
 
-        if newdir in d:
-            raise OSError(errno.EEXIST, 'file exists')
-        else:
-            d[newdir] = dict()
+        d.mkdir(fname)
 
     def rmdir(self, path):
         if path == '/':
             raise OSError(errno.EINVAL, 'invalid argument - cannot rmdir /')
 
         dname, fname = self.__split_slash_agnostically(path)
-        d = self.__lookup(dname)
+        d = self.__root.lookup(self.__tokenize(dname))
 
-        if fname not in d:
-            raise OSError(errno.ENOENT, 'file not found')
-
-        if not isinstance(d[fname], dict): # todo TEST
-            raise OSError(errno.ENOTDIR, 'not a directory')
-
-        if d[fname]:
-            raise OSError(errno.ENOTEMPTY, 'directory not empty')
-
-        del(d[fname])
+        d.rmdir(fname)
 
     def unlink(self, path):
-        # todo: test
         if path == '/':
             raise OSError(errno.EINVAL, 'invalid argument - cannot unlink /')
 
         dname, fname = self.__split_slash_agnostically(path)
-        d = self.__lookup(dname)
+        d = self.__root.lookup(self.__tokenize(dname))
 
-        if fname not in d:
-            raise OSError(errno.ENOENT, 'file not found')
-
-        if isinstance(d[fname], dict):
-            raise OSError(errno.EPERM, 'operation not permitted (cannot unlink directory)')
-
-        del(d[fname])
+        d.unlink(fname)
 
     def symlink(self, src, dst):
         raise NotImplementedError
 
     def exists(self, path):
         try:
-            self.__lookup(path)
+            self.__root.lookup(self.__tokenize(path))
             return True
         except OSError, e:
             if e.errno == errno.ENOENT:
@@ -358,29 +382,16 @@ class MemoryFileSystem(FileSystem):
     def open(self, path, mode):
         raise NotImplementedError
 
-    def rmtree(self, path):
-        if path == '/':
-            raise OSError(errno.EINVAL, 'invalid argument - cannot delete root')
-
-        dname, fname = self.__split_slash_agnostically(path)
-        d = self.__lookup(dname)
-
-        if not fname in d:
-            raise OSError(errno.ENOENT, 'file not found (%s)' % (path,))
-    
-        del(d[fname])
-
     def mkdtemp(self, suffix=None):
         tmpname = 'tmp%s' % (str(self.__tmp_count),)
         self.__tmp_count += 1
 
         # we may legitimately collide since we blindly hope no one
         # created a matching file, or /tmp could be removed
-        d = self.__lookup('/tmp')
+        d = self.__root.lookup(self.__tokenize('/tmp'))
         fullname = '%s%s' % (tmpname, ('-%s' % (suffix,)) if suffix else '')
-        assert fullname not in d, 'bug, or someone collidied with our temp-allocation'
 
-        d[fullname] = dict()
+        d.link(MemoryDirectory(parent=d), fullname)
 
         return '/tmp/%s' % (fullname,)
 
