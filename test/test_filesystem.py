@@ -57,11 +57,24 @@ class FileSystemBaseCase(object):
 
             # todo: populate diverse tree, try rmtree()
             self.fs.open(os.path.join(tdir.path, 'testfile_created'), 'w').close()
+            self.assertFalse(self.fs.is_dir(os.path.join(tdir.path, 'testfile_created')))
             self.assertErrnoError(errno.ENOENT,
                                   self.fs.open,
                                   os.path.join(tdir.path, 'testfile_notexist'),
                                   'r')
-            
+            subdir = os.path.join(tdir.path, 'testsubdir')
+            subfile = os.path.join(subdir, 'file')
+            subsym = os.path.join(subdir, 'sym')
+            self.fs.mkdir(subdir)
+            f = self.fs.open(subfile, 'w')
+            f.write('hello world')
+            f.close()
+            f = self.fs.open(subfile, 'r')
+            self.assertEqual(f.read(), 'hello world')
+            f.close()
+            # todo: symlink
+            self.fs.rmtree(subdir)
+
         self.assertFalse(self.fs.exists(tpath), 'tempdir should be removed')
 
 class LocalFileSystemTests(FileSystemBaseCase, unittest.TestCase):
