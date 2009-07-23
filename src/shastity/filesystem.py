@@ -332,8 +332,21 @@ class MemoryFile:
 
 class MemoryFileObject:
     '''File-like object for the memory file system.'''
-    def __init__(self, memfile):
+    def __init__(self, memfile, mode):
         self.memfile = memfile
+        self.mode = mode
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args, **kwargs):
+        self.close()
+
+    def __del__(self):
+        self.close()
+
+    def close(self):
+        pass # nothing to be done
 
 class MemoryFileSystem(FileSystem):
     '''A simple in-memory file system primarily intended for unit testing.
@@ -429,7 +442,7 @@ class MemoryFileSystem(FileSystem):
                 raise
 
     def open(self, path, mode):
-        raise NotImplementedError
+        return MemoryFileObject(self.__lookup(path), mode)
 
     def is_symlink(self, path):
         return self.__lookup(path).is_symlink()
