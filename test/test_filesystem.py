@@ -77,6 +77,9 @@ class FileSystemBaseCase(object):
             self.fs.symlink(subfile, subsym)
             self.assertTrue(self.fs.is_symlink(subsym))
             self.assertFalse(self.fs.is_symlink(subfile))
+            f = self.fs.open(subsym, 'r')
+            self.assertEqual(f.read(), 'hello world')
+            f.close()
             self.fs.rmtree(subdir)
 
         self.assertFalse(self.fs.exists(tpath), 'tempdir should be removed')
