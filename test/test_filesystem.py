@@ -38,11 +38,24 @@ class FileSystemBaseCase(object):
             # should not be able to rmdir non-empty dirs
             self.assertOSError(errno.ENOTEMPTY, self.fs.rmdir, tdir.path)
 
+            # successful exists()?
+            self.assertTrue(self.fs.exists(testdir))
+            
+            # successful is_dir()? todo: test non-dir
+            self.assertTrue(self.fs.is_dir(testdir))
+
+            # todo: test symlink creation + testing
+
+            # successful listdir()?
+            self.assertEqual(self.fs.listdir(tdir.path), ['testdir'])
+
             # successful rmdir() on empty dir?
             self.fs.rmdir(testdir)
 
             # retry, this time we should fail
             self.assertOSError(errno.ENOENT, self.fs.rmdir, testdir)
+
+            # todo: populate diverse tree, try rmtree()
             
         self.assertFalse(self.fs.exists(tpath), 'tempdir should be removed')
 
