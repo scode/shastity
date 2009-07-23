@@ -393,12 +393,20 @@ class OpenMode:
             raise AssertionError('invalid mode string: %s' % (modestring,))
 
 class MemoryFileObject:
-    '''File-like object for the memory file system.'''
+    '''File-like object for the memory file system.
+
+    @note We do not implement sparse file semantics.
+    @note Several methods remain unimplemented.
+    @note We are not efficient in general, just functional.'''
     def __init__(self, memfile, mode):
         '''@type mode OpenMode'''
         self.memfile = memfile
         self.mode = mode
 
+        if self.mode.truncate_on_open:
+            self.memfile.contents = ''
+        self.pos = 0 if self.mode.at_beginning else len(memfile.contents)
+        
     def __enter__(self):
         return self
 
@@ -411,6 +419,66 @@ class MemoryFileObject:
     def close(self):
         pass # nothing to be done
 
+    def flush(self):
+        pass
+
+    def fileno(self):
+        raise NotImplementedError('fileno() not supported for memory fs')
+
+    def isatty(self):
+        return False
+
+    def next(self):
+        raise NotImplementedError('next() not yet implemented for memory fs')
+
+    def read(self, size=-1):
+        if size == 0:
+            return ''
+        elif size < 0:
+            ret = self.memfile.contents[self.pos:]
+            self.pos += len(ret)
+            return ret
+        else:
+            ret = self.memfile.contents[self.pos:self.pos + size]
+            self.pos += len(ret)
+            return ret
+
+    def readline(self, size=-1):
+        # \r?
+        if size <= 0:
+            size = len(self.memfile.contents) - self.pos
+        nlpos = self.memfile.contents.find('\n', self.pos, self.pos + size)
+
+        if nlpos == -1:
+            ret = self.memfile.contents[self.pos, self.pos + size]
+            self.pos += len(ret)
+            return ret
+        else:
+            ret = self.memfile.contents[self.pos, nlpos + 1]
+            self.pos += len(ret)
+            return ret
+
+    def readlines(self, sizehint=None):
+        raise NotImplementedError
+
+    def xreadlines(self):
+        raise NotImplementedError
+
+    def seek(self, offset, whence=os.SEEK_SET):
+        raise NotImplementedError
+
+    def tell(self):
+        raise NotImplementedError
+
+    def truncate(self, size=0):
+        self.memfile.contents = self.memfile.contents[0:size + 1]
+        
+    def write(self, str):
+        self.memfile.contents = self.memfile.contents[0:self.pos + 1] + str + self.memfile.contents[self.pos + 1:]
+
+    def writelines(self, sequence):
+        raise NotImplementedError
+            
 class MemoryFileSystem(FileSystem):
     '''A simple in-memory file system primarily intended for unit testing.
 
