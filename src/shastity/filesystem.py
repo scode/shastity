@@ -108,10 +108,30 @@ class FileSystem(object):
     def open(self, path, mode):
         raise NotImplementedError
 
+    def is_symlink(self, path):
+        '''@return Whether the given path is a symlink.'''
+        raise NotImplementedError
+
+    def is_dir(self, path):
+        '''@return Whether the given path is a directory (or symlink pointing to one).'''
+        raise NotImplementedError
+
+    def listdir(self, path):
+        '''@return List of filenames in the given directory.'''
+        raise NotImplementedError
+
     def rmtree(self, path):
         '''Recursively delete the tree rooted at path (not following
         symlinks).'''
-        raise NotImplementedError
+        # we implement this ourselves, rather than using
+        # shutil.rmtree(), in order to have the same implementation
+        # for regular fs and memory fs.
+        if self.is_dir(path):
+            for fname in self.listdir(path):
+                self.rmtree(os.path.join(path, fname))
+            self.rmdir(path)
+        else:
+            self.unlink(path)
 
     def mkdtemp(self, suffix=None):
         '''Atomically create/allocate a temporary directory and return
@@ -149,8 +169,15 @@ class LocalFileSystem(FileSystem):
     def open(self, path, mode):
         return open(path, mode)
 
-    def rmtree(self, path):
-        shutil.rmtree(path)
+    def is_symlink(self, path):
+        return os.path.islink(path)
+
+    def is_dir(self, path):
+        return os.path.isdir(path)
+
+    def listdir(self, path):
+        '''@return List of filenames in the given directory.'''
+        return os.listdir(path)
 
     def mkdtemp(self, suffix=None):
         # mkdtemp differentiates between None and no parameter
@@ -200,6 +227,12 @@ class MemoryDirectory:
 
     def is_dir(self):
         return True
+    
+    def is_symlink(self):
+        return False
+
+    def listdir(self):
+        return self.entries.keys()
     
     def deparent(self):
         self.parent = None
@@ -266,6 +299,9 @@ class MemorySymlink:
     def is_dir(self):
         return False
 
+    def is_symlink(self):
+        return True
+    
     def resolve(self, reldir):
         '''Resolve this symlink relative to the given directory.'''
         if self.dest[0] == '/':
@@ -289,6 +325,9 @@ class MemoryFile:
         self.contents = ''
 
     def is_dir(self):
+        return False
+
+    def is_symlink(self):
         return False
 
 class MemoryFileObject:
@@ -339,6 +378,10 @@ class MemoryFileSystem(FileSystem):
         else:
             return path.split('/')
 
+    def __lookup(self, path):
+        # todo: abs vs. rel
+        return self.__root.lookup(self.__tokenize(path))
+
     def mkdir(self, path):
         dname, fname = self.__split_slash_agnostically(path)
         d = self.__root.lookup(self.__tokenize(dname))
@@ -381,6 +424,18 @@ class MemoryFileSystem(FileSystem):
 
     def open(self, path, mode):
         raise NotImplementedError
+
+    def is_symlink(self, path):
+        return self.__root.lookup(self.__tokenize(path)).is_symlink()
+
+    def is_dir(self, path):
+        return self.__root.lookup(self.__tokenize(path)).is_dir()
+
+    def listdir(self, path):
+        if not self.is_dir(path):
+            raise OSError(errno.ENOTDIR, 'not a directory')
+
+        return self.__lookup(path).listdir()
 
     def mkdtemp(self, suffix=None):
         tmpname = 'tmp%s' % (str(self.__tmp_count),)
