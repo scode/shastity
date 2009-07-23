@@ -15,11 +15,11 @@ class FileSystemBaseCase(object):
     def setUp(self):
         self.fs = self.make_file_system() # provided by subclass
 
-    def assertOSError(self, errno, fn, *args, **kwargs):
+    def assertErrnoError(self, errno, fn, *args, **kwargs):
         try:
             fn(*args, **kwargs)
-            raise AssertionError('expected OSError with errno %d; got no OSError at all' % (errno,))
-        except OSError, e:
+            raise AssertionError('expected EnvironmentError with errno %d; got no OSError at all' % (errno,))
+        except EnvironmentError, e:
             self.assertTrue(e.errno == errno, 'errno %d expected, got %d' % (errno, e.errno))
         
     def test_tempdir(self):
@@ -27,7 +27,7 @@ class FileSystemBaseCase(object):
             tpath = tdir.path
 
             self.assertTrue(self.fs.exists(tdir.path), 'tempdir should exist')
-            self.assertOSError(errno.EEXIST, self.fs.mkdir, tdir.path)
+            self.assertErrnoError(errno.EEXIST, self.fs.mkdir, tdir.path)
 
             # successful mkdir() and exists?
             testdir = os.path.join(tdir.path, 'testdir')
@@ -36,7 +36,7 @@ class FileSystemBaseCase(object):
             self.assertFalse(self.fs.exists(os.path.join(tdir.path, 'non-existent-testdir')))
 
             # should not be able to rmdir non-empty dirs
-            self.assertOSError(errno.ENOTEMPTY, self.fs.rmdir, tdir.path)
+            self.assertErrnoError(errno.ENOTEMPTY, self.fs.rmdir, tdir.path)
 
             # successful exists()?
             self.assertTrue(self.fs.exists(testdir))
@@ -53,9 +53,14 @@ class FileSystemBaseCase(object):
             self.fs.rmdir(testdir)
 
             # retry, this time we should fail
-            self.assertOSError(errno.ENOENT, self.fs.rmdir, testdir)
+            self.assertErrnoError(errno.ENOENT, self.fs.rmdir, testdir)
 
             # todo: populate diverse tree, try rmtree()
+            self.fs.open(os.path.join(tdir.path, 'testfile_created'), 'w').close()
+            self.assertErrnoError(errno.ENOENT,
+                                  self.fs.open,
+                                  os.path.join(tdir.path, 'testfile_notexist'),
+                                  'r')
             
         self.assertFalse(self.fs.exists(tpath), 'tempdir should be removed')
 
