@@ -395,6 +395,7 @@ class OpenMode:
 class MemoryFileObject:
     '''File-like object for the memory file system.'''
     def __init__(self, memfile, mode):
+        '''@type mode OpenMode'''
         self.memfile = memfile
         self.mode = mode
 
@@ -503,7 +504,12 @@ class MemoryFileSystem(FileSystem):
             else:
                 raise
 
-    def open(self, path, mode):
+    def open(self, path, modestring):
+        mode = OpenMode(modestring)
+        if mode.create_on_open:
+            if not self.exists(path):
+                dname, fname = self.__split_slash_agnostically(path)
+                self.__lookup(dname).link(MemoryFile(), fname)
         return MemoryFileObject(self.__lookup(path), mode)
 
     def is_symlink(self, path):
