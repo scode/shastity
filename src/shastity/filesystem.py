@@ -330,6 +330,68 @@ class MemoryFile:
     def is_symlink(self):
         return False
 
+class OpenMode:
+    '''Trivial helper to interpret fopen() style modestrings.
+
+    @ivar reading_allowed
+    @ivar writing_allowed
+    @ivar truncate_on_open
+    @ivar create_on_open
+    @ivar at_beginning
+    @ivar at_end
+    @ivar append_only'''
+    def __init__(self, modestring):
+        if modestring == 'r':
+            self.reading_allowed = True
+            self.writing_allowed = False
+            self.truncate_on_open = False
+            self.create_on_open = False
+            self.at_beginning = True
+            self.at_end = not self.at_beginning
+            self.append_only = False
+        elif modestring == 'r+':
+            self.reading_allowed = True
+            self.writing_allowed = True
+            self.truncate_on_open = False
+            self.create_on_open = False
+            self.at_beginning = True
+            self.at_end = not self.at_beginning
+            self.append_only = False
+        elif modestring == 'w':
+            self.reading_allowed = False
+            self.writing_allowed = True
+            self.truncate_on_open = True
+            self.create_on_open = True
+            self.at_beginning = True
+            self.at_end = not self.at_beginning
+            self.append_only = False
+        elif modestring == 'w+':
+            self.reading_allowed = True
+            self.writing_allowed = True
+            self.truncate_on_open = True
+            self.create_on_open = True
+            self.at_beginning = True
+            self.at_end = not self.at_beginning
+            self.append_only = False
+        elif modestring == 'a':
+            self.reading_allowed = False
+            self.writing_allowed = True
+            self.truncate_on_open = False
+            self.create_on_open = True
+            self.at_beginning = False
+            self.at_end = not self.at_beginning
+            self.append_only = True
+        elif modestring == 'a+':
+            self.reading_allowed = True
+            self.writing_allowed = True
+            self.truncate_on_open = False
+            self.create_on_open = True
+            self.at_beginning = False
+            self.at_end = not self.at_beginning
+            self.append_only = True
+        else:
+            raise AssertionError('invalid mode string: %s' % (modestring,))
+
 class MemoryFileObject:
     '''File-like object for the memory file system.'''
     def __init__(self, memfile, mode):

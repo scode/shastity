@@ -67,5 +67,15 @@ class MemoryFileSystemTests(FileSystemBaseCase, unittest.TestCase):
     def make_file_system(self):
         return fs.MemoryFileSystem()
 
+    def test_creationmodes(self):
+        # test creation but do not bother testing flags since it
+        # effectively boilds down to cut'n'paste anyway
+        fs.OpenMode('r')
+        fs.OpenMode('r+')
+        fs.OpenMode('w')
+        fs.OpenMode('w+')
+        fs.OpenMode('a')
+        fs.OpenMode('a+')
+
 if __name__ == "__main__":
     unittest.main()
