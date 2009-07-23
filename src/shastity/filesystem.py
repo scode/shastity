@@ -276,6 +276,12 @@ class MemoryDirectory:
 
         self.entries[name] = memfile
 
+    def symlink(self, linkstring, name):
+        if name in self.entries:
+            raise OSError(errno.EEXIST, 'file exists')
+
+        self.entries[name] = MemorySymlink(linkstring)
+    
     def unlink(self, name):
         if not name in self.entries:
             raise OSError(errno.ENOENT, 'file not found')
@@ -306,16 +312,16 @@ class MemorySymlink:
         '''Resolve this symlink relative to the given directory.'''
         if self.dest[0] == '/':
             next_node = reldir.root()
-        elif entry.dest[0] == '.':
+        elif self.dest[0] == '.':
             next_node = reldir
-        elif entry.dest[0] == '..':
+        elif self.dest[0] == '..':
             next_node = reldir.parent
             if not next_node:
                 raise OSError(errno.ENOENT, 'file not found (symlink past root node)')
         else:
             raise AssertionError('bug - bad start of symlink')
 
-        return next_node.lookup(entry.dest[1:])
+        return next_node.lookup(self.dest[1:])
 
     def readlink(self):
         return reduce(os.path.join, self.dest, '')
@@ -560,7 +566,10 @@ class MemoryFileSystem(FileSystem):
         d.unlink(fname)
 
     def symlink(self, src, dst):
-        raise NotImplementedError
+        dname, fname = self.__split_slash_agnostically(dst)
+        d = self.__lookup(dname)
+
+        d.symlink(self.__tokenize(src), fname)
 
     def exists(self, path):
         try:
