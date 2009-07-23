@@ -188,6 +188,15 @@ class MemoryDirectory:
         self.parent = parent
         self.entries = dict()
 
+    def __getitem__(self, fname):
+        if not fname in self.entries:
+            raise OSError(errno.ENOENT, 'file not found')
+
+        return self.entries[fname]
+
+    def __contains__(self, fname):
+        return fname in self.entries
+
     def root(self):
         if self.parent:
             return self.parent.root()
@@ -590,7 +599,13 @@ class MemoryFileSystem(FileSystem):
         return MemoryFileObject(self.__lookup(path), mode)
 
     def is_symlink(self, path):
-        return self.__lookup(path).is_symlink()
+        dname, fname = self.__split_slash_agnostically(path)
+        d = self.__lookup(dname)
+
+        if not d.is_dir():
+            raise OSError(errno.EISDIR, 'is a directory')
+
+        return d[fname].is_symlink()
 
     def is_dir(self, path):
         return self.__lookup(path).is_dir()
