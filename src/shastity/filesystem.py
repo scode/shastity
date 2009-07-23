@@ -390,7 +390,7 @@ class MemoryFileSystem(FileSystem):
 
     def mkdir(self, path):
         dname, fname = self.__split_slash_agnostically(path)
-        d = self.__root.lookup(self.__tokenize(dname))
+        d = self.__lookup(dname)
 
         if not d.is_dir():
             raise OSError(errno.ENOTDIR, 'not a directory (%s)' % (directory,))
@@ -402,7 +402,7 @@ class MemoryFileSystem(FileSystem):
             raise OSError(errno.EINVAL, 'invalid argument - cannot rmdir /')
 
         dname, fname = self.__split_slash_agnostically(path)
-        d = self.__root.lookup(self.__tokenize(dname))
+        d = self.__lookup(dname)
 
         d.rmdir(fname)
 
@@ -411,7 +411,7 @@ class MemoryFileSystem(FileSystem):
             raise OSError(errno.EINVAL, 'invalid argument - cannot unlink /')
 
         dname, fname = self.__split_slash_agnostically(path)
-        d = self.__root.lookup(self.__tokenize(dname))
+        d = self.__lookup(dname)
 
         d.unlink(fname)
 
@@ -420,7 +420,7 @@ class MemoryFileSystem(FileSystem):
 
     def exists(self, path):
         try:
-            self.__root.lookup(self.__tokenize(path))
+            self.__lookup(path)
             return True
         except OSError, e:
             if e.errno == errno.ENOENT:
@@ -432,10 +432,10 @@ class MemoryFileSystem(FileSystem):
         raise NotImplementedError
 
     def is_symlink(self, path):
-        return self.__root.lookup(self.__tokenize(path)).is_symlink()
+        return self.__lookup(path).is_symlink()
 
     def is_dir(self, path):
-        return self.__root.lookup(self.__tokenize(path)).is_dir()
+        return self.__lookup(path).is_dir()
 
     def listdir(self, path):
         if not self.is_dir(path):
@@ -449,7 +449,7 @@ class MemoryFileSystem(FileSystem):
 
         # we may legitimately collide since we blindly hope no one
         # created a matching file, or /tmp could be removed
-        d = self.__root.lookup(self.__tokenize('/tmp'))
+        d = self.__lookup('/tmp')
         fullname = '%s%s' % (tmpname, ('-%s' % (suffix,)) if suffix else '')
 
         d.link(MemoryDirectory(parent=d), fullname)
