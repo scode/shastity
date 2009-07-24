@@ -103,6 +103,14 @@ class Backend(object):
         backend.'''
         pass
 
+    def __enter__(self):
+        '''Returns self.'''
+        return self
+
+    def __exit__(self, *args, **kwargs):
+        '''Calls self.close().'''
+        self.close()
+
     def put(self, name, data):
         '''Put a file by the given name and contents into the store.
 
@@ -149,4 +157,9 @@ class Backend(object):
 
         @type name string
         @param name Name of file to delete.'''
+        raise NotImplementedError
+
+    def close(self):
+        '''Close the backend, releasing any resources it may
+        occupy.'''
         raise NotImplementedError
