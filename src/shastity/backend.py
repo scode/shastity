@@ -84,6 +84,16 @@ class Backend(object):
         a bit longer. No internal logic will break in shastity; again as long
         as the backend works internally.
 
+    Another important consideration is that regardless of consistency
+    guarantee, a backend *must* honor the order of operations. For
+    example, if shastity does:
+
+      (1) PUT x
+      (2) DELETE x
+      (3) PUT x
+
+    It would be broken behavior for (3) to fail due to a delayed (2).
+
     @ivar identifier The identifier given to the Backend constructor.'''
     def __init__(self, identifier):
         '''Instantiate the backend, storing the identifier. Expected
