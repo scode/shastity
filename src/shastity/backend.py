@@ -27,6 +27,19 @@ class Backend(object):
     an optimizing implemented at a future time, but regardless writing
     code like that is good practice anyway).
 
+    A fundamental assumption of shastity is that the block size used
+    for file I/O will be "reasonably small"; thus backends can assume
+    that data being put and gotten to/from the store will fit
+    comfortably in RAM, and that it is okay to perhaps make a copy of
+    a block of data and otherwise treat is as a medium-to-large piece
+    of data, rather than a *huge* piece of data. This is an assumption
+    that is part of the public interface of shastity and something we
+    communicate to the user.
+
+    Making this assumptions goes to simplicity of interface and
+    implementation; there is no need to have elaborate logic for
+    streaming very large files in a reliable fashion.
+
     Backends must be able to handle reasonably long file names. No
     effort is made to be compatible with legacy 8.3 file system
     conventions or similar; any such acrobatics would have to be
