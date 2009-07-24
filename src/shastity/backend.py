@@ -104,13 +104,49 @@ class Backend(object):
         pass
 
     def put(self, name, data):
+        '''Put a file by the given name and contents into the store.
+
+        The put operation must satisfy several characteristics:
+
+          - The operation must atomically either succeed or not; the backend
+            must guarantee that a half-finished or otherwise failed put operation
+            will not cause a particially put files to be available and visible to
+            subsequent list() or get().
+
+          - When the put completes successfully, the file is considered to be written
+            successfully and persistently (see consistency notes in class docs). In particular
+            whichever put happens *last* must take presedence.
+
+          - Duplicate put operations absolutely *must* be handled, *or* the backend's list() must
+            be strictly up-to-date with respect to put():s.
+
+        @type name string
+        @param name The name of the file.
+
+        @type data bytes
+        @param data The contents of the file.'''
         raise NotImplementedError
 
     def get(self, name):
+        '''Get the contents of the file by the given name.
+
+        @type name string
+        @param name The name of the file to get.
+        
+        @rtype bytes
+        @return The contents of the file.'''
         raise NotImplementedError
 
     def list(self):
+        '''Get a complete list of all files in the backend.
+
+        @rtype list of strings
+        @return List of file names.'''
         raise NotImplementedError
 
     def delete(self, name):
+        '''Delete the given file in the backend.
+
+        @type name string
+        @param name Name of file to delete.'''
         raise NotImplementedError
