@@ -162,4 +162,4 @@ class Backend(object):
     def close(self):
         '''Close the backend, releasing any resources it may
         occupy.'''
-        raise NotImplementedError
+        pass
