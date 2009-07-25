@@ -450,5 +450,34 @@ class MetaDataTests(unittest.TestCase):
                        is_sticky=True),
                   '---------t')
 
+    def test_to_string(self):
+        d = dict(is_directory=True,
+                 is_regular=False,
+                 is_symlink=False,
+                 is_block_device=False,
+                 is_character_device=False,
+                 is_fifo=False,
+                 user_read=True,
+                 user_write=True,
+                 user_execute=True,
+                 group_read=True,
+                 group_write=False,
+                 group_execute=True,
+                 other_read=True,
+                 other_write=False,
+                 other_execute=True,
+                 is_setuid=False,
+                 is_setgid=False,
+                 is_sticky=False,
+                 uid=5,
+                 gid=6,
+                 size=7,
+                 atime=8,
+                 mtime=9,
+                 ctime=10)
+        md = metadata.FileMetaData(d)
+
+        self.assertEqual(md.to_string(), 'drwxr-xr-x 5 6 7 8 9 10')
+
 if __name__ == "__main__":
     unittest.main()

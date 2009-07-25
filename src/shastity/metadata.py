@@ -263,6 +263,43 @@ class FileMetaData(object):
     def to_string(self):
         '''Produce a string encoding of this meta data.
 
-        TODO: define format characteristics'''
-        raise NotImplementedError
+        The format of the string is:
+
+          MODESTR uid gid size atime mtime ctime
+
+        Where MODESTR is the result of mode_to_str() (ls -l
+        style). Times are seconds since epoch.'''
+
+        assert self.uid is not None
+        assert self.gid is not None
+        assert self.size is not None
+        assert self.atime is not None
+        assert self.mtime is not None
+        assert self.ctime is not None
+
+        return ('%(modestring)s %(uid)d %(gid)d %(size)d %(atime)d %(mtime)d %(ctime)d'
+                '' % dict(modestring=mode_to_str(dict(is_directory=self.is_directory,
+                                                      is_character_device=self.is_character_device,
+                                                      is_block_device=self.is_block_device,
+                                                      is_regular=self.is_regular,
+                                                      is_fifo=self.is_fifo,
+                                                      is_symlink=self.is_symlink,
+                                                      is_setuid=self.is_setuid,
+                                                      is_setgid=self.is_setgid,
+                                                      is_sticky=self.is_sticky,
+                                                      user_read=self.user_read,
+                                                      user_write=self.user_write,
+                                                      user_execute=self.user_execute,
+                                                      group_read=self.group_read,
+                                                      group_write=self.group_write,
+                                                      group_execute=self.group_execute,
+                                                      other_read=self.other_read,
+                                                      other_write=self.other_write,
+                                                      other_execute=self.other_execute)),
+                          uid=self.uid,
+                          gid=self.gid,
+                          size=self.size,
+                          atime=self.atime,
+                          mtime=self.mtime,
+                          ctime=self.ctime))
 
