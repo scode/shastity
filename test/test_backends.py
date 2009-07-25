@@ -75,8 +75,8 @@ class BackendsBaseCase(object):
         self.assertEqual(self.backend.get(prefix(lname)), 'data')
         self.assertTrue(prefix(lname) in self.get_testfiles())
 
-    def test_lots_of_files(self):
-        fnames = [ prefix('fnumber_%d' % (n,)) for n in xrange(0, 1000) ]
+    def test_several_files(self):
+        fnames = [ prefix('fnumber_%d' % (n,)) for n in xrange(0, 100) ]
         for fname in fnames:
             self.backend.put(prefix(fname), fname)
         flist = self.backend.list()
