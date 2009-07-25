@@ -22,5 +22,13 @@ class MetaDataTests(unittest.TestCase):
             md.user_write = False
         self.assertRaises(AssertionError, assign_test)
 
+    def test_init_assignment(self):
+        for propname in metadata.FileMetaData.propnames:
+            for boolval in [ True, False ]:
+                propdic = dict()
+                propdic[propname] = boolval
+
+                self.assertEqual(getattr(metadata.FileMetaData(props=propdic), propname), boolval)
+
 if __name__ == "__main__":
     unittest.main()

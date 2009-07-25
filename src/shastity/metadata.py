@@ -88,6 +88,10 @@ class FileMetaData(object):
         for prop in self.propnames:
             setattr(self, prop, None)
 
+        if props:
+            for prop, val in props.iteritems():
+                setattr(self, prop, val)
+
         self.__write_protected = True
 
     def __setattr__(self, key, value):
