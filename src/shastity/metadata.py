@@ -92,7 +92,7 @@ class FileMetaData(object):
 
     def __setattr__(self, key, value):
         # implement trivial write protection scheme
-        if self.__write_protected:
+        if (not key.startswith('_')) and self.__write_protected:
             raise AssertionError('setting a property on FileMetaData is not allowed - we are read-only!')
         else:
             self.__dict__[key] = value
