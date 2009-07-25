@@ -5,10 +5,15 @@
 from __future__ import absolute_import
 from __future__ import with_statement
 
+import shutil
+import tempfile
 import unittest
 
 import shastity.backend as backend
 import shastity.backends.memorybackend as memorybackend
+import shastity.logging as logging
+
+log = logging.get_logger(__name__)
 
 PREFIX = 'shastity_unittest_'
 
@@ -39,6 +44,19 @@ class BackendsBaseCase(object):
 class MemoryBackendTests(BackendsBaseCase, unittest.TestCase):
     def make_backend(self):
         return memorybackend.MemoryBackend('memory')
+
+class DirectoryBackendTests(BackendsBaseCase, unittest.TestCase):
+    def make_backend(self):
+        return memorybackend.MemoryBackend('memory')
+
+    def setUp(self):
+        self.tempdir = tempfile.mkdtemp(suffix='-shastity_directory_backend_unittest')
+        log.debug('using temporary directory %s', self.tempdir)
+
+        BackendsBaseCase.setUp(self)
+
+    def tearDown(self):
+        shutil.rmtree(self.tempdir)
 
 if __name__ == "__main__":
     unittest.main()
