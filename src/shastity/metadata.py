@@ -98,6 +98,56 @@ def mode_to_str(propdict):
 
     return ''.join(chars)
 
+def str_to_mode(s):
+    '''Inverse of mode_to_str().'''
+    assert len(s) == 10, 'mode string should be exactly 10 chars: %s' % (s,)
+
+    ret = dict()
+
+    assert s[0] in '-bcdlp'
+    ret['is_regular'] = s[0] == '-'
+    ret['is_block_device'] = s[0] == 'b'
+    ret['is_character_device'] = s[0] == 'c'
+    ret['is_directory'] = s[0] == 'd'
+    ret['is_symlink'] = s[0] == 'l'
+    ret['is_fifo'] = s[0] == 'p'
+
+    if ret['is_symlink']:
+        # symlinks are special and remaining ones do not apply
+        return ret
+
+    assert s[1] in 'r-'
+    ret['user_read'] = s[1] == 'r'
+    
+    assert s[2] in 'w-'
+    ret['user_write'] = s[2] == 'w'
+
+    assert s[3] in 'x-sS'
+    ret['user_execute'] = (s[3] == 'x') or (s[3] == 's')
+    ret['is_setuid'] = (s[3] == 's') or (s[3] == 'S')
+
+    assert s[4] in 'r-'
+    ret['group_read'] = s[4] == 'r'
+    
+    assert s[5] in 'w-'
+    ret['group_write'] = s[5] == 'w'
+
+    assert s[6] in 'x-sS'
+    ret['group_execute'] = (s[6] == 'x') or (s[6] == 's')
+    ret['is_setgid'] = (s[6] == 's') or (s[6] == 'S')
+
+    assert s[7] in 'r-'
+    ret['other_read'] = s[7] == 'r'
+    
+    assert s[8] in 'w-'
+    ret['other_write'] = s[8] == 'w'
+
+    assert s[9] in 'x-tT'
+    ret['other_execute'] = (s[9] == 'x') or (s[9] == 't')
+    ret['is_sticky'] = (s[9] == 't') or (s[9] == 'T')
+
+    return ret
+
 class FileMetaData(object):
     '''Represents meta-data about files, including any and all
     meta-data that are to be preserved on backup/restore.
