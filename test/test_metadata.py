@@ -30,5 +30,13 @@ class MetaDataTests(unittest.TestCase):
 
                 self.assertEqual(getattr(metadata.FileMetaData(props=propdic), propname), boolval)
 
+    def test_other_copy(self):
+        for propname in metadata.FileMetaData.propnames:
+            for boolval in [ True, False ]:
+                propdic = dict()
+                propdic[propname] = boolval
+
+                self.assertEqual(getattr(metadata.FileMetaData(other=metadata.FileMetaData(props=propdic)), propname), boolval)
+
 if __name__ == "__main__":
     unittest.main()

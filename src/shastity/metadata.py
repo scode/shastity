@@ -85,8 +85,12 @@ class FileMetaData(object):
         '''
         self.__write_protected = False
 
-        for prop in self.propnames:
-            setattr(self, prop, None)
+        if other: # initialize from other instance
+            for prop in self.propnames:
+                setattr(self, prop, getattr(other, prop))
+        else:     # else initialize all to None
+            for prop in self.propnames:
+                setattr(self, prop, None)
 
         if props:
             for prop, val in props.iteritems():
