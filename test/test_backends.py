@@ -11,6 +11,7 @@ import unittest
 
 import shastity.backend as backend
 import shastity.backends.memorybackend as memorybackend
+import shastity.backends.directorybackend as directorybackend
 import shastity.logging as logging
 
 log = logging.get_logger(__name__)
@@ -47,7 +48,7 @@ class MemoryBackendTests(BackendsBaseCase, unittest.TestCase):
 
 class DirectoryBackendTests(BackendsBaseCase, unittest.TestCase):
     def make_backend(self):
-        return memorybackend.MemoryBackend('memory')
+        return directorybackend.DirectoryBackend(self.tempdir)
 
     def setUp(self):
         self.tempdir = tempfile.mkdtemp(suffix='-shastity_directory_backend_unittest')
