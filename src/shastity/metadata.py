@@ -6,6 +6,98 @@
 File meta data handling.
 '''
 
+def mode_to_str(propdict):
+    '''Internal helper similar to strmode(3). Produces
+    'drwxr-xr-x' style (like ls -l) mode strings from the
+    permission/sticky/setuid attributes.'''
+    d = propdict
+
+    chars = [] # list of characters later to be joined into string
+
+    if d['is_regular']:
+        chars.append('-')
+    elif d['is_block_device']:
+        chars.append('b')
+    elif d['is_character_device']:
+        chars.append('c')
+    elif d['is_directory']:
+        chars.append('d')
+    elif d['is_symlink']:
+        chars.append('l')
+    elif d['is_fifo']:
+        chars.append('p')
+    else:
+        raise AssertionError('should not be reachable')
+
+    # symlinks are a special case; individual modes etc don't make sense
+    if d['is_symlink']:
+        return ''.join(chars) + 'rwxr-xr-x'
+
+    if d['user_read']:
+        chars.append('r')
+    else:
+        chars.append('-')
+
+    if d['user_write']:
+        chars.append('w')
+    else:
+        chars.append('-')
+
+    if d['user_execute']:
+        if d['is_setuid']:
+            chars.append('s')
+        else:
+            chars.append('x')
+    else:
+        if d['is_setuid']:
+            chars.append('S')
+        else:
+            chars.append('-')
+        
+    if d['group_read']:
+        chars.append('r')
+    else:
+        chars.append('-')
+
+    if d['group_write']:
+        chars.append('w')
+    else:
+        chars.append('-')
+
+    if d['group_execute']:
+        if d['is_setgid']:
+            chars.append('s')
+        else:
+            chars.append('x')
+    else:
+        if d['is_setgid']:
+            chars.append('S')
+        else:
+            chars.append('-')
+
+    if d['other_read']:
+        chars.append('r')
+    else:
+        chars.append('-')
+
+    if d['other_write']:
+        chars.append('w')
+    else:
+        chars.append('-')
+
+    if d['other_execute']:
+        if d['is_sticky']:
+            chars.append('t')
+        else:
+            chars.append('x')
+    else:
+        if d['is_sticky']:
+            chars.append('T')
+        else:
+            chars.append('-')
+
+    return ''.join(chars)
+
 class FileMetaData(object):
     '''Represents meta-data about files, including any and all
     meta-data that are to be preserved on backup/restore.
