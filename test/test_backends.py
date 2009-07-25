@@ -39,6 +39,9 @@ class BackendsBaseCase(object):
         for fname in fnames:
             self.backend.delete(fname)
 
+    def tearDown(self):
+        self.backend.close()
+
     def get_testfiles(self):
         return [ name for name in self.backend.list() if name.startswith(PREFIX)]
 
@@ -118,6 +121,8 @@ class DirectoryBackendTests(BackendsBaseCase, unittest.TestCase):
         BackendsBaseCase.setUp(self)
 
     def tearDown(self):
+        BackendsBaseCase.tearDown(self)
+
         shutil.rmtree(self.tempdir)
 
 if __name__ == "__main__":
