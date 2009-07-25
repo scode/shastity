@@ -78,13 +78,52 @@ class FileMetaData(object):
     @ivar group_execute
     @ivar other_execute
     '''
+
+    # for introspection and automation purposes.
+    propnames = [ 'is_directory',
+                  'is_character_device',
+                  'is_block_device',
+                  'is_regular',
+                  'is_fifo',
+                  'is_symlink',
+                  'uid',
+                  'gid',
+                  'size',
+                  'atime',
+                  'mtime',
+                  'ctime',
+                  'is_setuid',
+                  'is_setgid',
+                  'is_sticky',
+                  'yser_read',
+                  'group_read',
+                  'other_read',
+                  'user_write',
+                  'group_write',
+                  'other_write',
+                  'user_execute',
+                  'group_execute',
+                  'other_execute' ]
+
     def __init__(self, props=None, other=None):
         '''
         @param props: Dict of properties that match those of the instance to be created.
         @param other: Other instance on which to base the values of any properties that
                       do not appear in props.
         '''
-        pass
+        self.__write_protected = False
+
+        for prop in self.propnames:
+            setattr(self, prop, None)
+
+        self.__write_protected = True
+
+    def __setattr__(self, key, value):
+        # implement trivial write protection scheme
+        if self.__write_protected:
+            raise AssertionError('setting a property on FileMetaData is not allowed - we are read-only!')
+        else:
+            self.__dict__[key] = value
 
     @classmethod
     def from_string(cls, s):
@@ -97,102 +136,6 @@ class FileMetaData(object):
 
         TODO: define format characteristics'''
         raise NotImplementedError
-
-    @property
-    def is_directory(self):
-        return self.__is_directory
-
-    @property
-    def is_character_device(self):
-        return self.__is_character_device
-
-    @property
-    def is_block_device(self):
-        return self.__is_block_device
-
-    @property
-    def is_regular(self):
-        return self.__is_regular
-
-    @property
-    def is_fifo(self):
-        return self.__is_fifo
-
-    @property
-    def is_symlink(self):
-        return self.__is_symlink
-
-    @property
-    def uid(self):
-        return self.__uid
-
-    @property
-    def gid(self):
-        return self.__gid
-
-    @property
-    def size(self):
-        return self.__size
-
-    @property
-    def atime(self):
-        return self.__atime
-
-    @property
-    def mtime(self):
-        return self.__mtime
-
-    @property
-    def ctime(self):
-        return self.__ctime
-
-    @property
-    def is_setuid(self):
-        return self.__is_setuid
-
-    @property
-    def is_setgid(self):
-        return self.__is_setgid
-    
-    @property
-    def is_sticky(self):
-        return self.__is_sticky
-
-    @property
-    def user_read(self):
-        return self.__user_read
-
-    @property
-    def group_read(self):
-        return self.__user_read
-
-    @property
-    def other_read(self):
-        return self.__other_read
-
-    @property
-    def user_write(self):
-        return self.__user_write
-    
-    @property
-    def group_write(self):
-        return self.__group_write
-
-    @property
-    def other_write(self):
-        return self.__other_write
-
-    @property
-    def user_execute(self):
-        return self.__user_execute
-
-    @property
-    def group_execute(self):
-        return self.__group_execute
-    
-    @property
-    def other_execute(self):
-        return self.__other_execute
 
 class StaleTemporaryDirectory(Exception):
     '''Raised to indicate that an attempt to use a stale (cleaned up)
