@@ -173,24 +173,25 @@ class FileMetaData(object):
     @ivar is_regular          Is the file a regularfile?
     @ivar is_fifo             Is the file a FIFO/named pipe?
     @ivar is_symlink          Is the file a symbolic link?
+    @ivar is_setuid           Is the setuid bit set?
+    @ivar is_setgid           Is the setgid bit set?
+    @ivar is_sticky           Is the sticky bit set?
+    @ivar user_read
+    @ivar user_write
+    @ivar user_execute
+    @ivar group_read
+    @ivar group_write
+    @ivar group_execute
+    @ivar other_read
+    @ivar other_write
+    @ivar other_execute
+
     @ivar uid                 UID of the owner.
     @ivar gid                 GID of the group owner.
     @ivar size                Size of file (if regular, else None).
     @ivar atime               Access time of the file (seconds since epoch).
     @ivar mtime               Modification time of the file (seconds since epoch).
     @ivar ctime               ctime, whatever the platform feels that means (secondssince epoch).
-    @ivar is_setuid           Is the setuid bit set?
-    @ivar is_setgid           Is the setgid bit set?
-    @ivar is_sticky           Is the sticky bit set?
-    @ivar yser_read
-    @ivar group_read
-    @ivar other_read
-    @ivar user_write
-    @ivar group_write
-    @ivar other_write
-    @ivar user_execute
-    @ivar group_execute
-    @ivar other_execute
     '''
 
     # for introspection and automation purposes.
@@ -200,24 +201,24 @@ class FileMetaData(object):
                   'is_regular',
                   'is_fifo',
                   'is_symlink',
+                  'is_setuid',
+                  'is_setgid',
+                  'is_sticky',
+                  'user_read',
+                  'user_write',
+                  'user_execute',
+                  'group_read',
+                  'group_write',
+                  'group_execute',
+                  'other_read',
+                  'other_write',
+                  'other_execute',
                   'uid',
                   'gid',
                   'size',
                   'atime',
                   'mtime',
-                  'ctime',
-                  'is_setuid',
-                  'is_setgid',
-                  'is_sticky',
-                  'yser_read',
-                  'group_read',
-                  'other_read',
-                  'user_write',
-                  'group_write',
-                  'other_write',
-                  'user_execute',
-                  'group_execute',
-                  'other_execute' ]
+                  'ctime' ]
 
     def __init__(self, props=None, other=None):
         '''
