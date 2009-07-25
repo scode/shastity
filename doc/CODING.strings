@@ -1,0 +1,38 @@
+= Strings in the shastity code base =
+
+(This is going to be a bit ranty, but this is a *huge* pet peeve of
+mine because it causes so much grief all over the world that people
+confuse this stuff. I can only speculate as to the amount of man-hours
+wasted from civilization. Seriously.)
+
+The absolutely most important rule to remember, which sadly seems to
+be ignored/not adherred to all over the place in various Python code
+bases, is:
+
+  CHARACTER STRINGS ARE NOT BYTE STRINGS
+
+Please repeat that 10 times in your head.
+
+A character string is a string (sequence) of characters. A byte string
+is a string (sequence) of bytes. What people may often call a "utf-8
+string" is actually "a byte string containing the UTF-8 encoding of a
+character string". You may substitute "byte array" for "byte string"
+if you wish.
+
+Whenever the word "string" is used in the code base, it means
+character string unless otherwise stated. In Python 2.x, this means
+that it is one of:
+
+  - a str instance containing US ASCII (7 bit) content.
+  - a unicode instance
+
+Actually encoding/decoding strings only happen when some data
+logically crosses the character/byte boundar, or a generic
+character/ASCII character boundary. There is no sprinkling of
+conversions and UTF-8 assumptions all over the code; character strings
+are not freaking byte strings.
+
+It is very unfortunate that the unicde support in Python 2.x is such
+that it is very easy for people to never realize this
+distinction. Hopefully this entire file will become obsolete and
+useless once the world has adopted Python 3.x, which fixes this.
