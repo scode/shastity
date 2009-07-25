@@ -57,25 +57,25 @@ class BackendsBaseCase(object):
         self.backend.delete(prefix('test'))
         self.assertEqual(len(self.get_testfiles()), 0)
 
-        # put/get of empty file
+    def test_empty_file(self):
         self.backend.put(prefix('emptytest'), '')
         self.assertEqual(self.backend.get(prefix('emptytest')), '')
         self.backend.delete(prefix('emptytest'))
 
-        # put/get largish file
+    def test_largish_file(self):
         kbyte = ''.join(['x' for nothing in xrange(0, 1024)])
         mbyte = ''.join([ kbyte for nothing in xrange(0, 1024)])
         self.backend.put(prefix('largetest'),  mbyte)
         self.assertEqual(self.backend.get(prefix('largetest')), mbyte)
         self.backend.delete(prefix('largetest'))
 
-        # long file name
+    def test_long_filename(self):
         lname = 'ldjfajfldjflasdjfklsdjfklasdjfldjfljsdljfasdjfklasdjfklasdjflasdjklfasdjklffweruasfasdfweruwaourweourwepoqurweipoqurqwepourqweiporewr'
         self.backend.put(prefix(lname), 'data')
         self.assertEqual(self.backend.get(prefix(lname)), 'data')
         self.assertTrue(prefix(lname) in self.get_testfiles())
 
-        # put non-trivial amount of files
+    def test_lots_of_files(self):
         fnames = [ prefix('fnumber_%d' % (n,)) for n in xrange(0, 1000) ]
         for fname in fnames:
             self.backend.put(prefix(fname), fname)
