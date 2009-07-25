@@ -105,6 +105,12 @@ class FileMetaData(object):
         else:
             self.__dict__[key] = value
 
+    def __getitem__(self, key):
+        if key in self.propnames:
+            return getattr(self, key)
+        else:
+            raise KeyError(key)
+        
     @classmethod
     def from_string(cls, s):
         '''Given a string in the format produced by to_string(), parse
