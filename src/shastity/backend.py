@@ -6,6 +6,13 @@
 File storage backend interface.
 """
 
+from __future__ import absolute_import
+from __future__ import with_statement
+
+import shastity.logging as logging
+
+log = logging.get_logger(__name__)
+
 class Backend(object):
     '''A storage backend. A backend is anything which allows four
     basic operations:
@@ -101,7 +108,10 @@ class Backend(object):
 
         @param identifier The identifying URL/name/path/etc of this
         backend.'''
-        pass
+        self.identifier = identifier
+
+        log.info('instantiating backend of type %s with identifier %s',
+                 self.__class__.__name__, self.identifier)
 
     def __enter__(self):
         '''Returns self.'''
