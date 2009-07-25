@@ -1,4 +1,17 @@
-shastity - hash-based deduplicating backups
+shastity - hash-based deduplicating secure remote backups
+
+= Status =
 
 This is in-development software (not even alpha level). Do not
 use. Yet.
+
+= Running the unit tests =
+
+Ensure the 'src' directory is in your python path, such as by:
+
+  export PYTHONPATH=$(pwd)/src
+
+Run all unit tests by:
+
+  python test/test.py
+
