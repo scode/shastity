@@ -10,6 +10,7 @@ from __future__ import absolute_import
 from __future__ import with_statement
 
 import os.path
+import tempfile
 
 import shastity.backend as backend
 import shastity.logging as logging
@@ -56,7 +57,8 @@ class DirectoryBackend(backend.Backend):
 
         fd, tmppath = tempfile.mkstemp(prefix=self.hidden_prefix, dir=self.__path, suffix=('-%s' % (name,)))
         try:
-            assert tmppath.startswith(self.hidden_prefix)
+            tmppath_dir, tmppath_file = os.path.split(tmppath)
+            assert tmppath_file.startswith(self.hidden_prefix)
             
             os.write(fd, data)
             
