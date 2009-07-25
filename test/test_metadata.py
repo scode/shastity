@@ -481,7 +481,29 @@ class MetaDataTests(unittest.TestCase):
         self.assertEqual(metadata.FileMetaData.from_string(md.to_string()).to_string(),
                          'drwxr-xr-x 5 6 7 8 9 10')
 
-        
+        def from_s(s):
+            return metadata.FileMetaData.from_string(s)
+
+        self.assertRaises(AssertionError, from_s, 'drwxr-xr-x 5 6 7 8 9 10 extra')
+        self.assertRaises(ValueError, from_s, 'drwxr-xr-x 5 6 7 8 9 notint')
+        self.assertRaises(ValueError, from_s, 'drwxr-xr-x 5 6 7 8 notint 10')
+        self.assertRaises(ValueError, from_s, 'drwxr-xr-x 5 6 7 notint 9 10')
+        self.assertRaises(ValueError, from_s, 'drwxr-xr-x 5 6 7 notint 9 10')
+        self.assertRaises(ValueError, from_s, 'drwxr-xr-x 5 6 notint 8 9 10')
+        self.assertRaises(ValueError, from_s, 'drwxr-xr-x 5 notint 7 8 9 10')
+        self.assertRaises(ValueError, from_s, 'drwxr-xr-x notint 6 7 8 9 10')
+
+        self.assertRaises(AssertionError, from_s, 'drwxr-xr-x! 5 6 7 8 9 10')
+        self.assertRaises(AssertionError, from_s, 'drwxr-xr-! 5 6 7 8 9 10')
+        self.assertRaises(AssertionError, from_s, 'drwxr-xr!x 5 6 7 8 9 10')
+        self.assertRaises(AssertionError, from_s, 'drwxr-x!-x 5 6 7 8 9 10')
+        self.assertRaises(AssertionError, from_s, 'drwxr-!r-x 5 6 7 8 9 10')
+        self.assertRaises(AssertionError, from_s, 'drwxr!xr-x 5 6 7 8 9 10')
+        self.assertRaises(AssertionError, from_s, 'drwx!-xr-x 5 6 7 8 9 10')
+        self.assertRaises(AssertionError, from_s, 'drw!r-xr-x 5 6 7 8 9 10')
+        self.assertRaises(AssertionError, from_s, 'dr!xr-xr-x 5 6 7 8 9 10')
+        self.assertRaises(AssertionError, from_s, 'd!wxr-xr-x 5 6 7 8 9 10')
+        self.assertRaises(AssertionError, from_s, '!rwxr-xr-x 5 6 7 8 9 10')
 
 if __name__ == "__main__":
     unittest.main()
