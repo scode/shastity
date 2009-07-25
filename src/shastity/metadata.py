@@ -237,6 +237,7 @@ class FileMetaData(object):
 
         if props:
             for prop, val in props.iteritems():
+                assert prop in self.propnames, 'property %s not a valid property' % (prop,)
                 setattr(self, prop, val)
 
         self.__write_protected = True
