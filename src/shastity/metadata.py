@@ -29,10 +29,6 @@ def mode_to_str(propdict):
     else:
         raise AssertionError('should not be reachable')
 
-    # symlinks are a special case; individual modes etc don't make sense
-    if d['is_symlink']:
-        return ''.join(chars) + 'rwxr-xr-x'
-
     if d['user_read']:
         chars.append('r')
     else:
@@ -111,10 +107,6 @@ def str_to_mode(s):
     ret['is_directory'] = s[0] == 'd'
     ret['is_symlink'] = s[0] == 'l'
     ret['is_fifo'] = s[0] == 'p'
-
-    if ret['is_symlink']:
-        # symlinks are special and remaining ones do not apply
-        return ret
 
     assert s[1] in 'r-'
     ret['user_read'] = s[1] == 'r'

@@ -97,14 +97,6 @@ class MetaDataTests(unittest.TestCase):
                        is_setgid=False,
                        is_sticky=False),
                   'drwxr-xr-x')
-        # symlinks are special
-        test_conv(dict(is_directory=False,
-                       is_regular=False,
-                       is_symlink=True,
-                       is_block_device=False,
-                       is_character_device=False,
-                       is_fifo=False),
-                  'lrwxr-xr-x')
 
         # misc permutations, one character at a time
         test_conv(dict(is_directory=False,
