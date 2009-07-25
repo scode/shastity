@@ -497,5 +497,16 @@ class MetaDataTests(unittest.TestCase):
         self.assertRaises(AssertionError, from_s, 'd!wxr-xr-x 5 6 7 8 9 10')
         self.assertRaises(AssertionError, from_s, '!rwxr-xr-x 5 6 7 8 9 10')
 
+    def test_symlink_special_cases(self):
+        def conv(s):
+            got_s = metadata.FileMetaData.from_string(s).to_string()
+            self.assertEqual(got_s, s)
+
+        conv('lrwxr-xr-x 5 6 7 8 9 10 /path')
+        conv('drwxr-xr-x 5 6 7 8 9 10')
+
+        self.assertRaises(AssertionError, conv, 'drwxr-xr-x 5 6 7 8 9 10 /path')
+        self.assertRaises(AssertionError, conv, 'lrwxr-xr-x 5 6 7 8 9 10')
+
 if __name__ == "__main__":
     unittest.main()

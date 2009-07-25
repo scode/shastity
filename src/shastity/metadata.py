@@ -184,6 +184,8 @@ class FileMetaData(object):
     @ivar atime               Access time of the file (seconds since epoch).
     @ivar mtime               Modification time of the file (seconds since epoch).
     @ivar ctime               ctime, whatever the platform feels that means (secondssince epoch).
+
+    @ivar symlink_value       Value of symlink - if it is a symlink.
     '''
 
     # for introspection and automation purposes.
@@ -210,7 +212,8 @@ class FileMetaData(object):
                   'size',
                   'atime',
                   'mtime',
-                  'ctime' ]
+                  'ctime',
+                  'symlink_value' ]
 
     def __init__(self, props=None, other=None):
         '''
@@ -253,17 +256,23 @@ class FileMetaData(object):
         it and return the resulting instance.'''
         comps = s.split()
         
-        assert len(comps) == 7, ('expected something with 7 components, like drwxr-xr-x 5 6 7 8 9 10, '
-                                 'not like %s' % (s,))
+        assert len(comps) > 1
 
         d = str_to_mode(comps[0]) # grab most flags
         
+        expt_len = 8 if d['is_symlink'] else 7
+        assert len(comps) == expt_len, ('incorrectly formatted meta data string - should be 7 or 8 '
+                                        'space separated tokens, depending on whether it is a symlink')
+
         d['uid'] = int(comps[1])
         d['gid'] = int(comps[2])
         d['size'] = int(comps[3])
         d['atime'] = int(comps[4])
         d['mtime'] = int(comps[5])
         d['ctime'] = int(comps[6])
+
+        if d['is_symlink']:
+            d['symlink_value'] = comps[7]
 
         return FileMetaData(d)
 
@@ -284,7 +293,13 @@ class FileMetaData(object):
         assert self.mtime is not None
         assert self.ctime is not None
 
-        return ('%(modestring)s %(uid)d %(gid)d %(size)d %(atime)d %(mtime)d %(ctime)d'
+        if self.is_symlink:
+            assert self.symlink_value is not None # may be empty though - that's valid for a symlink
+            possible_symlink = ' %s' % (self.symlink_value,) # XXX/TODO: ESCAPE!
+        else:
+            possible_symlink = ''
+
+        return ('%(modestring)s %(uid)d %(gid)d %(size)d %(atime)d %(mtime)d %(ctime)d%(possible_symlink)s'
                 '' % dict(modestring=mode_to_str(dict(is_directory=self.is_directory,
                                                       is_character_device=self.is_character_device,
                                                       is_block_device=self.is_block_device,
@@ -308,5 +323,6 @@ class FileMetaData(object):
                           size=self.size,
                           atime=self.atime,
                           mtime=self.mtime,
-                          ctime=self.ctime))
+                          ctime=self.ctime,
+                          possible_symlink=possible_symlink))
 
