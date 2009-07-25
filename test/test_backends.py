@@ -84,6 +84,14 @@ class BackendsBaseCase(object):
             self.assertTrue(prefix(fname) in flist)
             self.assertEqual(self.backend.get(prefix(fname)), fname)
 
+    def test_funny_data(self):
+        # make sure we do not have scrambling of certain byte values,
+        # truncate on zeroes, or similar
+        all_bytes = ''.join([ chr(n) for n in xrange(0, 255) ])
+
+        self.backend.put(prefix('funnydata'), all_bytes)
+        self.assertEqual(self.backend.get(prefix('funnydata')), all_bytes)
+
 class MemoryBackendTests(BackendsBaseCase, unittest.TestCase):
     def make_backend(self):
         return memorybackend.MemoryBackend('memory')
