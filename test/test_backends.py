@@ -34,13 +34,55 @@ class BackendsBaseCase(object):
         # file beginning with PREFIX. In order to ensure we can re-run
         # tests in an idempotent fashion, we clean up pre-existing
         # files of tests first.
-        fnames = [ name for name in self.backend.list() if name.startswith(PREFIX) ]
+        fnames = self.get_testfiles()
 
         for fname in fnames:
             self.backend.delete(fname)
 
+    def get_testfiles(self):
+        return [ name for name in self.backend.list() if name.startswith(PREFIX)]
+
     def test_basic(self):
-        self.assertEqual(self.backend.list(), [])
+        self.assertEqual(self.get_testfiles(), [])
+
+        # put/get
+        self.backend.put(prefix('test'), 'data')
+        self.assertEqual(self.backend.get(prefix('test')), 'data')
+        
+        # list
+        self.assertEqual(len(self.get_testfiles()), 1)
+        self.assertEqual(self.get_testfiles()[0], prefix('test'))
+
+        # delete
+        self.backend.delete(prefix('test'))
+        self.assertEqual(len(self.get_testfiles()), 0)
+
+        # put/get of empty file
+        self.backend.put(prefix('emptytest'), '')
+        self.assertEqual(self.backend.get(prefix('emptytest')), '')
+        self.backend.delete(prefix('emptytest'))
+
+        # put/get largish file
+        kbyte = ''.join(['x' for nothing in xrange(0, 1024)])
+        mbyte = ''.join([ kbyte for nothing in xrange(0, 1024)])
+        self.backend.put(prefix('largetest'),  mbyte)
+        self.assertEqual(self.backend.get(prefix('largetest')), mbyte)
+        self.backend.delete(prefix('largetest'))
+
+        # long file name
+        lname = 'ldjfajfldjflasdjfklsdjfklasdjfldjfljsdljfasdjfklasdjfklasdjflasdjklfasdjklffweruasfasdfweruwaourweourwepoqurweipoqurqwepourqweiporewr'
+        self.backend.put(prefix(lname), 'data')
+        self.assertEqual(self.backend.get(prefix(lname)), 'data')
+        self.assertTrue(prefix(lname) in self.get_testfiles())
+
+        # put non-trivial amount of files
+        fnames = [ prefix('fnumber_%d' % (n,)) for n in xrange(0, 1000) ]
+        for fname in fnames:
+            self.backend.put(prefix(fname), fname)
+        flist = self.backend.list()
+        for fname in fnames:
+            self.assertTrue(prefix(fname) in flist)
+            self.assertEqual(self.backend.get(prefix(fname)), fname)
 
 class MemoryBackendTests(BackendsBaseCase, unittest.TestCase):
     def make_backend(self):
