@@ -92,6 +92,17 @@ class BackendsBaseCase(object):
         self.backend.put(prefix('funnydata'), all_bytes)
         self.assertEqual(self.backend.get(prefix('funnydata')), all_bytes)
 
+    def test_funny_names(self):
+        # test funny names we expect to be used or should be possible to use
+        funny_chars = ''.join([ chr(n) for n in xrange(ord('a'), ord('z') + 1) ] + 
+                              [ chr(n) for n in xrange(ord('A'), ord('Z') + 1) ] +
+                              [ chr(n) for n in xrange(ord('0'), ord('9') + 1) ])
+        funny_chars += '-_;:!@'
+
+        self.backend.put(prefix(funny_chars), funny_chars)
+        self.assertEqual(self.backend.get(prefix(funny_chars)), funny_chars)
+        self.assertTrue(prefix(funny_chars) in self.get_testfiles())
+
 class MemoryBackendTests(BackendsBaseCase, unittest.TestCase):
     def make_backend(self):
         return memorybackend.MemoryBackend('memory')
