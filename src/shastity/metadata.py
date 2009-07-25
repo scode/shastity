@@ -258,7 +258,21 @@ class FileMetaData(object):
     def from_string(cls, s):
         '''Given a string in the format produced by to_string(), parse
         it and return the resulting instance.'''
-        raise NotImplementedError
+        comps = s.split()
+        
+        assert len(comps) == 7, ('expected something with 7 components, like drwxr-xr-x 5 6 7 8 9 10, '
+                                 'not like %s' % (s,))
+
+        d = str_to_mode(comps[0]) # grab most flags
+        
+        d['uid'] = int(comps[1])
+        d['gid'] = int(comps[2])
+        d['size'] = int(comps[3])
+        d['atime'] = int(comps[4])
+        d['mtime'] = int(comps[5])
+        d['ctime'] = int(comps[6])
+
+        return FileMetaData(d)
 
     def to_string(self):
         '''Produce a string encoding of this meta data.

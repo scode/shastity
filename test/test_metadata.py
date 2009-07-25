@@ -450,7 +450,7 @@ class MetaDataTests(unittest.TestCase):
                        is_sticky=True),
                   '---------t')
 
-    def test_to_string(self):
+    def test_to_string_from_string(self):
         d = dict(is_directory=True,
                  is_regular=False,
                  is_symlink=False,
@@ -478,6 +478,10 @@ class MetaDataTests(unittest.TestCase):
         md = metadata.FileMetaData(d)
 
         self.assertEqual(md.to_string(), 'drwxr-xr-x 5 6 7 8 9 10')
+        self.assertEqual(metadata.FileMetaData.from_string(md.to_string()).to_string(),
+                         'drwxr-xr-x 5 6 7 8 9 10')
+
+        
 
 if __name__ == "__main__":
     unittest.main()
