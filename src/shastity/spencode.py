@@ -8,8 +8,8 @@ Very simple string encoding/decoded specifically for the purpose of
 including characterstrings (NOT byte strings!) into whitespace
 separated content.
 
-Please see doc/CODING.strings for some thoughts on character strings
-vs. byte strings.
+Please see doc/string_handling.txt for some thoughts on character
+strings vs. byte strings.
 
 The encoding is simply as follows:
 
