@@ -499,7 +499,12 @@ class MetaDataTests(unittest.TestCase):
 
     def test_symlink_special_cases(self):
         def conv(s):
-            got_s = metadata.FileMetaData.from_string(s).to_string()
+            md = metadata.FileMetaData.from_string(s)
+
+            if md.is_symlink:
+                self.assertTrue(md.symlink_value is not None)
+
+            got_s = md.to_string()
             self.assertEqual(got_s, s)
 
         conv("lrwxr-xr-x 5 6 7 8 9 10 '/path'")
