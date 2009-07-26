@@ -107,10 +107,11 @@ class StorageOperation(object):
             self.__sq.notify_operation_complete(self)
         except Exception, e:
             self.__set_result(False, util.current_traceback())
-            self.__sq.notify_operation_failed(self)
 
             log.error('operation failed: %s', str(self))
             log.error('traceback: %s', self.__result[1])
+
+            self.__sq.notify_operation_failed(self)
 
         if self.__result[0] and self.callback:
             self.callback(self.__result[1])
