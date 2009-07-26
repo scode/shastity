@@ -52,8 +52,10 @@ class S3Backend(backend.Backend):
         self.__conn.calling_format = connection.SubdomainCallingFormat()
         self.__bucket = self.__conn.lookup(self.bucket_name)
         if not self.__bucket:
-            log.log(logging.NOTICE, 's3 bucket %s does not exist; attempting to create', self.bucket_name)
             # automatically create if it does not exist
+            log.log(logging.NOTICE,
+                    's3 bucket %s does not exist; attempting to create',
+                    self.bucket_name)
 
             # TODO: should bail if location is not configured (and
             # even if we were to default default to US instead of
