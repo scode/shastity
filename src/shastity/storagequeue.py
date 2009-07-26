@@ -96,7 +96,7 @@ class PutOperation(StorageOperation):
         self.data = data
 
     def execute(self, backend):
-        return backend.put(name, data)
+        return backend.put(self.name, self.data)
 
 class GetOperation(StorageOperation):
     def __init__(self, name, callback=None):
@@ -105,7 +105,7 @@ class GetOperation(StorageOperation):
         self.name = name
 
     def execute(self, backend):
-        return backend.get(name)
+        return backend.get(self.name)
 
 class DeleteOperation(StorageOperation):
     def __init__(self, name, callback=None):
@@ -114,7 +114,7 @@ class DeleteOperation(StorageOperation):
         self.name = name
 
     def execute(self, backend):
-        return backend.delete(name)
+        return backend.delete(self.name)
 
 class StorageQueue(object):
     def __init__(self, backend_factory, max_conc):
