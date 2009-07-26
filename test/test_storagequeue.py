@@ -58,19 +58,50 @@ class StorageQueueBaseCase(object):
 
     def test_basic(self):
         with storagequeue.StorageQueue(lambda: self.make_backend(), CONCURRENCY) as sq:
-            sq.enqueue(storagequeue.PutOperation(prefix('test1'), 'data1'))
-            sq.enqueue(storagequeue.PutOperation(prefix('test2'), 'data2'))
-            sq.enqueue(storagequeue.PutOperation(prefix('test3'), 'data3'))
-            sq.wait()
-            sq.enqueue(storagequeue.GetOperation(prefix('test1')))
-            sq.enqueue(storagequeue.GetOperation(prefix('test2')))
-            sq.enqueue(storagequeue.GetOperation(prefix('test3')))
-            sq.barrier()
-            sq.enqueue(storagequeue.DeleteOperation(prefix('test1')))
-            sq.enqueue(storagequeue.DeleteOperation(prefix('test2')))
-            sq.enqueue(storagequeue.DeleteOperation(prefix('test3')))
-            sq.wait()
+            puts = [ storagequeue.PutOperation(prefix('test%s' % (n,)), str(n)) for n in xrange(0, 5) ]
+            gets = [ storagequeue.GetOperation(prefix('test%s' % (n,))) for n in xrange(0, 5) ]
+            dels = [ storagequeue.DeleteOperation(prefix('test%s' % (n,))) for n in xrange(0, 5) ]
             
+            # PUT
+            for p in puts:
+                self.assertFalse(p.is_done())
+                self.assertRaises(AssertionError, lambda: p.value())
+                self.assertRaises(AssertionError, lambda: p.succeeded())
+                sq.enqueue(p)
+
+            sq.wait()
+
+            for p in puts:
+                self.assertTrue(p.is_done())
+                self.assertTrue(p.succeeded())
+
+            # GET + DELETE
+            for g in gets:
+                self.assertFalse(g.is_done())
+                self.assertRaises(AssertionError, lambda: g.value())
+                self.assertRaises(AssertionError, lambda: g.succeeded())
+                sq.enqueue(g)
+                
+            sq.barrier()
+
+            for d in dels:
+                self.assertFalse(d.is_done())
+                self.assertRaises(AssertionError, lambda: d.value())
+                self.assertRaises(AssertionError, lambda: d.succeeded())
+                sq.enqueue(d)
+
+            sq.wait()
+
+            for g in gets:
+                self.assertTrue(p.is_done())
+                self.assertTrue(p.succeeded())
+                
+            self.assertEqual([g.value() for g in gets], [ '0', '1', '2', '3', '4' ])
+
+            for d in dels:
+                self.assertTrue(d.is_done())
+                self.assertTrue(d.succeeded())
+                self.assertEqual(d.value(), None)
 
 class MemoryBackendTests(StorageQueueBaseCase, unittest.TestCase):
     def make_backend(self):
