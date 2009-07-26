@@ -27,6 +27,7 @@ The storage queue is also the place where retry logic is implemented
 from __future__ import absolute_import
 from __future__ import with_statement
 
+import thread
 import threading
 
 import shastity.logging as logging
