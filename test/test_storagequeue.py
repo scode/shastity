@@ -34,26 +34,25 @@ def prefix(name):
 class StorageQueueBaseCase(object):
 
     def setUp(self):
-        self.backend = self.make_backend() # provided by subclass
+        with self.make_backend() as backend:
+            if not backend.exists():
+                backend.create()
 
-        if not self.backend.exists():
-            self.backend.create()
+            # We do not assume the backend is empty at the time the test
+            # starts, but we do assume that we can put, get and delete any
+            # file beginning with PREFIX. In order to ensure we can re-run
+            # tests in an idempotent fashion, we clean up pre-existing
+            # files of tests first.
+            fnames = self.get_testfiles(backend)
 
-        # We do not assume the backend is empty at the time the test
-        # starts, but we do assume that we can put, get and delete any
-        # file beginning with PREFIX. In order to ensure we can re-run
-        # tests in an idempotent fashion, we clean up pre-existing
-        # files of tests first.
-        fnames = self.get_testfiles()
-
-        for fname in fnames:
-            self.backend.delete(fname)
+            for fname in fnames:
+                backend.delete(fname)
 
     def tearDown(self):
-        self.backend.close()
+        pass
 
-    def get_testfiles(self):
-        return [ name for name in self.backend.list() if name.startswith(PREFIX)]
+    def get_testfiles(self, backend):
+        return [ name for name in backend.list() if name.startswith(PREFIX)]
 
     def test_basic(self):
         pass
