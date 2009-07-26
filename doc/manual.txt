@@ -1,0 +1,10 @@
+= shastity user's manual
+
+NOTE: This is a work-in-progress. shastity has not yet been released
+with the intent to be used by end-users, and this manual is not useful
+yet.
+
+== Introduction
+
+== Understanding the storage format
+
