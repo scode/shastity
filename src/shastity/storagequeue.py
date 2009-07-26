@@ -70,6 +70,13 @@ class StorageOperation(object):
             assert self.__result is not None, 'succeeeded() called before operation was done'
             return self.__result[0]
 
+    def value(self):
+        '''Value of operation, if it succeeded.'''
+        with self.__lock:
+            assert self.__result is not None, 'value() called before operation was done'
+            assert self.__result[0], 'value() called on failed operation'
+            return self.__result[1]
+
     def __set_result(self, success, data):
         with self.__lock:
             assert self.__result is None, '__set_result called twice?'
