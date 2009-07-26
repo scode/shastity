@@ -51,8 +51,29 @@ class StorageOperation(object):
         self.description = description
         self.callback = callback
 
-        self.__result = None
         self.__sq = None
+        self.__result = None
+        self.__lock = threading.Lock() # protects __result only
+
+    def is_done(self):
+        '''Is the operation done? Always safe to call.'''
+        with self.__lock:
+            return self.__result is not None
+
+    def succeeded(self):
+        '''Did it succeed? Calls to this method are invalid before an
+        operation is in fact done. However calling code can assume
+        that it is done after having wait():ed on the queue to which
+        it was submitted, and need not check is_done() on individual
+        operations.'''
+        with self.__lock:
+            assert self.__result is not None, 'succeeeded() called before operation was done'
+            return self.__result[0]
+
+    def __set_result(self, success, data):
+        with self.__lock:
+            assert self.__result is None, '__set_result called twice?'
+            self.__result = (success, data)
 
     def execute(self, backend):
         raise NotImplementedError
@@ -73,12 +94,12 @@ class StorageOperation(object):
         are not well handled).'''
         try:
             log.info('performing operation: %s', str(self))
-            self.__result = (True, self.execute(backend))
+            self.__set_result(True, self.execute(backend))
             log.debug('operation done: %s', str(self))
 
             self.__sq.notify_operation_complete(self)
         except Exception, e:
-            self.__result = (False, util.current_traceback())
+            self.__set_result(False, util.current_traceback())
             self.__sq.notify_operation_failed(self)
 
             log.error('operation failed: %s', str(self))
