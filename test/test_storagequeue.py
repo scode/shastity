@@ -106,9 +106,9 @@ class StorageQueueBaseCase(object):
     def test_bad_get_fail(self):
         with logging.FakeLogger(storagequeue, 'log'):
             with storagequeue.StorageQueue(lambda: self.make_backend(), CONCURRENCY) as sq:
-                p1 = storagequeue.PutOperation('test1', 'data')
-                g1 = storagequeue.GetOperation('test1')
-                g2 = storagequeue.GetOperation('test2')
+                p1 = storagequeue.PutOperation(prefix('test1'), 'data')
+                g1 = storagequeue.GetOperation(prefix('test1'))
+                g2 = storagequeue.GetOperation(prefix('test2'))
 
                 sq.enqueue(p1)
                 sq.enqueue(g1)
@@ -119,9 +119,9 @@ class StorageQueueBaseCase(object):
     def test_bad_delete_fail(self):
         with logging.FakeLogger(storagequeue, 'log'):
             with storagequeue.StorageQueue(lambda: self.make_backend(), CONCURRENCY) as sq:
-                p1 = storagequeue.PutOperation('test1', 'data')
-                d1 = storagequeue.GetOperation('test1')
-                d2 = storagequeue.GetOperation('test1')
+                p1 = storagequeue.PutOperation(prefix('test1'), 'data')
+                d1 = storagequeue.GetOperation(prefix('test1'))
+                d2 = storagequeue.GetOperation(prefix('test1'))
 
                 sq.enqueue(p1)
                 sq.enqueue(d1)
@@ -136,7 +136,7 @@ class StorageQueueBaseCase(object):
 
         with logging.FakeLogger(storagequeue, 'log'):
             with storagequeue.StorageQueue(lambda: self.make_backend(), CONCURRENCY) as sq:
-                p1 = FailingPut('test1', 'data')
+                p1 = FailingPut(prefix('test1'), 'data')
 
                 sq.enqueue(p1)
 
