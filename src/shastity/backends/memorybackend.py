@@ -6,17 +6,30 @@
 In-memory backend.
 '''
 
+import random
+
 import shastity.backend as backend
 
 class MemoryBackend(backend.Backend):
     '''Trivial in-memory backend that simply maps all operations to an
     internal dict. Obviously this does violate the supposed
     persistence guarantee of a backend; this is intended for unit
-    testing purposes.'''
+    testing purposes.
+
+    It supports an option 'max_fake_delay' whose value is the number
+    of seconds between 0 and which each operation will spend time im
+    time.sleep(). This is intended, again, for unit testing purposes
+    in order to try to trigger various timing dependent cases in a
+    non-deterministic fashion.'''
     def __init__(self, identifier, opts=dict()):
         backend.Backend.__init__(self, identifier, opts)
 
+        self.__max_fake_delay = float(opts.get('max_fake_delay', 0.0))
         self.__dict = dict()
+
+    def __delay(self):
+        if self.__max_fake_delay > 0.0:
+            time.sleep(self.__max_fake_delay * random.random())
 
     def exists(self):
         return True
@@ -25,17 +38,25 @@ class MemoryBackend(backend.Backend):
         pass # nothing to be done
 
     def put(self, name, data):
+        self.__delay()
+
         self.__dict[name] = data
 
     def get(self, name):
+        self.__delay()
+
         return self.__dict[name]
 
     def list(self):
+        self.__delay()
+
         return self.__dict.keys()
 
     def delete(self, name):
+        self.__delay()
+
         del(self.__dict[name])
 
     def close(self):
-        pass
+        self.__delay()
     
