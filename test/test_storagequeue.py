@@ -116,21 +116,6 @@ class StorageQueueBaseCase(object):
 
                 self.assertRaises(storagequeue.OperationHasFailed, sq.wait)
 
-    def test_bad_delete_fail(self):
-        with logging.FakeLogger(storagequeue, 'log'):
-            with storagequeue.StorageQueue(lambda: self.make_backend(), CONCURRENCY) as sq:
-                p1 = storagequeue.PutOperation(prefix('test1'), 'data')
-                d1 = storagequeue.DeleteOperation(prefix('test1'))
-                d2 = storagequeue.DeleteOperation(prefix('test1'))
-
-                sq.enqueue(p1)
-                sq.barrier()
-                sq.enqueue(d1)
-                sq.barrier()
-                sq.enqueue(d2)
-
-                self.assertRaises(storagequeue.OperationHasFailed, sq.wait)
-    
     def test_bad_put_fail(self):
         class FailingPut(storagequeue.PutOperation):
             def execute(self, backend):
