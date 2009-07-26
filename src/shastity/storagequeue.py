@@ -121,6 +121,9 @@ class DeleteOperation(StorageOperation):
     def execute(self, backend):
         return backend.delete(self.name)
 
+class OperationHasFailed(Exception):
+    pass
+
 class StorageQueue(object):
     def __init__(self, backend_factory, max_conc):
         '''
@@ -148,6 +151,8 @@ class StorageQueue(object):
         self.__backends = set() # backend cache
         self.__cond = threading.Condition()
 
+        self.__failed = False # set to true when an operation fails
+
     def __enter__(self):
         return self
 
@@ -158,6 +163,9 @@ class StorageQueue(object):
         '''Enqueue an operation for execution as soon as possible.
         
         @param op: A StorageOperation instance.'''
+        if self.__failed:
+            raise OperationHasFailed('a previous operation has failed; refusing further work')
+
         with self.__cond:
             while len(self.__ops) >= self.max_conc:
                 self.__cond.wait()
@@ -180,19 +188,21 @@ class StorageQueue(object):
 
         thread.start_new_thread(op_runner, ())
 
-    def __remove_op(self, op):
+    def __remove_op(self, op, success):
         with self.__cond:
             assert op in self.__ops, 'got notify from unknown operation %s' % (str(op,))
+            
+            if not success:
+                self.__failed = True
+
             self.__ops.remove(op)
             self.__cond.notify()
 
     def notify_operation_complete(self, op):
-        self.__remove_op(op)
+        self.__remove_op(op, True)
 
     def notify_operation_failed(self, op):
-        self.__failed = True
-
-        self.__remove_op(op)
+        self.__remove_op(op, False)
 
     def barrier(self):
         '''Guarantee that all operations queued before this call
