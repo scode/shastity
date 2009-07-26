@@ -45,7 +45,7 @@ class StorageOperation(object):
         @param callback If given, a callable which will be called with the result
                         if and when if the operation is successful.
         '''
-        self.mnemonic = mnenomic
+        self.mnemonic = mnemonic
         self.description = description
         self.callback = callback
 
