@@ -140,6 +140,12 @@ class StorageQueue(object):
         self.__backends = set() # backend cache
         self.__cond = threading.Condition()
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args, **kwargs):
+        self.wait()
+
     def enqueue(self, op):
         '''Enqueue an operation for execution as soon as possible.
         
