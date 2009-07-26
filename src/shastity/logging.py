@@ -34,3 +34,7 @@ def get_logger(name):
     """
     return logging.getLogger(name)
 
+# TODO: this is bad (to do this on module import).
+logging.basicConfig()
+
+
