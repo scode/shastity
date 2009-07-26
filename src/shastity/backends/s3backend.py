@@ -90,7 +90,7 @@ class S3Backend(backend.Backend):
         return [ k.name for k in self.__bucket.list() ]
 
     def delete(self, name):
-        self.bucket.delete_key(name)
+        self.__bucket.delete_key(name)
 
     def close(self):
         pass # boto doesn't need explicit disconnect
