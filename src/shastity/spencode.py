@@ -40,7 +40,7 @@ module.
 
 # Manually maintained string of character that we don't escape, mostly
 # for readability (and brevity/size).
-_safechars = 'abcdefghijklmnopqrstuvxyzABCDEFGHIJKLMNOPQRSTUVXYZ0123456789_-:.'
+_safechars = 'abcdefghijklmnopqrstuvxyzABCDEFGHIJKLMNOPQRSTUVXYZ0123456789_-:./'
 
 # Define two utilities that we only use on import to generate _enc_map.
 def _hex(c):
