@@ -27,6 +27,8 @@ log = logging.get_logger(__name__)
 
 PREFIX = 'shastity_unittest_'
 
+CONCURRENCY = 10
+
 def prefix(name):
     '''Trivial convenience function for constructing a PREFIX:ed filename.'''
     return PREFIX + name
@@ -55,11 +57,24 @@ class StorageQueueBaseCase(object):
         return [ name for name in backend.list() if name.startswith(PREFIX)]
 
     def test_basic(self):
-        pass
+        with storagequeue.StorageQueue(lambda: self.make_backend(), CONCURRENCY) as sq:
+            sq.enqueue(storagequeue.PutOperation(prefix('test1'), 'data1'))
+            sq.enqueue(storagequeue.PutOperation(prefix('test2'), 'data2'))
+            sq.enqueue(storagequeue.PutOperation(prefix('test3'), 'data3'))
+            sq.wait()
+            sq.enqueue(storagequeue.GetOperation(prefix('test1')))
+            sq.enqueue(storagequeue.GetOperation(prefix('test2')))
+            sq.enqueue(storagequeue.GetOperation(prefix('test3')))
+            sq.barrier()
+            sq.enqueue(storagequeue.DeleteOperation(prefix('test1')))
+            sq.enqueue(storagequeue.DeleteOperation(prefix('test2')))
+            sq.enqueue(storagequeue.DeleteOperation(prefix('test3')))
+            sq.wait()
+            
 
 class MemoryBackendTests(StorageQueueBaseCase, unittest.TestCase):
     def make_backend(self):
-        return memorybackend.MemoryBackend('memory', dict(max_fake_delay=1.0))
+        return memorybackend.MemoryBackend('memory', dict(max_fake_delay=0.1))
 
 class DirectoryBackendTests(StorageQueueBaseCase, unittest.TestCase):
     def make_backend(self):
@@ -74,6 +89,7 @@ class DirectoryBackendTests(StorageQueueBaseCase, unittest.TestCase):
     def tearDown(self):
         StorageQueueBaseCase.tearDown(self)
 
+        log.debug('cleaning temporary directory %s', self.tempdir)
         shutil.rmtree(self.tempdir)
 
 if os.getenv('SHASTITY_UNITTEST_S3_BUCKET') != None:
