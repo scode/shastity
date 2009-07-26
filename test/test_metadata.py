@@ -502,11 +502,11 @@ class MetaDataTests(unittest.TestCase):
             got_s = metadata.FileMetaData.from_string(s).to_string()
             self.assertEqual(got_s, s)
 
-        conv('lrwxr-xr-x 5 6 7 8 9 10 /path')
-        conv('drwxr-xr-x 5 6 7 8 9 10')
+        conv("lrwxr-xr-x 5 6 7 8 9 10 '/path'")
+        conv("drwxr-xr-x 5 6 7 8 9 10")
 
-        self.assertRaises(AssertionError, conv, 'drwxr-xr-x 5 6 7 8 9 10 /path')
-        self.assertRaises(AssertionError, conv, 'lrwxr-xr-x 5 6 7 8 9 10')
+        self.assertRaises(AssertionError, conv, "drwxr-xr-x 5 6 7 8 9 10 '/path'")
+        self.assertRaises(AssertionError, conv, "lrwxr-xr-x 5 6 7 8 9 10")
 
 if __name__ == "__main__":
     unittest.main()

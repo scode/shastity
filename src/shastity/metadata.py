@@ -6,6 +6,8 @@
 File meta data handling.
 '''
 
+import shastity.spencode as spencode
+
 def mode_to_str(propdict):
     '''Internal helper similar to strmode(3). Produces
     'drwxr-xr-x' style (like ls -l) mode strings from the
@@ -272,7 +274,7 @@ class FileMetaData(object):
         d['ctime'] = int(comps[6])
 
         if d['is_symlink']:
-            d['symlink_value'] = comps[7]
+            d['symlink_value'] = spencode.spdecode(comps[7])
 
         return FileMetaData(d)
 
@@ -295,7 +297,7 @@ class FileMetaData(object):
 
         if self.is_symlink:
             assert self.symlink_value is not None # may be empty though - that's valid for a symlink
-            possible_symlink = ' %s' % (self.symlink_value,) # XXX/TODO: ESCAPE!
+            possible_symlink = ' %s' % (spencode.spencode(self.symlink_value),)
         else:
             possible_symlink = ''
 
