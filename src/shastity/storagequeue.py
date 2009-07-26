@@ -71,10 +71,14 @@ class StorageOperation(object):
         are not well handled).'''
         # TODO: totally broken, actually handle errors
         try:
+            log.info('performing operation: %s', str(self))
             self.__result = (True, self.execute(backend))
+            log.debug('operation done: %s', str(self))
+
             if self.callback:
                 self.callback(self.__result[1]) # todo exceptionsb
         except:
+            log.error('operation failed: %s', str(self))
             print 'bork bork bork'
 
     def __str__(self):
