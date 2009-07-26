@@ -48,7 +48,7 @@ class S3Backend(backend.Backend):
         self.__bucket = None # ditto
 
         log.debug('attempting to connect to s3')
-        self.__conn = connection.S3Connection(host=self.__opts.get('s3_host', None))
+        self.__conn = connection.S3Connection(host=self.__opts.get('s3_host', connection.S3Connection.DefaultHost))
         self.__conn.calling_format = connection.SubdomainCallingFormat()
         self.__bucket = self.__conn.lookup(self.bucket_name)
         if not self.__bucket:
