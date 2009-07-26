@@ -166,11 +166,12 @@ class StorageQueue(object):
         if self.__backends:
             backend = self.__backends.pop()
         else:
+            log.debug('instantiating new backend')
             backend = self.backend_factory()
 
         def op_runner():
             op.perform(backend)
-            
+
         thread.start_new_thread(op_runner, ())
 
     def notify_operation_complete(self, op):
