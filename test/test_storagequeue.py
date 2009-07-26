@@ -129,6 +129,19 @@ class StorageQueueBaseCase(object):
 
                 self.assertRaises(storagequeue.OperationHasFailed, sq.wait)
     
+    def test_bad_put_fail(self):
+        class FailingPut(storagequeue.PutOperation):
+            def execute(self, backend):
+                raise AssertionError('put failed for unit testing purposes')
+
+        with logging.FakeLogger(storagequeue, 'log'):
+            with storagequeue.StorageQueue(lambda: self.make_backend(), CONCURRENCY) as sq:
+                p1 = FailingPut('test1', 'data')
+
+                sq.enqueue(p1)
+
+                self.assertRaises(storagequeue.OperationHasFailed, sq.wait)
+    
 class MemoryBackendTests(StorageQueueBaseCase, unittest.TestCase):
     def make_backend(self):
         return memorybackend.MemoryBackend('memory', dict(max_fake_delay=0.1))
