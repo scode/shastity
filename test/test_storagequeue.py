@@ -142,6 +142,35 @@ class StorageQueueBaseCase(object):
 
                 self.assertRaises(storagequeue.OperationHasFailed, sq.wait)
     
+    def test_bulk_ops(self):
+        with storagequeue.StorageQueue(lambda: self.make_backend(), CONCURRENCY) as sq:
+            COUNT = 100
+    
+            puts = [ storagequeue.PutOperation(prefix(str(n)), str(n)) for n in xrange(0, COUNT) ]
+            gets = [ storagequeue.GetOperation(prefix(str(n))) for n in xrange(0, COUNT) ]
+            dels = [ storagequeue.DeleteOperation(prefix(str(n))) for n in xrange(0, COUNT) ]
+
+            for p in puts:
+                sq.enqueue(p)
+    
+            sq.barrier()
+    
+            for g in gets:
+                sq.enqueue(g)
+    
+            sq.barrier()
+    
+            for d in dels:
+                sq.enqueue(d)
+    
+            sq.wait()
+    
+            for op in puts + gets + dels:
+                self.assertTrue(op.is_done())
+                self.assertTrue(op.succeeded())
+    
+            self.assertEqual([g.value() for g in gets], [ str(n) for n in xrange(0, COUNT) ])
+            
 class MemoryBackendTests(StorageQueueBaseCase, unittest.TestCase):
     def make_backend(self):
         return memorybackend.MemoryBackend('memory', dict(max_fake_delay=0.1))
