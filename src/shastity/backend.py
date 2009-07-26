@@ -112,7 +112,7 @@ class Backend(object):
     It would be broken behavior for (3) to fail due to a delayed (2).
 
     @ivar identifier The identifier given to the Backend constructor.'''
-    def __init__(self, identifier):
+    def __init__(self, identifier, opts=dict()):
         '''Instantiate the backend, storing the identifier. Expected
         to be called by sub-classes.
 

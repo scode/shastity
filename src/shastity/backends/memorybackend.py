@@ -13,8 +13,8 @@ class MemoryBackend(backend.Backend):
     internal dict. Obviously this does violate the supposed
     persistence guarantee of a backend; this is intended for unit
     testing purposes.'''
-    def __init__(self, identifier):
-        backend.Backend.__init__(self, identifier)
+    def __init__(self, identifier, opts=dict()):
+        backend.Backend.__init__(self, identifier, opts)
 
         self.__dict = dict()
 

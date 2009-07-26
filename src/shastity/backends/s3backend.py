@@ -33,7 +33,7 @@ class S3Backend(backend.Backend):
         http://aws.amazon.com/s3/
     '''
     def __init__(self, identifier, opts=dict()):
-        backend.Backend.__init__(self, identifier)
+        backend.Backend.__init__(self, identifier, opts)
 
         delayed_imports()
 

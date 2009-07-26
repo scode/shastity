@@ -35,8 +35,8 @@ class DirectoryBackend(backend.Backend):
     # will scream rather than silently fail.
     hidden_prefix = '__shastity_directory_backend.'
 
-    def __init__(self, identifier):
-        backend.Backend.__init__(self, identifier)
+    def __init__(self, identifier, opts=dict()):
+        backend.Backend.__init__(self, identifier, opts)
         
         self.__path = identifier # redundant but clearer
 
