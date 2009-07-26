@@ -41,11 +41,13 @@ class DirectoryBackend(backend.Backend):
         self.__path = identifier # redundant but clearer
 
         if self.exists():
+            pass
             # clean up after previous crashes/failures
-            files_to_clean = [ name for name in os.listdir(self.__path) if name.startswith(self.hidden_prefix) ]
-            for fname in files_to_clean:
-                log.warning('removing stale (post-crash/post-abort?) file %s', fname)
-                os.unlink(os.path.join(self.__path, fname))
+            # update: dont; we need this to be done in a pre-i/o stage for concurrency reasons
+            #files_to_clean = [ name for name in os.listdir(self.__path) if name.startswith(self.hidden_prefix) ]
+            #for fname in files_to_clean:
+            #    log.warning('removing stale (post-crash/post-abort?) file %s', fname)
+            #    os.unlink(os.path.join(self.__path, fname))
 
     def exists(self):
         return os.path.exists(self.__path)
