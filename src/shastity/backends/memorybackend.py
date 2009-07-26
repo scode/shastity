@@ -18,6 +18,12 @@ class MemoryBackend(backend.Backend):
 
         self.__dict = dict()
 
+    def exists(self):
+        return True
+
+    def create(self):
+        pass # nothing to be done
+
     def put(self, name, data):
         self.__dict[name] = data
 

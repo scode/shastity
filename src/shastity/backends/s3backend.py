@@ -51,7 +51,15 @@ class S3Backend(backend.Backend):
         self.__conn = connection.S3Connection(host=self.__opts.get('s3_host', connection.S3Connection.DefaultHost))
         self.__conn.calling_format = connection.SubdomainCallingFormat()
         self.__bucket = self.__conn.lookup(self.bucket_name)
-        if not self.__bucket:
+
+    def exists(self):
+        if self.__bucket is not None:
+            self.__bucket = self.__conn.lookup(self.bucket_name)
+
+        return self.__bucket is not None
+
+    def create(self):
+        if not self.exists():
             # automatically create if it does not exist
             log.log(logging.NOTICE,
                     's3 bucket %s does not exist; attempting to create',

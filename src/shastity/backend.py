@@ -24,7 +24,7 @@ class Backend(object):
 
     All backend classes are expected to be possible to instantiate by
     giving them one parameter - the identifier.
-
+    
     Performance
     ===========
 
@@ -33,12 +33,22 @@ class Backend(object):
     getting small files. In other words, it is important that the
     backend be fast at storing and retrieving small files.
 
+    Concurrency and thread-safety
+    =============================
+
     Because it is anticipated that some backends may be fundamentally
     difficult to make efficient in this way, all backend:s should be
     implemented such that concurrent use of *distinct* (not the same)
-    instances from multiple threads is safe (multi-threading *may* be
-    an optimizing implemented at a future time, but regardless writing
-    code like that is good practice anyway).
+    instances from multiple threads is safe. The only expect is
+    exists() and create() which are specifically designed to be
+    'administrative' commands and are not meant to be invoked in
+    highly concurrent fashion; in particular these two operations are
+    specifically expected to affect shared state.
+    
+    Backends can assume that when they receive put/get/delete/list
+    requests, the backing storage has either been created some time
+    prior to the instantiation of that backend, or it was created
+    using that particular backend instance.
 
     Block/file sizes
     ================
@@ -120,6 +130,28 @@ class Backend(object):
     def __exit__(self, *args, **kwargs):
         '''Calls self.close().'''
         self.close()
+
+    def exists():
+        ''' Checks whether backend storage exists. The definition of
+        "exists" is up to the backend; some may not have such a
+        concept at all, in which case it always exists.
+        
+        The main purpose for the exists()/create() interface is to
+        allow shastity to initialize, if needed, storage prior to main
+        operation (where multiple concurrent operations may occurr),
+        saving backends from having to be safe w.r.t. concurrency when
+        creating backing storage.
+
+        @return Whether or not the backend storage exists.'''
+        raise NotImplementedError
+
+    def create():
+        '''Create the necessary backend storage. Will only be called
+        if exists() returned false. Contrary to put/get/delete/list(),
+        this operation is expected to have side-effects on state that
+        is shared between multiple instances of the backend, and need
+        NOT be thread-safe.'''
+        raise NotImplementedError
 
     def put(self, name, data):
         '''Put a file by the given name and contents into the store.

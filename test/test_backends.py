@@ -31,6 +31,9 @@ class BackendsBaseCase(object):
     def setUp(self):
         self.backend = self.make_backend() # provided by subclass
 
+        if not self.backend.exists():
+            self.backend.create()
+
         # We do not assume the backend is empty at the time the test
         # starts, but we do assume that we can put, get and delete any
         # file beginning with PREFIX. In order to ensure we can re-run

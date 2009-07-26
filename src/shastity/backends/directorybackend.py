@@ -40,15 +40,20 @@ class DirectoryBackend(backend.Backend):
         
         self.__path = identifier # redundant but clearer
 
+        if self.exists():
+            # clean up after previous crashes/failures
+            files_to_clean = [ name for name in os.listdir(self.__path) if name.startswith(self.hidden_prefix) ]
+            for fname in files_to_clean:
+                log.warning('removing stale (post-crash/post-abort?) file %s', fname)
+                os.unlink(os.path.join(self.__path, fname))
+
+    def exists(self):
+        return os.path.exists(self.__path)
+
+    def create(self):
         if not os.path.exists(self.__path):
             log.notice('creating non-existent directory %s', self.__path)
             os.makedirs(self.__path)
-        
-        # clean up after previous crashes/failures
-        files_to_clean = [ name for name in os.listdir(self.__path) if name.startswith(self.hidden_prefix) ]
-        for fname in files_to_clean:
-            log.warning('removing stale (post-crash/post-abort?) file %s', fname)
-            os.unlink(os.path.join(self.__path, fname))
 
     def put(self, name, data):
         assert not name.startswith(self.hidden_prefix)
