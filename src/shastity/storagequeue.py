@@ -246,3 +246,6 @@ class StorageQueue(object):
         with self.__cond:
             while self.__ops:
                 self.__cond.wait()
+
+        if self.__failed:
+            raise OperationHasFailed('one or more operations failed')
