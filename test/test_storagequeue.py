@@ -60,7 +60,7 @@ class StorageQueueBaseCase(object):
 
 class MemoryBackendTests(StorageQueueBaseCase, unittest.TestCase):
     def make_backend(self):
-        return memorybackend.MemoryBackend('memory')
+        return memorybackend.MemoryBackend('memory', dict(max_fake_delay=1.0))
 
 class DirectoryBackendTests(StorageQueueBaseCase, unittest.TestCase):
     def make_backend(self):
