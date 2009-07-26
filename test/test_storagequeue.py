@@ -116,6 +116,19 @@ class StorageQueueBaseCase(object):
 
                 self.assertRaises(storagequeue.OperationHasFailed, sq.wait)
 
+    def test_bad_delete_fail(self):
+        with logging.FakeLogger(storagequeue, 'log'):
+            with storagequeue.StorageQueue(lambda: self.make_backend(), CONCURRENCY) as sq:
+                p1 = storagequeue.PutOperation('test1', 'data')
+                d1 = storagequeue.GetOperation('test1')
+                d2 = storagequeue.GetOperation('test1')
+
+                sq.enqueue(p1)
+                sq.enqueue(d1)
+                sq.enqueue(d2)
+
+                self.assertRaises(storagequeue.OperationHasFailed, sq.wait)
+    
 class MemoryBackendTests(StorageQueueBaseCase, unittest.TestCase):
     def make_backend(self):
         return memorybackend.MemoryBackend('memory', dict(max_fake_delay=0.1))
