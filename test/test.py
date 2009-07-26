@@ -14,6 +14,7 @@ import unittest
 # the bug is.
 test_names = [ 'logging',
                'hash',
+               'util',
                'spencode',
                'metadata',
                'filesystem',
