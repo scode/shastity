@@ -7,6 +7,7 @@ In-memory backend.
 '''
 
 import random
+import time
 
 import shastity.backend as backend
 
