@@ -5,13 +5,15 @@
 from __future__ import absolute_import
 from __future__ import with_statement
 
+import os
 import shutil
 import tempfile
 import unittest
 
 import shastity.backend as backend
-import shastity.backends.memorybackend as memorybackend
 import shastity.backends.directorybackend as directorybackend
+import shastity.backends.memorybackend as memorybackend
+import shastity.backends.s3backend as s3backend
 import shastity.logging as logging
 
 log = logging.get_logger(__name__)
@@ -124,6 +126,11 @@ class DirectoryBackendTests(BackendsBaseCase, unittest.TestCase):
         BackendsBaseCase.tearDown(self)
 
         shutil.rmtree(self.tempdir)
+
+if os.getenv('SHASTITY_UNITTEST_S3_BUCKET') != None:
+    class S3BackendTests(BackendsBaseCase, unittest.TestCase):
+        def make_backend(self):
+            return s3backend.S3Backend(os.getenv('SHASTITY_UNITTEST_S3_BUCKET')) # todo
 
 if __name__ == "__main__":
     unittest.main()
