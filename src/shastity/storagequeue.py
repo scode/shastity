@@ -83,6 +83,34 @@ class StorageOperation(object):
     def __repr__(self):
         return '<%s(%s %s)>' % (self.__class__.__name__, self.mnemonic, self.description)
 
+class PutOperation(StorageOperation):
+    def __init__(self, name, data, callback=None):
+        StorageOperation.__init__(self, 'PUT', '%s (%d bytes)' % (name, len(data)), callback)
+
+        self.name = name
+        self.data = data
+
+    def execute(self, backend):
+        return backend.put(name, data)
+
+class GetOperation(StorageOperation):
+    def __init__(self, name, callback=None):
+        StorageOperation.__init__(self, 'GET', name, callback)
+
+        self.name = name
+
+    def execute(self, backend):
+        return backend.get(name)
+
+class DeleteOperation(StorageOperation):
+    def __init__(self, name, callback=None):
+        StorageOperation.__init__(self, 'DEL', name, callback)
+
+        self.name = name
+
+    def execute(self, backend):
+        return backend.delete(name)
+
 class StorageQueue(object):
     def __init__(self, backend_factory, max_conc, max_mem):
         '''
