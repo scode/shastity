@@ -112,15 +112,13 @@ class DeleteOperation(StorageOperation):
         return backend.delete(name)
 
 class StorageQueue(object):
-    def __init__(self, backend_factory, max_conc, max_mem):
+    def __init__(self, backend_factory, max_conc):
         '''
         @param backend_factory: Callable which will yield a newly constructed backend when called.
         @param max_conc: Maximum worker concurrency.
-        @param max_mem: Maximum (approximate, as reported by operations) memory usage.
         '''
         self.backend_factory = backend_factory
         self.max_conc = max_conc
-        self.max_mem = max_mem
         
         # We maintain a set of currently oustanding operations. We
         # never keep more here than the number of workers that we
