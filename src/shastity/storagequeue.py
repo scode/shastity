@@ -185,6 +185,6 @@ class StorageQueue(object):
 
     def wait(self):
         '''Wait for all outstanding operations to complete.'''
-        with self.__ops_cond:
+        with self.__cond:
             while self.__ops:
-                self.__ops_cond.wait()
+                self.__cond.wait()
