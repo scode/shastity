@@ -31,6 +31,7 @@ import thread
 import threading
 
 import shastity.logging as logging
+import shastity.util as util
 
 log = logging.get_logger(__name__)
 
@@ -70,17 +71,21 @@ class StorageOperation(object):
         signalling. This will be called by the StorageQueue in some
         worker thread. Errors should not leak from this method (they
         are not well handled).'''
-        # TODO: totally broken, actually handle errors
         try:
             log.info('performing operation: %s', str(self))
             self.__result = (True, self.execute(backend))
             log.debug('operation done: %s', str(self))
 
-            if self.callback:
-                self.callback(self.__result[1]) # todo exceptionsb
-        except:
+            self.__sq.notify_operation_complete(self)
+        except Exception, e:
+            self.__result = (False, util.current_traceback())
+            self.__sq.notify_operation_failed(self)
+
             log.error('operation failed: %s', str(self))
-            print 'bork bork bork'
+            log.error('traceback: %s', self.__result[1])
+
+        if self.__result[0] and self.callback:
+            self.callback(self.__result[1])
 
     def __str__(self):
         return '%s %s' % (self.mnemonic, self.description)
@@ -147,7 +152,7 @@ class StorageQueue(object):
         return self
 
     def __exit__(self, *args, **kwargs):
-        self.wait()
+        pass #self.wait()
 
     def enqueue(self, op):
         '''Enqueue an operation for execution as soon as possible.
@@ -170,15 +175,24 @@ class StorageQueue(object):
             backend = self.backend_factory()
 
         def op_runner():
+            op.set_storage_queue(self)
             op.perform(backend)
 
         thread.start_new_thread(op_runner, ())
 
-    def notify_operation_complete(self, op):
+    def __remove_op(self, op):
         with self.__cond:
             assert op in self.__ops, 'got notify from unknown operation %s' % (str(op,))
-            del(self.__ops)[op]
+            self.__ops.remove(op)
             self.__cond.notify()
+
+    def notify_operation_complete(self, op):
+        self.__remove_op(op)
+
+    def notify_operation_failed(self, op):
+        self.__failed = True
+
+        self.__remove_op(op)
 
     def barrier(self):
         '''Guarantee that all operations queued before this call
