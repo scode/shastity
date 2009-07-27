@@ -23,6 +23,11 @@ class NotADirectory(Exception):
 
 def _traverse_dir(fs, path):
     files = fs.listdir(path)
+    
+    # sort files so that we emit them in a deterministic order; this
+    # is necessary to allow for streaming comparisons between two
+    # streams of traversal entries (useful for ctime based
+    # optimization of incremental backups)
     files.sort()
     
     # this is a bit tricky to do correctly, and we don't really. we
