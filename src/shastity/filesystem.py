@@ -199,6 +199,8 @@ class LocalFileSystem(FileSystem):
         props['is_regular']          = stat.S_ISREG(statinfo.st_mode)
         props['is_fifo']             = stat.S_ISFIFO(statinfo.st_mode)
         props['is_symlink']          = stat.S_ISLNK(statinfo.st_mode)
+        if props['is_symlink']:
+            props['symlink_value']   = os.readlink(path)
         # TODO: socket?
 
         props['is_setuid']           = (statinfo.st_mode & stat.S_ISUID) == stat.S_ISUID
@@ -390,7 +392,8 @@ class MemorySymlink:
     def __init__(self, dest):
         '''@param dest: list (starts with . or /) of components'''
         self.dest = dest
-        self.metadata = metadata.FileMetaData(props=dict(is_symlink=True),
+        self.metadata = metadata.FileMetaData(props=dict(is_symlink=True,
+                                                         symlink_value=self.readlink()),
                                               other=_default_metadata)
 
     def is_dir(self):

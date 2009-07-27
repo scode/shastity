@@ -44,8 +44,6 @@ class FileSystemBaseCase(object):
             # successful is_dir()?
             self.assertTrue(self.fs.is_dir(testdir))
 
-            # todo: test symlink creation + testing
-
             # successful listdir()?
             self.assertEqual(self.fs.listdir(tdir.path), ['testdir'])
 
@@ -77,6 +75,8 @@ class FileSystemBaseCase(object):
             self.fs.symlink(subfile, subsym)
             self.assertTrue(self.fs.is_symlink(subsym))
             self.assertFalse(self.fs.is_symlink(subfile))
+            self.assertTrue(self.fs.lstat(subsym)['is_symlink'])
+            self.assertEqual(self.fs.lstat(subsym)['symlink_value'], subfile)
             f = self.fs.open(subsym, 'r')
             self.assertEqual(f.read(), 'hello world')
             f.close()
