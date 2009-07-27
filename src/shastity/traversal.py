@@ -10,7 +10,7 @@ metadata.
 from __future__ import absolute_import
 from __future__ import with_statement
 
-import  os.path
+import os.path
 
 import shastity.filesystem as filesystem
 import shastity.logging as logging
