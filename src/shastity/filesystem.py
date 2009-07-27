@@ -203,7 +203,7 @@ class LocalFileSystem(FileSystem):
 
         props['is_setuid']           = (statinfo.st_mode & stat.S_ISUID) == stat.S_ISUID
         props['is_setgid']           = (statinfo.st_mode & stat.S_ISGID) == stat.S_ISGID
-        props['is_setsticky']        = (statinfo.st_mode & stat.S_ISVTX) == stat.S_ISVTX
+        props['is_sticky']           = (statinfo.st_mode & stat.S_ISVTX) == stat.S_ISVTX
 
         props['user_read']           = (statinfo.st_mode & stat.S_IRUSR) == stat.S_IRUSR
         props['user_write']          = (statinfo.st_mode & stat.S_IWUSR) == stat.S_IWUSR
@@ -213,7 +213,7 @@ class LocalFileSystem(FileSystem):
         props['group_execute']       = (statinfo.st_mode & stat.S_IXGRP) == stat.S_IXGRP
         props['other_read']          = (statinfo.st_mode & stat.S_IROTH) == stat.S_IROTH
         props['other_write']         = (statinfo.st_mode & stat.S_IWOTH) == stat.S_IWOTH
-        props['othe_execute']        = (statinfo.st_mode & stat.S_IXOTH) == stat.S_IXOTH
+        props['other_execute']        = (statinfo.st_mode & stat.S_IXOTH) == stat.S_IXOTH
 
         props['uid']                 = statinfo[stat.ST_UID]
         props['gid']                 = statinfo[stat.ST_GID]
