@@ -32,7 +32,10 @@ import errno
 import os
 import os.path
 import shutil
+import stat
 import tempfile
+
+import shastity.metadata as metadata
 
 class StaleTemporaryDirectory(Exception):
     '''Raised to indicate that an attempt to use a stale (cleaned up)
@@ -120,6 +123,13 @@ class FileSystem(object):
         '''@return List of filenames in the given directory.'''
         raise NotImplementedError
 
+    def lstat(self, path):
+        '''
+        Stat the file at the given path, resutling in a FileMetaData object.
+
+        @return A FileMetaData object.'''
+        raise NotImplementedError
+
     def rmtree(self, path):
         '''Recursively delete the tree rooted at path (not following
         symlinks).'''
@@ -178,6 +188,41 @@ class LocalFileSystem(FileSystem):
     def listdir(self, path):
         '''@return List of filenames in the given directory.'''
         return os.listdir(path)
+
+    def lstat(self, path):
+        statinfo = os.lstat(path)
+        
+        props = dict()
+        props['is_directory']        = stat.S_ISDIR(statinfo.st_mode)
+        props['is_character_device'] = stat.S_ISCHR(statinfo.st_mode)
+        props['is_block_device']     = stat.S_ISBLK(statinfo.st_mode)
+        props['is_regular']          = stat.S_ISREG(statinfo.st_mode)
+        props['is_fifo']             = stat.S_ISFIFO(statinfo.st_mode)
+        props['is_symlink']          = stat.S_ISLINK(statinfo.st_mode)
+        # TODO: socket?
+
+        props['is_setuid']           = (statinfo.st_mode & stat.S_ISUID) == stat.S_ISUID
+        props['is_setgid']           = (statinfo.st_mode & stat.S_ISGID) == stat.S_ISGID
+        props['is_setsticky']        = (statinfo.st_mode & stat.S_ISVTX) == stat.S_ISVTX
+
+        props['user_read']           = (statinfo.st_mode & stat.S_IRUSR) == stat.S_IRUSR
+        props['user_write']          = (statinfo.st_mode & stat.S_IWUSR) == stat.S_IWUSR
+        props['user_execute']        = (statinfo.st_mode & stat.S_IXUSR) == stat.S_IXUSR
+        props['group_read']          = (statinfo.st_mode & stat.S_IRGRP) == stat.S_IRGRP
+        props['group_write']         = (statinfo.st_mode & stat.S_IWGRP) == stat.S_IWGRP
+        props['group_execute']       = (statinfo.st_mode & stat.S_IXGRP) == stat.S_IXGRP
+        props['other_read']          = (statinfo.st_mode & stat.S_IROTH) == stat.S_IROTH
+        props['other_write']         = (statinfo.st_mode & stat.S_IWOTH) == stat.S_IWOTH
+        props['othe_execute']        = (statinfo.st_mode & stat.S_IXOTH) == stat.S_IXOTH
+
+        props['uid']                 = statinfo[stat.ST_UID]
+        props['gid']                 = statinfo[stat.ST_GID]
+        props['size']                = statinfo[stat.ST_SIZE]
+        props['atime']               = statinfo[stat.ST_ATIME]
+        props['mtime']               = statinfo[stat.ST_MTIME]
+        props['ctime']               = statinfo[stat.ST_CTIME]
+
+        return metadata.FileMetaData(props=props)
 
     def mkdtemp(self, suffix=None):
         # mkdtemp differentiates between None and no parameter
@@ -615,6 +660,9 @@ class MemoryFileSystem(FileSystem):
             raise OSError(errno.ENOTDIR, 'not a directory')
 
         return self.__lookup(path).listdir()
+
+    def lstat(self, path):
+        raise NotImplementedError
 
     def mkdtemp(self, suffix=None):
         tmpname = 'tmp%s' % (str(self.__tmp_count),)
