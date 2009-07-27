@@ -228,10 +228,32 @@ class LocalFileSystem(FileSystem):
         # mkdtemp differentiates between None and no parameter
         return tempfile.mkdtemp(suffix=('' if suffix is None else suffix))
 
+# typical rwxr-xr-x default
+_default_metadata = metadata.FileMetaData(props=dict(is_directory=False,
+                                                     is_regular=False,
+                                                     is_symlink=False,
+                                                     is_block_device=False,
+                                                     is_character_device=False,
+                                                     is_fifo=False,
+                                                     user_read=True,
+                                                     user_write=True,
+                                                     user_execute=False,
+                                                     group_read=True,
+                                                     group_write=False,
+                                                     group_execute=True,
+                                                     other_read=True,
+                                                     other_write=False,
+                                                     other_execute=True,
+                                                     is_setuid=False,
+                                                     is_setgid=False,
+                                                     is_sticky=False))
+
 class MemoryDirectory:
     def __init__(self, parent):
         self.parent = parent
         self.entries = dict()
+        self.metadata = metadata.FileMetaData(props=dict(is_directory=True),
+                                              other=_default_metadata)
 
     def __getitem__(self, fname):
         if not fname in self.entries:
@@ -241,6 +263,9 @@ class MemoryDirectory:
 
     def __contains__(self, fname):
         return fname in self.entries
+
+    def lstat(self):
+        return self.metadata
 
     def root(self):
         if self.parent:
@@ -355,6 +380,8 @@ class MemorySymlink:
     def __init__(self, dest):
         '''@param dest: list (starts with . or /) of components'''
         self.dest = dest
+        self.metadata = metadata.FileMetaData(props=dict(is_symlink=True),
+                                              other=_default_metadata)
 
     def is_dir(self):
         return False
@@ -362,6 +389,9 @@ class MemorySymlink:
     def is_symlink(self):
         return True
     
+    def lstat(self):
+        return self.metadata
+
     def resolve(self, reldir):
         '''Resolve this symlink relative to the given directory.'''
         if self.dest[0] == '/':
@@ -383,12 +413,17 @@ class MemorySymlink:
 class MemoryFile:
     def __init__(self):
         self.contents = ''
+        self.metadata = metadata.FileMetaData(props=dict(is_regular=True),
+                                              other=_default_metadata)
 
     def is_dir(self):
         return False
 
     def is_symlink(self):
         return False
+
+    def lstat(self):
+        return self.metadata    
 
 class OpenMode:
     '''Trivial helper to interpret fopen() style modestrings.
@@ -662,7 +697,7 @@ class MemoryFileSystem(FileSystem):
         return self.__lookup(path).listdir()
 
     def lstat(self, path):
-        raise NotImplementedError
+        return self.__lookup(path).lstat()
 
     def mkdtemp(self, suffix=None):
         tmpname = 'tmp%s' % (str(self.__tmp_count),)
