@@ -10,6 +10,8 @@ metadata.
 from __future__ import absolute_import
 from __future__ import with_statement
 
+import  os.path
+
 import shastity.filesystem as filesystem
 import shastity.logging as logging
 import shastity.metadata as metadata
@@ -37,7 +39,7 @@ def _traverse_dir(fs, path):
     # backup live file systems if they can avoid it.
     for f in files:
         fpath = os.path.join(path, f)
-        fmeta = fs.lstat(fmeta)
+        fmeta = fs.lstat(fpath)
 
         yield (fpath, fmeta)
 
@@ -55,12 +57,12 @@ def traverse(fs, path):
 
     @type fs FileSystem
     @param fs Filesystem backend to traverse.
-
     @param path Path to root of traversal.
     '''
     if not fs.is_dir(path):
         raise NotADirectory(path)
 
     yield (path, fs.lstat(path))
-
-    _traverse_dir(fs, path)
+    
+    for path, metadata in _traverse_dir(fs, path):
+        yield (path, metadata)
