@@ -23,6 +23,7 @@ class NotADirectory(Exception):
 
 def _traverse_dir(fs, path):
     files = fs.listdir(path)
+    files.sort()
     
     # this is a bit tricky to do correctly, and we don't really. we
     # should check to see what other tools do. in general, traversing
