@@ -42,7 +42,14 @@ class TraversalBaseCase(object):
 
             lst = [ elt for elt in traversal.traverse(self.fs, tdir.path) ] 
             self.assertEqual(len(lst), 3)
-        
+
+    def test_regular_self(self):
+        with self.fs.tempdir() as tdir:
+            with self.fs.open(self.path(tdir.path, 'testfile'), 'w'):
+                pass
+
+            lst = [ elt for elt in traversal.traverse(self.fs, tdir.path) ] 
+            self.assertEqual(len(lst), 2)
 
 class LocalFileSystemTests(TraversalBaseCase, unittest.TestCase):
     def make_file_system(self):
