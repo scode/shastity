@@ -198,7 +198,7 @@ class LocalFileSystem(FileSystem):
         props['is_block_device']     = stat.S_ISBLK(statinfo.st_mode)
         props['is_regular']          = stat.S_ISREG(statinfo.st_mode)
         props['is_fifo']             = stat.S_ISFIFO(statinfo.st_mode)
-        props['is_symlink']          = stat.S_ISLINK(statinfo.st_mode)
+        props['is_symlink']          = stat.S_ISLNK(statinfo.st_mode)
         # TODO: socket?
 
         props['is_setuid']           = (statinfo.st_mode & stat.S_ISUID) == stat.S_ISUID
