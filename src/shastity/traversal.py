@@ -44,7 +44,8 @@ def _traverse_dir(fs, path):
         yield (fpath, fmeta)
 
         if fmeta.is_directory:
-            _traverse_dir(fs, fpath)
+            for recpath, recmeta in _traverse_dir(fs, fpath):
+                yield recpath, recmeta
 
 def traverse(fs, path):
     '''
