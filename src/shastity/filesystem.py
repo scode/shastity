@@ -136,7 +136,7 @@ class FileSystem(object):
         # we implement this ourselves, rather than using
         # shutil.rmtree(), in order to have the same implementation
         # for regular fs and memory fs.
-        if self.is_dir(path):
+        if not self.is_symlink(path) and self.is_dir(path):
             for fname in self.listdir(path):
                 self.rmtree(os.path.join(path, fname))
             self.rmdir(path)
@@ -290,7 +290,10 @@ class MemoryDirectory:
                         return entry
                 elif isinstance(entry, MemorySymlink):
                     if no_follow:
-                        raise AssertionError('no_follow, but requested demanded follow')
+                        if len(comps) == 1: # last component, we're done
+                            return self
+                        else:
+                            raise AssertionError('no_follow, but request demanded follow')
                     else:
                         # ask symlink to resolve itself relative to us
                         return entry.resolve(self)
@@ -623,9 +626,9 @@ class MemoryFileSystem(FileSystem):
         else:
             return path.split('/')
 
-    def __lookup(self, path):
+    def __lookup(self, path, no_follow=False):
         # todo: abs vs. rel
-        return self.__root.lookup(self.__tokenize(path))
+        return self.__root.lookup(self.__tokenize(path), no_follow=no_follow)
 
     def mkdir(self, path):
         dname, fname = self.__split_slash_agnostically(path)
@@ -697,7 +700,7 @@ class MemoryFileSystem(FileSystem):
         return self.__lookup(path).listdir()
 
     def lstat(self, path):
-        return self.__lookup(path).lstat()
+        return self.__lookup(path, no_follow=True).lstat()
 
     def mkdtemp(self, suffix=None):
         tmpname = 'tmp%s' % (str(self.__tmp_count),)
