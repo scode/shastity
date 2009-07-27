@@ -18,8 +18,7 @@ class TraversalBaseCase(object):
         self.fs = self.make_file_system() # provided by subclass
 
     def test_misc(self):
-        for path, md in traversal.traverse(self.fs, '/home/scode/tmp'):
-            print path
+        pass
 
 class LocalFileSystemTests(TraversalBaseCase, unittest.TestCase):
     def make_file_system(self):
