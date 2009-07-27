@@ -237,7 +237,7 @@ _default_metadata = metadata.FileMetaData(props=dict(is_directory=False,
                                                      is_fifo=False,
                                                      user_read=True,
                                                      user_write=True,
-                                                     user_execute=False,
+                                                     user_execute=True,
                                                      group_read=True,
                                                      group_write=False,
                                                      group_execute=True,
@@ -246,7 +246,13 @@ _default_metadata = metadata.FileMetaData(props=dict(is_directory=False,
                                                      other_execute=True,
                                                      is_setuid=False,
                                                      is_setgid=False,
-                                                     is_sticky=False))
+                                                     is_sticky=False,
+                                                     uid=1,
+                                                     gid=1,
+                                                     size=0,
+                                                     atime=5,
+                                                     mtime=5,
+                                                     ctime=5))
 
 class MemoryDirectory:
     def __init__(self, parent):
@@ -293,7 +299,8 @@ class MemoryDirectory:
                         if len(comps) == 1: # last component, we're done
                             return self
                         else:
-                            raise AssertionError('no_follow, but request demanded follow')
+                            raise AssertionError('no_follow, but request demanded follow (comps = %s)'
+                                                 '' % (comps,))
                     else:
                         # ask symlink to resolve itself relative to us
                         return entry.resolve(self)
@@ -358,11 +365,11 @@ class MemoryDirectory:
 
         self.entries[name] = memfile
 
-    def symlink(self, linkstring, name):
+    def symlink(self, linkcomps, name):
         if name in self.entries:
             raise OSError(errno.EEXIST, 'file exists')
 
-        self.entries[name] = MemorySymlink(linkstring)
+        self.entries[name] = MemorySymlink(linkcomps)
     
     def unlink(self, name):
         if not name in self.entries:
@@ -700,7 +707,16 @@ class MemoryFileSystem(FileSystem):
         return self.__lookup(path).listdir()
 
     def lstat(self, path):
-        return self.__lookup(path, no_follow=True).lstat()
+        dname, fname = self.__split_slash_agnostically(path)
+        d = self.__lookup(dname)
+
+        if not d.is_dir():
+            raise OSError(errno.EISDIR, 'is a directory')
+
+        if not fname in d:
+            raise OSError(errno.ENOENT, 'file not found')
+
+        return d[fname].lstat()
 
     def mkdtemp(self, suffix=None):
         tmpname = 'tmp%s' % (str(self.__tmp_count),)

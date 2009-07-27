@@ -43,7 +43,7 @@ def _traverse_dir(fs, path):
 
         yield (fpath, fmeta)
 
-        if fmeta.is_directory:
+        if fmeta.is_directory and not fmeta.is_symlink:
             for recpath, recmeta in _traverse_dir(fs, fpath):
                 yield recpath, recmeta
 
@@ -60,7 +60,7 @@ def traverse(fs, path):
     @param fs Filesystem backend to traverse.
     @param path Path to root of traversal.
     '''
-    if not fs.is_dir(path):
+    if fs.is_symlink(path) or not fs.is_dir(path):
         raise NotADirectory(path)
 
     yield (path, fs.lstat(path))
