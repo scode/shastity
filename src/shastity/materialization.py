@@ -20,7 +20,7 @@ log = logging.get_logger(__name__)
 def materialize(fs, path, entryiter, storagequeue):
     '''
     @type fs FileSystem instance.
-    @param fs File system into which to materialize the stream.p
+    @param fs File system into which to materialize the stream.
 
     @param path The path in the file system at which to materialize the stream to.
 
