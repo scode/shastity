@@ -19,7 +19,8 @@ test_names = [ 'logging',
                'metadata',
                'filesystem',
                'backends',
-               'storagequeue' ]
+               'storagequeue',
+               'traversal' ]
 
 if __name__ == "__main__":
    suite = unittest.defaultTestLoader.loadTestsFromNames([ 'test_%s' % (tn,) for tn in test_names])
