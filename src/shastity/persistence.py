@@ -22,7 +22,18 @@ DEFAULT_HASHER = hash.make_hasher('sha512')
 log = logging.get_logger(__name__)
 
 def _next_block(f, blocksize):
-    raise NotImplementedError
+    parts = []
+    sofar = 0
+
+    while sofar < blcoksize:
+        part = f.read(blocksize - sofar)
+        if len(part) == 0:
+            break # eof
+        
+        parts += part
+        sofar += len(part)
+
+    return ''.join(parts)
 
 def _persist_file(fs,
                   path,
