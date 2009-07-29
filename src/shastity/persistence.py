@@ -16,11 +16,14 @@ import shastity.logging as logging
 
 log = logging.get_logger(__name__)
 
-def persist_full(fs, traversal, basepath, storagequeue):
+def persist(fs, traversal, incremental, basepath, storagequeue):
     '''
     @param fs: File system from which to read file contents.
     @param traversal: Generator producting (path, metadata) entries.
+    @param incremental: Incremental entry produced for a previous backup relative
+                        to which we are to optimize away file reading/hashing/encryption.
     @param basepath: Base path (prefix) of backup.
     @param storagequeue: Storage queue to which to write files contents.
     '''
-    pass
+    assert incremental is None, 'incremental optimization not yet implemented'
+
