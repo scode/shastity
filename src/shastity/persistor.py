@@ -16,7 +16,11 @@ import shastity.logging as logging
 
 log = logging.get_logger(__name__)
 
-def persist_full(fs, traversal, storagequeue):
+def persist_full(fs, traversal, basepath, storagequeue):
     '''
+    @param fs: File system from which to read file contents.
+    @param traversal: Generator producting (path, metadata) entries.
+    @param basepath: Base path (prefix) of backup.
+    @param storagequeue: Storage queue to which to write files contents.
     '''
     pass
