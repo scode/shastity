@@ -29,6 +29,7 @@ from __future__ import with_statement
 
 import thread
 import threading
+import traceback
 
 import shastity.logging as logging
 import shastity.util as util
@@ -106,7 +107,7 @@ class StorageOperation(object):
 
             self.__sq.notify_operation_complete(self)
         except Exception, e:
-            self.__set_result(False, util.current_traceback())
+            self.__set_result(False, traceback.format_exc())
 
             log.error('operation failed: %s', str(self))
             log.error('traceback: %s', self.__result[1])
