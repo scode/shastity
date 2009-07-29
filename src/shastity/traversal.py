@@ -66,6 +66,12 @@ def traverse(fs, path):
     @param fs Filesystem backend to traverse.
     @param path Path to root of traversal.
     '''
+    # TODO: what to do about the base path changing? should we resolve
+    # the symlink once and keep the real path for consistency? that
+    # would only help in the particular case of symlinks of course,
+    # and not e.g. umounts etc. What do other tools do, what does tar
+    # do for example?
+
     if fs.is_symlink(path) or not fs.is_dir(path):
         raise NotADirectory(path)
 
