@@ -49,11 +49,26 @@ class PersistenceBaseCase(object):
                     f.write('this is the body of testfile2')
                 self.fs.symlink(self.path(tdir.path, 'testdir/testfile2'),
                                 self.path(tdir.path, 'testdir/testfile2-symlink'))
+                with self.fs.open(self.path(tdir.path, 'testdir/testfile3'), 'a') as f:
+                    f.write('testfile3 body')
 
                 traverser = traversal.traverse(self.fs, tdir.path)
-                for path, meta, hashes in persistence.persist(self.fs, traverser, None, tdir.path, sq):
-                    pass
-                    #print meta.to_string() + ' ' + path + ' ' + unicode(hashes)
+                manifest = [ elt for elt in persistence.persist(self.fs,
+                                                                traverser,
+                                                                None,
+                                                                tdir.path,
+                                                                sq,
+                                                                blocksize=20) ]
+                #print meta.to_string() + ' ' + path + ' ' + unicode(hashes)
+                self.assertEqual(len(manifest), 6)
+                files = self.backend.list()
+                self.assertEqual(len(files), 3) # two blocks for 2, one for 3
+    
+                file_contents = [ self.backend.get(fname) for fname in files ]
+    
+                self.assertTrue('testfile3 body' in file_contents)
+                self.assertTrue('this is the body of ' in file_contents)
+                self.assertTrue('testfile2' in file_contents)
 
 class MemoryTests(PersistenceBaseCase, unittest.TestCase):
     def make_file_system(self):
