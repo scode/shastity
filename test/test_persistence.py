@@ -14,6 +14,7 @@ import unittest
 import shastity.backends.directorybackend as directorybackend
 import shastity.backends.memorybackend as memorybackend
 import shastity.filesystem as fs
+import shastity.hash as hash
 import shastity.logging as logging
 import shastity.metadata as md
 import shastity.persistence as persistence
@@ -69,6 +70,9 @@ class PersistenceBaseCase(object):
                 self.assertTrue('testfile3 body' in file_contents)
                 self.assertTrue('this is the body of ' in file_contents)
                 self.assertTrue('testfile2' in file_contents)
+                
+                for fname in files:
+                    self.assertEqual(fname, hash.make_hasher('sha512')(self.backend.get(fname))[1])
 
 class MemoryTests(PersistenceBaseCase, unittest.TestCase):
     def make_file_system(self):
