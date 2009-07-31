@@ -22,6 +22,8 @@ import shastity.traversal as traversal
 
 log = logging.get_logger(__name__)
 
+CONCURRENCY = 10
+
 class PersistenceBaseCase(object):
     def setUp(self):
         self.tempdir = tempfile.mkdtemp(suffix='-shastity_directory_backend_unittest')
@@ -38,10 +40,20 @@ class PersistenceBaseCase(object):
         return os.path.join(base, (reduce(os.path.join, [ comp for comp in p.split('/') if comp ])))
 
     def test_basic(self):
-        #with self.fs.tempdir() as tdir:
-        #    lst = [ elt for elt in traversal.traverse(self.fs, tdir.path) ] 
-        #    self.assertEqual(len(lst), 1)
-        pass
+        with storagequeue.StorageQueue(lambda: self.make_backend(), CONCURRENCY) as sq:
+            with self.fs.tempdir() as tdir:
+                # populate
+                self.fs.mkdir(self.path(tdir.path, 'testdir'))
+                self.fs.open(self.path(tdir.path, 'testdir/testfile'), 'a').close()
+                with self.fs.open(self.path(tdir.path, 'testdir/testfile2'), 'a') as f:
+                    f.write('this is the body of testfile2')
+                self.fs.symlink(self.path(tdir.path, 'testdir/testfile2'),
+                                self.path(tdir.path, 'testdir/testfile2-symlink'))
+
+                traverser = traversal.traverse(self.fs, tdir.path)
+                for path, meta, hashes in persistence.persist(self.fs, traverser, None, tdir.path, sq):
+                    pass
+                    #print meta.to_string() + ' ' + path + ' ' + unicode(hashes)
 
 class MemoryTests(PersistenceBaseCase, unittest.TestCase):
     def make_file_system(self):
