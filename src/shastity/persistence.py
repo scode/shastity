@@ -58,6 +58,8 @@ def _persist_file(fs,
 
     if meta.is_symlink:
         return (path, meta, [])
+    elif meta.is_directory:
+        return (path[len(basepath):], meta, [])
     else:
         hashes = []
 
