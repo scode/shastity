@@ -40,8 +40,8 @@ def _persist_file(fs,
                   basepath,
                   meta,
                   sq,
-                  blocksize=DEFAULT_BLOCKSIZE,
-                  hasher=DEFAULT_HASHER):
+                  blocksize,
+                  hasher):
     '''Persist a single file and return its entry to be yielded back
     to the parent caller. Parameters match those of persist().'''
     # TODO: fstat() after open to make sure we are not subject to
@@ -98,7 +98,7 @@ def persist(fs,
     
     for path, meta in traversal:
         # Future: Do traversal/incremental optimization logic here.
-        yield _persist_file(fs, path, basepath, meta, sq)
+        yield _persist_file(fs, path, basepath, meta, sq, blocksize=blocksize, hasher=hasher)
 
     sq.wait()
 
