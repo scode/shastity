@@ -25,7 +25,7 @@ def _next_block(f, blocksize):
     parts = []
     sofar = 0
 
-    while sofar < blcoksize:
+    while sofar < blocksize:
         part = f.read(blocksize - sofar)
         if len(part) == 0:
             break # eof
@@ -52,9 +52,11 @@ def _persist_file(fs,
     # TODO #2: Block devices and major/minor preservation. Bah.
 
     assert path.startswith(basepath)
-    assert basepath.endswith('/')
+    assert basepath.endswith('/') \
+        or (basepath != '' and path.startswith(basepath + '/')) \
+        or (basepath != '' and path == basepath)
 
-    if meta.is_symlink():
+    if meta.is_symlink:
         return (path, meta, [])
     else:
         hashes = []
