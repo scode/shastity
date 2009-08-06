@@ -46,6 +46,12 @@ section and return to it later. It is however highly recommended that
 this section be read before using shastity in a production
 environment.
 
+Also, while this section will try to give some information on general
+concepts such as hashing and content addressable storage, its primary
+purpose is documenting how shastity uses these technologies. Users are
+encouraged to read other material on cryptographic hashes, content
+addressable storage, and de-duplication. TODO: provide some references
+
 === Content addressable storage ===
 
 shastity uses "content addressable storage" for storing the contents
