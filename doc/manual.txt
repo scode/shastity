@@ -129,3 +129,43 @@ expressed in terms of references to stored blocks - by their identity.
 To be clear, in real life the block size will be much larger than that
 used in the examples. The expectation is that block sizes in the
 ballpark of 1 MB will be used.
+
+=== High-level shastity storage model ===
+
+TODO: this describes the model without encryption. fix.
+
+In shastity all storage of backup data is done in terms of a 'storage
+backend'. A storage backend defines the method used to access the
+data, and the location of the data. For example, a backend might be
+"the Amazon S3 bucket this.is.my.bucket.name", or "the file system
+directory /path/to/directory".
+
+TODO: provide info on listing backends etc
+
+A backend is capable of a few simple operations, such as putting data
+into it by some given name (its key), and getting it back out by the
+same key (name), along with listing all keys (it is essentially a very
+simple key/value store).
+
+shastity has exactly two kinds of data:
+
+* Blocks of file contents.
+* Backup manifest files.
+
+Backup manifest files are compressed line-oriented text files
+containing one entry per file in the backup set. Each entry contains
+the path to the file, the meta-data about the file (permissions,
+ownership, etc) and a description of its contents in terms of block
+identities (SHA-512 hexadecimal hashes).
+
+Blocks of file contents are just that. There is no meta-data or
+structure other than the file names corresponding with the SHA-512
+hexadecimal hash of each block.
+
+A backup manifest is completely self-contained from any other backup
+manifest. There is no dependency in between them. The only dependency
+between anything in the shastity storage model, is that of referential
+integrity of blocks. That is, a block referenced by its hash in the
+manifest file must exist in the collection of blocks.
+
+TODO: provide example
