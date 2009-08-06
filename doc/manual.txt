@@ -45,3 +45,51 @@ want to get it running to try it ASAP, you may want to skip this
 section and return to it later. It is however highly recommended that
 this section be read before using shastity in a production
 environment.
+
+=== Content addressable storage ===
+
+shastity uses "content addressable storage" for storing the contents
+of files (in a block-wise fashion - more on that later).
+
+With content addressable storage, the content determines where to find
+(or put) the data. For example, in a content addressable storage
+system that uses files in a directory, the text "hello world" might be
+stored in the file:
+
+  6f5902ac237024bdd0c176cb93063dc4
+
+This is determined only by the contents of the file (there is no
+separate piece of information that says that the text "hello world" is
+stored in that file; it is determined solely based on the text
+itself).
+   
+In order to accomplish the mapping from content ("hello world" above)
+to storage location (the file 6f5902ac237024bdd0c176cb93063dc4 above),
+a cryptographic hashing algorithm is used. In the above example, MD5
+was used for brevity, though shastity by default uses SHA-512.
+
+(Please Google for "cryptographic hash" if the above does not make
+sense to you.)
+
+=== De-duplication ===
+
+In the example from the previous section, not only do you know that
+the text "hello world" is always stored in the file
+6f5902ac237024bdd0c176cb93063dc4, you also know to a very high degree
+of certainty that you will not encounter any other text that is
+supposed to be stored in the same file. This is a property of the
+cryptographic hashing.
+
+If we make the assumption that the probability of encountering a hash
+collision is so low that we can consider it zero for practical
+purposes, we can do de-duplication of data. In other words, whenever
+we have the need to store the text "hello world" we can check whether
+we already have that data stored solely based on the names of the
+files in our storage system. If we do, we're done.
+
+The result is that we will only ever store a single copy of "hello
+world", regardless of how many times we asked our storage system to
+store that data.
+
+=== Block-based storage ===
+
