@@ -97,5 +97,35 @@ The result is that we will only ever store a single copy of "hello
 world", regardless of how many times we asked our storage system to
 store that data.
 
+(It is important to note that the optimization only works for
+identical data. For example, storage of the string "hello there,
+world" is not helped by the fact that we have already stored "hello
+world".)
+
 === Block-based storage ===
 
+shastity stores file contents as blocks of data. For example, suppose
+the block size is 6 bytes. In the preceding example, the text "hello
+world" would then be stored as two blocks:
+
+  "hello " -> 1a77a8341bddc4b45418f9c30e7102b4
+  "world"  -> 591785b794601e212b260e25925636fd
+
+The contents of the file can then be described as:
+
+  The block 1a77a8341bddc4b45418f9c30e7102b4 followed by
+  the block 591785b794601e212b260e25925636fd.
+
+Let us make that a bit more terse and add some meta-data about the
+file and we get something like:
+
+  -rwxr-xr-x /home/username/mbox 1a77a8341bddc4b45418f9c30e7102b4 591785b794601e212b260e25925636fd
+
+The above example is not identical to how shastity stores information
+about files, but it is pretty similar. As you can see it is a highly
+human-readable description of file meta data, with contents being
+expressed in terms of references to stored blocks - by their identity.
+
+To be clear, in real life the block size will be much larger than that
+used in the examples. The expectation is that block sizes in the
+ballpark of 1 MB will be used.
