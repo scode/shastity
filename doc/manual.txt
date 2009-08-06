@@ -36,7 +36,32 @@ Reasonable documentation, especially of backup tools, is important. If
 you feel sections of this manual are incomplete or unclear, please do
 file a bug (TODO: explain how). The target audience is that of people
 with some reasonable level of experience with Unix-like operating
-systems (working at the command line and editing configuration files)>
+systems (working at the command line and editing configuration files).
+
+== shastity terminology ==
+
+With shastity, the act of taking a backup of a directory tree is
+called /persisting/ the tree to storage.
+
+The act of restoring that directory tree at a later time is called
+/materializing/ the tree from storage.
+
+Storage (of backup data) is always talked about in terms of storage
+/backends/, A storage backend is some particular method of accessing
+data (e.g. the "S3 backend" stores data on Amazon S3) or some
+particular location of data (e.g. name.of.an.s3.bucket). (Yes,
+unfortunately the term backend then refers to both some particular
+type/location and just the type depending on context.)
+
+The act of persisting a tree results in a /backup set/, which is the
+abstract concept often known as "a backup" in the sense of "I put a
+backup of my home directory onto my USB stick". In practical terms, a
+backup set is made up of two things. The first thing is the /backup
+manifest/, which is a single file that contains the list of files in
+the set, their meta data, and information about how to reconstruct
+their contents. The other part of the backup set is a set of data
+blocks referred to by the manifest.
+
 
 == Understanding the storage model
 
@@ -132,7 +157,7 @@ ballpark of 1 MB will be used.
 
 === High-level shastity storage model ===
 
-TODO: this describes the model without encryption. fix.
+TODO: this describes the format without encryption. fix.
 
 In shastity all storage of backup data is done in terms of a 'storage
 backend'. A storage backend defines the method used to access the
