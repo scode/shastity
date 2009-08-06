@@ -6,5 +6,42 @@ yet.
 
 == Introduction
 
-== Understanding the storage format
+shastity is a command line based backup software which provides the
+ability to backup local file system contents to a variety of storage
+backends. It is specifically designed to play well with eentually
+consistent storage such as Amazon S3. It also supports encryption
+(hence the name) of backed up data to allow for backups to
+semi-trusted or untrusted storage. All backed up file conents is
+stored in a block-wise fashion with hash-based de-duplication.
 
+Just to give a quick couple of examples, in the simplest of cases,
+backing up all of /home/username to a directory
+/mnt/backup/home_username is as simple as:
+
+  shastity persist /home/username dir:/mnt/backup/home_username
+
+Or if you prefer to backup to the Amazon S3 service:
+
+  shastity persist /home/username s3:bucket.base.name
+
+(the S3 example requires appropriate AWS authentication information to
+be present in environment variables or the shastity configuration).
+
+This user manual will attempt to document shastity with a fair bit of
+completeness, such that a reasonably experienced Unix admin can not
+only use shastity, but understand the fundamental concepts and its
+storage model.
+
+Reasonable documentation, especially of backup tools, is important. If
+you feel sections of this manual are incomplete or unclear, please do
+file a bug (TODO: explain how). The target audience is that of people
+with some reasonable level of experience with Unix-like operating
+systems (working at the command line and editing configuration files)>
+
+== Understanding the storage model
+
+This section is not strictly necessary to use shastity. If you just
+want to get it running to try it ASAP, you may want to skip this
+section and return to it later. It is however highly recommended that
+this section be read before using shastity in a production
+environment.
