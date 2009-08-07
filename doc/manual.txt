@@ -60,8 +60,11 @@ backup set is made up of two things. The first thing is the /backup
 manifest/, which is a single file that contains the list of files in
 the set, their meta data, and information about how to reconstruct
 their contents. The other part of the backup set is a set of data
-blocks referred to by the manifest.
+blocks referred to by the manifest (by their hexadecimal value).
 
+The /manifest storage backend/ is the storage backend used to store
+backup manifest files. The /block storage backend/ is the storage
+backend used to store block contents.
 
 == Understanding the storage model
 
