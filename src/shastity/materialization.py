@@ -24,7 +24,7 @@ def materialize(fs, path, entryiter, storagequeue):
 
     @param path The path in the file system at which to materialize the stream to.
 
-    @type entryiter iterable yielding (path, metadata) tuples
+    @type entryiter iterable yielding (path, metadata, hashes) tuples
     @param entryiter The generator of entries to materialize.
 
     @type storagequeue StorageQueue
