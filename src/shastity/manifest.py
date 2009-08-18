@@ -50,26 +50,19 @@ def store_manifest(backend, name, entry_generator):
     """
     assert '.' not in name, 'manifest names cannot contain dots'
 
-    # Note: We break abstraction here w.r.t. the text representation
-    # of meta data. This is on purpose.
-
     mf_lines = []
 
     for (path, metadata, hashes) in entry_generator:
         md = metadata.to_string()
-        assert len(md.split()) == 8 if metadata.is_symlink else len(md.split()) == 7
 
         pth = spencode.spencode(path)
-        assert len(pth.split()) == 1
 
         if metadata.is_symlink:
             rest = spencode.spencode(metadata.symlink_value)
-            assert len(rest.split()) == 1
         else:
             rest = ' '.join([ '%s,%s' % (algo, hex) for (algo, hex) in hashes ])
-            assert len(rest.split()) == len(hashes) - 1
 
-        mf_lines.append('%s %s %s' % (md, pth, rest))
+        mf_lines.append('%s %s | %s' % (md, pth, rest))
 
     backend.put(name, '\n'.join(mf_lines))
 
@@ -80,8 +73,6 @@ def read_manifest(backend, name):
     """
     assert '.' not in name, 'manifest names cannot contain dots'
 
-    # Note: We break abstraction here w.r.t. the text representation
-    # of meta data. This is on purpose.
 
 def delete_manifest(backend, name):
     """
