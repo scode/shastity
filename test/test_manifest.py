@@ -42,7 +42,12 @@ class ManifestBaseCase(object):
     def test_basic(self):
         with self.make_backend() as b:
             def make_entry(n, contents):
-                return ('%d' % (n,), md.FileMetaData.from_string('-rwxr-xr-x 5 6 7 8 9 10'), [('sha512', 'abcd')])
+                hashes = []
+                while contents:
+                    hashes.append(('sha512', contents[0:5])) # treat contents as hash, nevermind
+                    contents = contents[5:]
+
+                return ('%d' % (n,), md.FileMetaData.from_string('-rwxr-xr-x 5 6 7 8 9 10'), hashes)
 
             entries_in = [ make_entry(n, 'contents'.join([ unicode(m) for m in xrange(0, n)])) for n in xrange(0, 100) ]
             
