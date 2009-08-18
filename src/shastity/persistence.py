@@ -71,6 +71,7 @@ def _persist_file(fs,
                 
                 algo, hash = hasher(block)
                 hashes.append((algo, hash))
+                # todo: don't put if file exists
                 sq.enqueue(storagequeue.PutOperation(name=hash,
                                                      data=block))
             return (path[len(basepath):], meta, hashes)
