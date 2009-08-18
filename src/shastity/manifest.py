@@ -39,7 +39,7 @@ import shastity.spencode as spencode
 
 log = logging.get_logger(__name__)
 
-def store_manifest(backend, name, entry_generator):
+def write_manifest(backend, name, entry_generator):
     """
     @param backend A storage backend (dedicated to manifests)
 
