@@ -57,10 +57,7 @@ def store_manifest(backend, name, entry_generator):
 
         pth = spencode.spencode(path)
 
-        if metadata.is_symlink:
-            rest = spencode.spencode(metadata.symlink_value)
-        else:
-            rest = ' '.join([ '%s,%s' % (algo, hex) for (algo, hex) in hashes ])
+        rest = ' '.join([ '%s,%s' % (algo, hex) for (algo, hex) in hashes ])
 
         mf_lines.append('%s | %s | %s' % (md, pth, rest))
 
