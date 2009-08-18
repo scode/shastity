@@ -62,7 +62,7 @@ def store_manifest(backend, name, entry_generator):
         else:
             rest = ' '.join([ '%s,%s' % (algo, hex) for (algo, hex) in hashes ])
 
-        mf_lines.append('%s %s | %s' % (md, pth, rest))
+        mf_lines.append('%s | %s | %s' % (md, pth, rest))
 
     backend.put(name, '\n'.join(mf_lines))
 
