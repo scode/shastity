@@ -34,6 +34,7 @@ import  os.path
 
 import shastity.filesystem as filesystem
 import shastity.logging as logging
+import shastity.spencode as spencode
 
 log = logging.get_logger(__name__)
 
@@ -42,19 +43,45 @@ def store_manifest(backend, name, entry_generator):
     @param backend A storage backend (dedicated to manifests)
 
     @type  name A string.
-    @param name Name of manifest.
+    @param name Name of manifest; must not contain dots.
     
     @param entry_generator Backup entry generator producting all entries, in order, for inclusion
                            in the manifest.
     """
-    pass
+    assert '.' not in name, 'manifest names cannot contain dots'
+
+    # Note: We break abstraction here w.r.t. the text representation
+    # of meta data. This is on purpose.
+
+    mf_lines = []
+
+    for (path, metadata, hashes) in entry_generator:
+        md = metadata.to_string()
+        assert len(md.split()) == 8 if metadata.is_symlink else len(md.split()) == 7
+
+        pth = spencode.spencode(path)
+        assert len(pth.split()) == 1
+
+        if metadata.is_symlink:
+            rest = spencode.spencode(metadata.symlink_value)
+            assert len(rest.split()) == 1
+        else:
+            rest = ' '.join([ '%s,%s' % (algo, hex) for (algo, hex) in hashes ])
+            assert len(rest.split()) == len(hashes) - 1
+
+        mf_lines.append('%s %s %s' % (md, pth, rest))
+
+    backend.put(name, '\n'.join(mf_lines))
 
 def read_manifest(backend, name):
     """
     @return A backup entry generator producing all entries, in order,
             contained in the manifest.
     """
-    pass
+    assert '.' not in name, 'manifest names cannot contain dots'
+
+    # Note: We break abstraction here w.r.t. the text representation
+    # of meta data. This is on purpose.
 
 def delete_manifest(backend, name):
     """
@@ -63,7 +90,7 @@ def delete_manifest(backend, name):
 
     @param name Name of the manifest to delete.
     """
-    pass
+    backend.delete(name)
 
 def list_manifests(backend):
     """
@@ -71,4 +98,4 @@ def list_manifests(backend):
 
     @return A list of names of all manifests contained in the backend.
     """
-    pass
+    return backend.list()
