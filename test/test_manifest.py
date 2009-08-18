@@ -49,6 +49,8 @@ class ManifestBaseCase(object):
             manifest.write_manifest(b, 'test_manifest', entries_in)
             entries_out = [ entry for entry in manifest.read_manifest(b, 'test_manifest') ]
 
+            #print b.get('test_manifest')
+
             self.assertEqual(manifest.list_manifests(b), [ 'test_manifest' ])
             manifest.delete_manifest(b, 'test_manifest')
             self.assertEqual(manifest.list_manifests(b), [])
