@@ -71,7 +71,7 @@ def read_manifest(backend, name):
     """
     assert '.' not in name, 'manifest names cannot contain dots'
     
-    mf_lines = backend.get(name).split('\n')
+    mf_lines = [ line.strip() for line in backend.get(name).split('\n') ]
 
     for line in mf_lines:
         (md, path, rest) = [ s.strip() for s in line.split('|') ]
@@ -80,7 +80,7 @@ def read_manifest(backend, name):
         path = spencode.spdecode(path)
         
         if rest:
-            rest = [ (algo, hex) for (algo, hex) in [ pair.split(',') for pair in rest ] ]
+            rest = [ (algo, hex) for (algo, hex) in [ pair.split(',') for pair in rest.split() ] ]
         else:
             rest = []
 
