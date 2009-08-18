@@ -34,6 +34,7 @@ import  os.path
 
 import shastity.filesystem as filesystem
 import shastity.logging as logging
+import shastity.metadata as metadata.
 import shastity.spencode as spencode
 
 log = logging.get_logger(__name__)
@@ -69,7 +70,21 @@ def read_manifest(backend, name):
             contained in the manifest.
     """
     assert '.' not in name, 'manifest names cannot contain dots'
+    
+    mf_lines = backend.get(name).split('\n')
 
+    for line in mf_lines:
+        (md, path, rest) = [ s.strip() for s in line.split('|') ]
+
+        md = metadata.FileMetaData.from_string(md)
+        path = spencode.spdecode(path)
+        
+        if rest:
+            rest = [ (algo, hex) for (algo, hex) in [ for pair.split(',') for pair in rest ] ]
+        else:
+            rest = []
+
+        yield (path, md, rest)
 
 def delete_manifest(backend, name):
     """
