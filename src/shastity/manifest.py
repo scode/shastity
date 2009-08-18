@@ -34,7 +34,7 @@ import  os.path
 
 import shastity.filesystem as filesystem
 import shastity.logging as logging
-import shastity.metadata as metadata.
+import shastity.metadata as metadata
 import shastity.spencode as spencode
 
 log = logging.get_logger(__name__)
@@ -80,7 +80,7 @@ def read_manifest(backend, name):
         path = spencode.spdecode(path)
         
         if rest:
-            rest = [ (algo, hex) for (algo, hex) in [ for pair.split(',') for pair in rest ] ]
+            rest = [ (algo, hex) for (algo, hex) in [ pair.split(',') for pair in rest ] ]
         else:
             rest = []
 
