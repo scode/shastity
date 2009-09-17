@@ -251,6 +251,9 @@ class FileMetaData(object):
             return getattr(self, key)
         else:
             raise KeyError(key)
+
+    def __str__(self):
+        return self.to_string()
         
     @classmethod
     def from_string(cls, s):
