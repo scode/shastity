@@ -24,7 +24,7 @@ class TraversalBaseCase(object):
     def test_basic(self):
         with self.fs.tempdir() as tdir:
             lst = [ elt for elt in traversal.traverse(self.fs, tdir.path) ] 
-            self.assertEqual(len(lst), 1)
+            self.assertEqual(len(lst), 0)
 
     def test_directory_traversal(self):
         with self.fs.tempdir() as tdir:
@@ -32,7 +32,7 @@ class TraversalBaseCase(object):
             self.fs.mkdir(self.path(tdir.path, 'testdir/subdir'))
 
             lst = [ elt for elt in traversal.traverse(self.fs, tdir.path) ] 
-            self.assertEqual(len(lst), 3)
+            self.assertEqual(len(lst), 2)
 
     def test_recursive_symlink(self):
         with self.fs.tempdir() as tdir:
@@ -41,7 +41,7 @@ class TraversalBaseCase(object):
                             self.path(tdir.path, 'testdir/symlink_to_parent'))
 
             lst = [ elt for elt in traversal.traverse(self.fs, tdir.path) ] 
-            self.assertEqual(len(lst), 3)
+            self.assertEqual(len(lst), 2)
 
     def test_regular_self(self):
         with self.fs.tempdir() as tdir:
@@ -49,7 +49,7 @@ class TraversalBaseCase(object):
                 pass
 
             lst = [ elt for elt in traversal.traverse(self.fs, tdir.path) ] 
-            self.assertEqual(len(lst), 2)
+            self.assertEqual(len(lst), 1)
 
 class LocalFileSystemTests(TraversalBaseCase, unittest.TestCase):
     def make_file_system(self):

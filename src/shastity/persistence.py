@@ -51,10 +51,13 @@ def _persist_file(fs,
 
     # TODO #2: Block devices and major/minor preservation. Bah.
 
-    assert path.startswith(basepath)
-    assert basepath.endswith('/') \
-        or (basepath != '' and path.startswith(basepath + '/')) \
-        or (basepath != '' and path == basepath)
+    assert len(basepath) > 0, 'basepath cannot be empty'
+    if not basepath.endswith('/'):
+        basepath += '/'
+
+    assert path.startswith(basepath), 'path %s not in basepath %s' % (path, basepath)
+    assert len(path) > len(basepath), ('basepath %s must be parent to path %s'
+                                       '' % (basepath, path))
 
     if meta.is_symlink:
         return (path, meta, [])

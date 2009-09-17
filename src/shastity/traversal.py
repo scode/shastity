@@ -72,10 +72,8 @@ def traverse(fs, path):
     # and not e.g. umounts etc. What do other tools do, what does tar
     # do for example?
 
-    if fs.is_symlink(path) or not fs.is_dir(path):
+    if not fs.is_dir(path):
         raise NotADirectory(path)
 
-    yield (path, fs.lstat(path))
-    
     for path, metadata in _traverse_dir(fs, path):
         yield (path, metadata)

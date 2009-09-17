@@ -63,7 +63,7 @@ class MaterializationBaseCase(object):
                                                                 sq,
                                                                 blocksize=20) ]
                 #print meta.to_string() + ' ' + path + ' ' + unicode(hashes)
-                self.assertEqual(len(manifest), 6)
+                self.assertEqual(len(manifest), 5)
                 files = self.backend.list()
                 self.assertEqual(len(files), 3) # two blocks for 2, one for 3
     
@@ -79,7 +79,7 @@ class MaterializationBaseCase(object):
                 # Create another tempdir and materialize into it, and compare
                 # the results.
                 with self.fs.tempdir() as rdir:
-                    materialization.materialize(self.fs, rdir, manifest, sq)
+                    materialization.materialize(self.fs, rdir.path, manifest, sq)
 
 class MemoryTests(MaterializationBaseCase, unittest.TestCase):
     def make_file_system(self):
