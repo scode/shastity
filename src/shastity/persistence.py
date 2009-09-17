@@ -59,10 +59,12 @@ def _persist_file(fs,
     assert len(path) > len(basepath), ('basepath %s must be parent to path %s'
                                        '' % (basepath, path))
 
+    stripped_path = path[len(basepath):]
+
     if meta.is_symlink:
-        return (path[len(basepath):], meta, [])
+        return (stripped_path, meta, [])
     elif meta.is_directory:
-        return (path[len(basepath):], meta, [])
+        return (stripped_path, meta, [])
     else:
         hashes = []
 
@@ -77,7 +79,7 @@ def _persist_file(fs,
                 # todo: don't put if file exists
                 sq.enqueue(storagequeue.PutOperation(name=hash,
                                                      data=block))
-            return (path[len(basepath):], meta, hashes)
+            return (stripped_path, meta, hashes)
 
 def persist(fs,
             traversal,
