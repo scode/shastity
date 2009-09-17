@@ -99,6 +99,7 @@ def persist(fs,
     
     for path, meta in traversal:
         # Future: Do traversal/incremental optimization logic here.
+        log.info('persisting %s', path)
         yield _persist_file(fs, path, basepath, meta, sq, blocksize=blocksize, hasher=hasher)
 
     sq.wait()
