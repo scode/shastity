@@ -60,7 +60,7 @@ def _persist_file(fs,
                                        '' % (basepath, path))
 
     if meta.is_symlink:
-        return (path, meta, [])
+        return (path[len(basepath):], meta, [])
     elif meta.is_directory:
         return (path[len(basepath):], meta, [])
     else:
