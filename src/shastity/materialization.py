@@ -58,5 +58,5 @@ def materialize(fs, destpath, entryiter, storagequeue):
             assert curdir is not None, 'no curdir - first entry not directory?'
             assert path.startswith(curdir), ('%s does not start with %s - out of order?'
                                              '' % (path, curdir))
-            
-        
+
+

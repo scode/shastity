@@ -66,13 +66,13 @@ class MaterializationBaseCase(object):
                 self.assertEqual(len(manifest), 5)
                 files = self.backend.list()
                 self.assertEqual(len(files), 3) # two blocks for 2, one for 3
-    
+
                 file_contents = [ self.backend.get(fname) for fname in files ]
-    
+
                 self.assertTrue('testfile3 body' in file_contents)
                 self.assertTrue('this is the body of ' in file_contents)
                 self.assertTrue('testfile2' in file_contents)
-                
+
                 for fname in files:
                     self.assertEqual(fname, hash.make_hasher('sha512')(self.backend.get(fname))[1])
 
@@ -84,10 +84,10 @@ class MaterializationBaseCase(object):
 class MemoryTests(MaterializationBaseCase, unittest.TestCase):
     def make_file_system(self):
         return fs.MemoryFileSystem()
-    
+
     def make_backend(self):
         return memorybackend.MemoryBackend('memory')
-        
+
 class LocalFileSystemTests(MaterializationBaseCase, unittest.TestCase):
     def make_file_system(self):
         return fs.LocalFileSystem()
@@ -99,9 +99,9 @@ if os.getenv('SHASTITY_UNITTEST_S3_BUCKET') != None:
     class S3Tests(PersistenceBaseCase, unittest.TestCase):
         def make_file_system(self):
             return fs.LocalFileSystem()
-    
+
         def make_backend(self):
             return s3backend.S3Backend(os.getenv('SHASTITY_UNITTEST_S3_BUCKET')) # todo
-    
+
 if __name__ == "__main__":
     unittest.main()
