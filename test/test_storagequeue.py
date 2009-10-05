@@ -61,7 +61,7 @@ class StorageQueueBaseCase(object):
             puts = [ storagequeue.PutOperation(prefix('test%s' % (n,)), str(n)) for n in xrange(0, 5) ]
             gets = [ storagequeue.GetOperation(prefix('test%s' % (n,))) for n in xrange(0, 5) ]
             dels = [ storagequeue.DeleteOperation(prefix('test%s' % (n,))) for n in xrange(0, 5) ]
-            
+
             # PUT
             for p in puts:
                 self.assertFalse(p.is_done())
@@ -81,7 +81,7 @@ class StorageQueueBaseCase(object):
                 self.assertRaises(AssertionError, lambda: g.value())
                 self.assertRaises(AssertionError, lambda: g.succeeded())
                 sq.enqueue(g)
-                
+
             sq.barrier()
 
             for d in dels:
@@ -98,14 +98,14 @@ class StorageQueueBaseCase(object):
             for g in gets:
                 self.assertTrue(p.is_done())
                 self.assertTrue(p.succeeded())
-                
+
             self.assertEqual([g.value() for g in gets], [ '0', '1', '2', '3', '4' ])
 
             for d in dels:
                 self.assertTrue(d.is_done())
                 self.assertTrue(d.succeeded())
                 self.assertEqual(d.value(), None)
-                
+
     def test_bad_get_fail(self):
         with logging.FakeLogger(storagequeue, 'log'):
             with storagequeue.StorageQueue(lambda: self.make_backend(), CONCURRENCY) as sq:
@@ -131,36 +131,36 @@ class StorageQueueBaseCase(object):
                 sq.enqueue(p1)
 
                 self.assertRaises(storagequeue.OperationHasFailed, sq.wait)
-    
+
     def test_bulk_ops(self):
         with storagequeue.StorageQueue(lambda: self.make_backend(), CONCURRENCY) as sq:
             COUNT = 100
-    
+
             puts = [ storagequeue.PutOperation(prefix(str(n)), str(n)) for n in xrange(0, COUNT) ]
             gets = [ storagequeue.GetOperation(prefix(str(n))) for n in xrange(0, COUNT) ]
             dels = [ storagequeue.DeleteOperation(prefix(str(n))) for n in xrange(0, COUNT) ]
 
             for p in puts:
                 sq.enqueue(p)
-    
+
             sq.barrier()
-    
+
             for g in gets:
                 sq.enqueue(g)
-    
+
             sq.barrier()
-    
+
             for d in dels:
                 sq.enqueue(d)
-    
+
             sq.wait()
-    
+
             for op in puts + gets + dels:
                 self.assertTrue(op.is_done())
                 self.assertTrue(op.succeeded())
-    
+
             self.assertEqual([g.value() for g in gets], [ str(n) for n in xrange(0, COUNT) ])
-            
+
 class MemoryBackendTests(StorageQueueBaseCase, unittest.TestCase):
     def make_backend(self):
         return memorybackend.MemoryBackend('memory', dict(max_fake_delay=0.1))
