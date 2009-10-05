@@ -90,6 +90,9 @@ class StorageQueueBaseCase(object):
                 self.assertRaises(AssertionError, lambda: d.succeeded())
                 sq.enqueue(d)
 
+            for d in dels:
+                d.wait() # test individual op waits
+
             sq.wait()
 
             for g in gets:

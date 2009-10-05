@@ -54,11 +54,17 @@ class StorageOperation(object):
 
         self.__sq = None
         self.__result = None
-        self.__lock = threading.Lock() # protects __result only
+        self.__cond = threading.Condition() # protects __result only
+
+    def wait(self):
+        '''Wait for the operation to complete.'''
+        with self.__cond:
+            while self.__result is None:
+                self.__cond.wait()
 
     def is_done(self):
         '''Is the operation done? Always safe to call.'''
-        with self.__lock:
+        with self.__cond:
             return self.__result is not None
 
     def succeeded(self):
@@ -67,21 +73,22 @@ class StorageOperation(object):
         that it is done after having wait():ed on the queue to which
         it was submitted, and need not check is_done() on individual
         operations.'''
-        with self.__lock:
+        with self.__cond:
             assert self.__result is not None, 'succeeeded() called before operation was done'
             return self.__result[0]
 
     def value(self):
         '''Value of operation, if it succeeded.'''
-        with self.__lock:
+        with self.__cond:
             assert self.__result is not None, 'value() called before operation was done'
             assert self.__result[0], 'value() called on failed operation'
             return self.__result[1]
 
     def __set_result(self, success, data):
-        with self.__lock:
+        with self.__cond:
             assert self.__result is None, '__set_result called twice?'
             self.__result = (success, data)
+            self.__cond.notifyAll()
 
     def execute(self, backend):
         raise NotImplementedError
