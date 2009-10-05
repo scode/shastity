@@ -40,7 +40,7 @@ class StorageOperation(object):
     '''Abstract base class for all operations.
 
     Specific baseclasses should implement execute().'''
-    
+
     def __init__(self, mnemonic, description, callback=None):
         '''
         @param mnemonic Short mnemonic indicating the type of operation.
@@ -162,7 +162,7 @@ class StorageQueue(object):
         '''
         self.backend_factory = backend_factory
         self.max_conc = max_conc
-        
+
         # We maintain a set of currently oustanding operations. We
         # never keep more here than the number of workers that we
         # have; so in effect the current implementation is not really
@@ -191,7 +191,7 @@ class StorageQueue(object):
 
     def enqueue(self, op):
         '''Enqueue an operation for execution as soon as possible.
-        
+
         @param op: A StorageOperation instance.'''
         if self.__failed:
             raise OperationHasFailed('a previous operation has failed; refusing further work')
@@ -221,7 +221,7 @@ class StorageQueue(object):
     def __remove_op(self, op, success):
         with self.__cond:
             assert op in self.__ops, 'got notify from unknown operation %s' % (str(op,))
-            
+
             if not success:
                 self.__failed = True
 
