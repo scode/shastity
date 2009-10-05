@@ -46,7 +46,10 @@ class StorageOperation(object):
         @param mnemonic Short mnemonic indicating the type of operation.
         @param description Longer human-readable description of operations.
         @param callback If given, a callable which will be called with the result
-                        if and when if the operation is successful.
+                        if and when if the operation is successful. The callback
+                        will block the I/O worker until done; thus worker
+                        invocation is subject to the concurrency limits of a
+                        storage queue.
         '''
         self.mnemonic = mnemonic
         self.description = description
@@ -57,7 +60,9 @@ class StorageOperation(object):
         self.__cond = threading.Condition() # protects __result only
 
     def wait(self):
-        '''Wait for the operation to complete.'''
+        '''Wait for the operation to complete. The operation is
+        complete when a value has been delivered and the callback, if
+        any, has completed.'''
         with self.__cond:
             while self.__result is None:
                 self.__cond.wait()
