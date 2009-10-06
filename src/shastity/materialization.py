@@ -110,6 +110,7 @@ def materialize(fs, destpath, entryiter, storagequeue):
                     # todo: always, or optionally based on settings, delay fsync
                     # in order to avoid overhead.
                     os.fsync(self.__fobj.fileno())
+                    self.__fobj.close()
 
     if not fs.is_dir(destpath):
         raise DestinationPathNotDirectory(destpath)
