@@ -117,6 +117,7 @@ def materialize(fs, destpath, entryiter, storagequeue):
     curdir = None
     for path, metadata, hashes in entryiter:
         local_path = os.path.join(destpath, path)
+
         log.info('materializing [%s]', path)
 
         assert not path.startswith('/')
