@@ -116,12 +116,13 @@ def materialize(fs, destpath, entryiter, storagequeue):
 
     curdir = None
     for path, metadata, hashes in entryiter:
+        local_path = os.path.join(destpath, path)
         log.info('materializing [%s]', path)
 
         assert not path.startswith('/')
 
         if metadata.is_directory:
-            fs.mkdir(os.path.join(destpath, path))
+            fs.mkdir(local_path)
             # TODO: fix perms
             curdir = path
         else:
