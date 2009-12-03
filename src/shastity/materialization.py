@@ -15,13 +15,14 @@ import threading
 
 import shastity.filesystem as filesystem
 import shastity.logging as logging
+import shastity.storagequeue as storagequeue
 
 log = logging.get_logger(__name__)
 
 class DestinationPathNotDirectory(Exception):
     pass
 
-def materialize(fs, destpath, entryiter, storagequeue):
+def materialize(fs, destpath, entryiter, sq):
     '''
     @type fs FileSystem instance.
     @param fs File system into which to materialize the stream.
@@ -31,9 +32,9 @@ def materialize(fs, destpath, entryiter, storagequeue):
     @type entryiter iterable yielding (path, metadata, hashes) tuples
     @param entryiter The generator of entries to materialize.
 
-    @type storagequeue StorageQueue
-    @param storagequeue Storage queue via which to perform read operations necessary in
-                        order to populate the tree.
+    @type sq StorageQueue
+    @param sq Storage queue via which to perform read operations necessary in
+              order to populate the tree.
     '''
     # We traverse the list in order, thus ensuring that directories
     # are created prior to their contents. However, we also want to
