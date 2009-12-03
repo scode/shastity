@@ -132,7 +132,19 @@ def materialize(fs, destpath, entryiter, sq):
             assert curdir is not None, 'no curdir - first entry not directory?'
             assert path.startswith(curdir), ('%s does not start with %s - out of order?'
                                              '' % (path, curdir))
-            #blocknames = [ algohash[1] for algohash in hashes ]
-            #ops = [ GetOperation(blockname) for blockname in blocknames ]
+            f = fs.open(local_path, 'w')
+            # TODO: fix perms before any writing happens
+            # TODO: and remember to optionally fsync to avoid security vuln in case
+            #       of crash and out-of-order writes.
+            m13n = FileMaterialization(fname=local_path,
+                                       totblocks=len(hashes),
+                                       fobj=f)
+            blocknames = [ algohash[1] for algohash in hashes ]
+            ops = [ storagequeue.GetOperation(name=blockname,
+                                              callback=lambda bstr: m13n.write_block(bstr, block_num))
+                    for block_num, blockname in enumerate(blocknames) ]
+            for op in ops:
+                pass#sq.enqueue(op)
+
 
 
