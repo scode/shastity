@@ -182,6 +182,9 @@ class LocalFileSystem(FileSystem):
     def open(self, path, mode):
         return open(path, mode)
 
+    def fsync(self, fileno):
+        os.fsync(fileno)
+
     def is_symlink(self, path):
         return os.path.islink(path)
 
