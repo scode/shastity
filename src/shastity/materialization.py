@@ -144,7 +144,7 @@ def materialize(fs, destpath, entryiter, sq):
                                               callback=lambda bstr: m13n.write_block(bstr, block_num))
                     for block_num, blockname in enumerate(blocknames) ]
             for op in ops:
-                pass#sq.enqueue(op)
+                sq.enqueue(op)
 
 
 
