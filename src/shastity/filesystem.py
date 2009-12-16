@@ -701,6 +701,10 @@ class MemoryFileSystem(FileSystem):
                 self.__lookup(dname).link(MemoryFile(), fname)
         return MemoryFileObject(self.__lookup(path), mode)
 
+    def fsync(self, fileno):
+        assert fileno is None, 'attempt to fsync something other than None, which indicates the file descriptor did not come from us (= the memory file system backend)'
+        pass # do nothing
+
     def is_symlink(self, path):
         dname, fname = self.__split_slash_agnostically(path)
         d = self.__lookup(dname)
