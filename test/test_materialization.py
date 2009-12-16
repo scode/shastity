@@ -81,6 +81,8 @@ class MaterializationBaseCase(object):
                 with self.fs.tempdir() as rdir:
                     materialization.materialize(self.fs, rdir.path, manifest, sq)
 
+                    
+
 class MemoryTests(MaterializationBaseCase, unittest.TestCase):
     def make_file_system(self):
         return fs.MemoryFileSystem()

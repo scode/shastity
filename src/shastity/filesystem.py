@@ -74,7 +74,7 @@ class TemporaryDirectory(object):
         if self.__stale:
             raise StaleTemporaryDirectory(self.__path)
         return self.__fs
-        
+
     def __get_path(self):
         if self.__stale:
             raise StaleTemporaryDirectory(self.__path)
@@ -149,7 +149,7 @@ class FileSystem(object):
     def mkdtemp(self, suffix=None):
         '''Atomically create/allocate a temporary directory and return
         its name.
-        
+
         @note While similar, this is not identical to python's tempfile.mkdtemp().
 
         @param suffix: Suffix to apply to the allocated name, if supported.
@@ -197,7 +197,7 @@ class LocalFileSystem(FileSystem):
 
     def lstat(self, path):
         statinfo = os.lstat(path)
-        
+
         props = dict()
         props['is_directory']        = stat.S_ISDIR(statinfo.st_mode)
         props['is_character_device'] = stat.S_ISCHR(statinfo.st_mode)
@@ -324,13 +324,13 @@ class MemoryDirectory:
 
     def is_dir(self):
         return True
-    
+
     def is_symlink(self):
         return False
 
     def listdir(self):
         return self.entries.keys()
-    
+
     def deparent(self):
         self.parent = None
 
@@ -342,13 +342,13 @@ class MemoryDirectory:
     def rmdir(self, name):
         if name not in self.entries:
             raise OSError(errno.ENOENT, 'file not found')
-        
+
         if not isinstance(self.entries[name], MemoryDirectory):
             raise OSError(errno.ENOTDIR, 'not a directory')
 
         if not self.entries[name].is_empty():
             raise OSError(errno.ENOTEMPTY, 'directory not empty')
-        
+
         del(self.entries[name])
 
     def exists(self, name):
@@ -378,7 +378,7 @@ class MemoryDirectory:
             raise OSError(errno.EEXIST, 'file exists')
 
         self.entries[name] = MemorySymlink(linkcomps)
-    
+
     def unlink(self, name):
         if not name in self.entries:
             raise OSError(errno.ENOENT, 'file not found')
@@ -407,7 +407,7 @@ class MemorySymlink:
 
     def is_symlink(self):
         return True
-    
+
     def lstat(self):
         return self.metadata
 
@@ -442,7 +442,7 @@ class MemoryFile:
         return False
 
     def lstat(self):
-        return self.metadata    
+        return self.metadata
 
 class OpenMode:
     '''Trivial helper to interpret fopen() style modestrings.
@@ -520,7 +520,7 @@ class MemoryFileObject:
         if self.mode.truncate_on_open:
             self.memfile.contents = ''
         self.pos = 0 if self.mode.at_beginning else len(memfile.contents)
-        
+
     def __enter__(self):
         return self
 
@@ -593,13 +593,13 @@ class MemoryFileObject:
 
     def truncate(self, size=0):
         self.memfile.contents = self.memfile.contents[0:size + 1]
-        
+
     def write(self, str):
         self.memfile.contents = self.memfile.contents[0:self.pos + 1] + str + self.memfile.contents[self.pos + 1:]
 
     def writelines(self, sequence):
         raise NotImplementedError
-            
+
 class MemoryFileSystem(FileSystem):
     '''A simple in-memory file system primarily intended for unit testing.
 
@@ -612,7 +612,7 @@ class MemoryFileSystem(FileSystem):
     def __init__(self):
         # Internally we use MemoryDirectory, MemorySymlink, MemoryFile
         # and MemoryFileObject to accomplish our goal.
-        # 
+        #
         # We are mostly responsible for converting between string
         # based paths (a/b/c) to component based paths (['a', 'b',
         # 'c']) and implementing logic which is beyond the scope of
@@ -753,5 +753,3 @@ class MemoryFileSystem(FileSystem):
 
     def tempdir(self, suffix=None):
         return TemporaryDirectory(self, self.mkdtemp())
-    
-        
