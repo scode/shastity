@@ -16,6 +16,7 @@ import threading
 import shastity.filesystem as filesystem
 import shastity.logging as logging
 import shastity.storagequeue as storagequeue
+import shastity.util as util
 
 log = logging.get_logger(__name__)
 
@@ -141,8 +142,9 @@ def materialize(fs, destpath, entryiter, sq):
                                        totblocks=len(hashes),
                                        fobj=f)
             blocknames = [ algohash[1] for algohash in hashes ]
+
             ops = [ storagequeue.GetOperation(name=blockname,
-                                              callback=lambda bstr: m13n.write_block(bstr, block_num))
+                                              callback=util.bind(lambda m13n, block_num, bstr: m13n.write_block(bstr, block_num), m13n, block_num))
                     for block_num, blockname in enumerate(blocknames) ]
             for op in ops:
                 sq.enqueue(op)
