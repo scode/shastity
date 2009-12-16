@@ -111,6 +111,9 @@ class FileSystem(object):
     def open(self, path, mode):
         raise NotImplementedError
 
+    def fsync(self, fileno):
+        raise NotImplementedError
+
     def is_symlink(self, path):
         '''@return Whether the given path is a symlink.'''
         raise NotImplementedError
