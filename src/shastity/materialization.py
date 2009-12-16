@@ -93,7 +93,7 @@ def materialize(fs, destpath, entryiter, sq):
             @param block_num: The block number (first block is 0).
             """
             with self.__cond:
-                while self.__last_block < block_num - 1:
+                while self.__last_block != block_num - 1:
                     self.__cond.wait()
 
             assert self.__last_block == block_num - 1
