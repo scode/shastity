@@ -7,7 +7,8 @@ setup(name="shastity",
       version="0.0",
       author="Peter Schuller",
       author_email="peter.schuller@infidyne.com",
-      packages = ['shastity'],
+      packages = ['shastity',
+                  'shastity.backends'],
       package_dir = {'': 'src'},
       scripts = ['bin/shastity'])
 
