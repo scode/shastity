@@ -35,6 +35,8 @@ def bind(callable, *bind_args, **bind_kwargs):
 
     Suggestions for how to do this less verbosely and more cleanly are
     welcome.
+
+    @todo: Just use functools.partial()?
     """
     def caller(*args, **kwargs):
         actual_args = bind_args + args
