@@ -104,6 +104,7 @@ def materialize(fs, destpath, entryiter, sq):
             with self.__cond:
                 self.__last_block += 1
                 assert self.__last_block == block_num
+                self.__cond.notifyAll() # not terribly efficient
 
                 if block_num == self.__totblocks - 1:
                     log.debug('fsync():ing after final block of %s', self.__fname)
