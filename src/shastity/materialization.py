@@ -110,7 +110,7 @@ def materialize(fs, destpath, entryiter, sq):
                     self.__fobj.flush()
                     # todo: always, or optionally based on settings, delay fsync
                     # in order to avoid overhead.
-                    os.fsync(self.__fobj.fileno())
+                    fs.fsync(self.__fobj.fileno())
                     self.__fobj.close()
 
     if not fs.is_dir(destpath):
