@@ -531,7 +531,14 @@ class MemoryFileObject:
         pass
 
     def fileno(self):
-        raise NotImplementedError('fileno() not supported for memory fs')
+        # file descriptors don't make sense for us; but we want calls
+        # to fileno() to not fail such that filenos can be given to
+        # e.g. fsync(). however, we also do not want to give something
+        # out that could possibly be construed as a valid file
+        # descriptor (that would be inviting accidentally using such a
+        # thing for calls to something other than the memory file
+        # system).
+        return None
 
     def isatty(self):
         return False
