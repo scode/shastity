@@ -81,7 +81,21 @@ class MaterializationBaseCase(object):
                 with self.fs.tempdir() as rdir:
                     materialization.materialize(self.fs, rdir.path, manifest, sq)
 
-                    
+                    def rec(refdir, tstdir):
+                        reflst = sorted(self.fs.listdir(refdir))
+                        tstlst = sorted(self.fs.listdir(tstdir))
+
+                        self.assertEqual(tstlst, reflst)
+
+                        # todo: confirm file sizes
+                        # todo: confirm file contents
+
+                        for entry in reflst:
+                            entrypath = os.path.join(refdir, entry)
+                            if not self.fs.is_symlink(entrypath) and self.fs.is_dir(entrypath):
+                                rec(entrypath, os.path.join(tstdir, entry))
+
+                    rec(tdir.path, rdir.path)
 
 class MemoryTests(MaterializationBaseCase, unittest.TestCase):
     def make_file_system(self):
