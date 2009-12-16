@@ -89,6 +89,7 @@ class MaterializationBaseCase(object):
 
                         # todo: confirm file sizes
                         # todo: confirm file contents
+                        # todo: confirm file meta
 
                         for entry in reflst:
                             entrypath = os.path.join(refdir, entry)
