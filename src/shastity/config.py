@@ -123,11 +123,15 @@ class AbstractOption(Option):
     def parse(self, value):
         self.set(self._parse(value))
 
+        return self
+
     def set(self, value):
         self._validate(value)
 
         self.__set = True
         self.__value = value
+
+        return self
 
     def get(self):
         return self.__value
@@ -135,6 +139,8 @@ class AbstractOption(Option):
     def get_required(self, comment=None):
         if not self.__set:
             raise RequiredOptionMissingError(unicode(self), comment=comment)
+
+        return self.get()
 
     def _parse(self, value):
         """
