@@ -31,6 +31,13 @@ class RequiredOptionMissingError(Exception):
         self.option_name = option_name
         self.comment = comment
 
+class BadOptionValueType(Exception):
+    """
+    Raised to indicate an attempt to set the value of an option to the
+    wrong type.
+    """
+    pass
+
 class Option:
     """
     Abastract base class defining the interface for all options. An
