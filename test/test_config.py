@@ -16,13 +16,13 @@ class ConfigTests(unittest.TestCase):
         self.assertEqual('test', config.StringOption().parse('test').get_required())
 
     def test_string_option(self):
-        config.StringOption().parse("test")
+        config.StringOption().parse('test')
         self.assertRaises(config.BadOptionValueType, lambda: config.StringOption().parse(5))
 
     def test_int_option(self):
         config.IntOption().parse(5)
-        config.IntOption().parse("5")
-        self.assertRaises(config.BadOptionValueType, lambda: config.IntOption().set("5"))
+        config.IntOption().parse('5')
+        self.assertRaises(config.BadOptionValueType, lambda: config.IntOption().set('5'))
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     unittest.main()
