@@ -154,7 +154,7 @@ class StringOption(AbstractOption):
         return s
 
     def _validate(self, value):
-        self._assertString(self, value)
+        self._assertString(value)
 
 class IntOption(AbstractOption):
     def _parse(self, s):
