@@ -121,7 +121,9 @@ class AbstractOption(Option):
         self.set(self._parse(value))
 
     def set(self, value):
-        self.__value = self._validate(value)
+        self._validate(value)
+
+        self.__value = value
 
     def get(self):
         return self.__value
