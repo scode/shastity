@@ -41,6 +41,22 @@ class Option:
     Methods beginning with an underscore are intended for
     implementation by subclasses.
     """
+    def name(self):
+        """
+        @return The name (key) of this option.
+        """
+        pass
+
+    def short_name(self):
+        """
+        @return The short name (one character) of this option, or None
+                if there is none.
+
+        @note This is a somewhat unclean coupling to the command line
+              interface.
+        """
+        pass
+
     def parse(self, s):
         """
         Parse a string representation of the desired value of the
