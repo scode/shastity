@@ -114,30 +114,45 @@ class Option:
 class AbstractOption(Option):
     """
     Provide a suitable baseclass for most/all subclasses of
-    options. See implementation.
+    options. Subclasses implement _validate_value() and
+    _parse_value().
     """
+    def parse(self, value):
+        self.set(self._parse(value))
+
     def set(self, value):
-        self.__value = value
+        self.__value = self._validate(value)
 
     def get(self):
         return self.__value
 
-    def assertType(self, obj, typ):
+    def _parse(self, value):
+        """
+        @return Parsed value (string -> object).
+        """
+        raise NotImplementedError
+
+    def _validate(self, value):
+        """
+        @raise An error if the value is not valid.
+        """
+        raise NotIMplementedError
+
+    def _assertType(self, obj, typ):
         if not isinstance(obj, typ):
             raise BadOptionValueType('value %s of option %s is not of type %s'
                                      '' % (obj, unicode(self), unicode(typ)))
 
-    def assertString(self, obj):
+    def _assertString(self, obj):
         # special case string due to disjoint types :(
         if not isinstance(obj, str) and not isinstance(obj, unicode):
             raise BadOptionValueType('value %s of option %s is not a string'
                                      '' % (obj, unicode(self)))
 
 class StringOption(AbstractOption):
-    def parse(self, s):
-        self.set(s)
+    def _parse(self, s):
+        return s
 
-    def set(self, value):
-        self.assertString(self, value)
+    def _validate(self, value):
+        self._assertString(self, value)
 
-        AbstractOption.set(self, value)
