@@ -11,6 +11,6 @@ import shastity.util as util
 
 class UtilTests(unittest.TestCase):
     pass
-            
+
 if __name__ == "__main__":
     unittest.main()
