@@ -104,3 +104,40 @@ class Option:
         @return The current value.
         """
         pass
+
+    def __str__(self):
+        return str(self.name)
+
+    def __unicode__(self):
+        return unicode(self.name)
+
+class AbstractOption(Option):
+    """
+    Provide a suitable baseclass for most/all subclasses of
+    options. See implementation.
+    """
+    def set(self, value):
+        self.__value = value
+
+    def get(self):
+        return self.__value
+
+    def assertType(self, obj, typ):
+        if not isinstance(obj, typ):
+            raise BadOptionValueType('value %s of option %s is not of type %s'
+                                     '' % (obj, unicode(self), unicode(typ)))
+
+    def assertString(self, obj):
+        # special case string due to disjoint types :(
+        if not isinstance(obj, str) and not isinstance(obj, unicode):
+            raise BadOptionValueType('value %s of option %s is not a string'
+                                     '' % (obj, unicode(self)))
+
+class StringOption(Option):
+    def parse(self, s):
+        self.set(s)
+
+    def set(self, value):
+        self.assertString(self, value)
+
+        AbstractOption.set(self, value)
