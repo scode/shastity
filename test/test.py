@@ -22,7 +22,8 @@ test_names = [ 'logging',
                'storagequeue',
                'traversal',
                'persistence',
-               'materialization' ]
+               'materialization',
+               'config' ]
 
 if __name__ == "__main__":
    suite = unittest.defaultTestLoader.loadTestsFromNames([ 'test_%s' % (tn,) for tn in test_names])
