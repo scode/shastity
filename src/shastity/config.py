@@ -156,3 +156,9 @@ class StringOption(AbstractOption):
     def _validate(self, value):
         self._assertString(self, value)
 
+class IntOption(AbstractOption):
+    def _parse(self, s):
+        return int(s)
+
+    def _validate(self, value):
+        self._assertType(value, int)
