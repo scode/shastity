@@ -133,7 +133,7 @@ class AbstractOption(Option):
             raise BadOptionValueType('value %s of option %s is not a string'
                                      '' % (obj, unicode(self)))
 
-class StringOption(Option):
+class StringOption(AbstractOption):
     def parse(self, s):
         self.set(s)
 
