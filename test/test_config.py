@@ -10,6 +10,11 @@ import unittest
 import shastity.config as config
 
 class ConfigTests(unittest.TestCase):
+    def test_test_required(self):
+        self.assertRaises(config.RequiredOptionMissingError,
+                          lambda: config.StringOption().get_required())
+        self.assertEqual('test', config.StringOption().parse('test').get_required())
+
     def test_string_option(self):
         config.StringOption().parse("test")
         self.assertRaises(config.BadOptionValueType, lambda: config.StringOption().parse(5))
