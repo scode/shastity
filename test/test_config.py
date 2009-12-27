@@ -28,5 +28,35 @@ class ConfigTests(unittest.TestCase):
         config.IntOption('testname').parse('5')
         self.assertRaises(config.BadOptionValueType, lambda: config.IntOption('testname').set('5'))
 
+    def test_default_configuration_creation(self):
+        c = config.DefaultConfiguration()
+        self.assertFalse(c.has_option('a'))
+
+        c = config.DefaultConfiguration({'test-option': config.StringOption('test-option')})
+        self.assertTrue(c.has_option('test-option'))
+        self.assertEqual(c.options()['test-option'].short_name(), None)
+
+        c = config.DefaultConfiguration({'test-option': config.StringOption('test-option', 't')})
+        self.assertTrue(c.has_option('test-option'))
+        self.assertEqual(c.options()['test-option'].short_name(), 't')
+
+    def test_default_configuration_merge(self):
+        c1 = config.DefaultConfiguration({'o1': config.StringOption('o1')})
+        c2 = config.DefaultConfiguration({'o2': config.StringOption('o2')})
+
+        c3 = c1.merge(c2)
+
+        self.assertTrue(c3.has_option('o1'))
+        self.assertTrue(c3.has_option('o2'))
+
+        c4 = config.DefaultConfiguration({'o2': config.StringOption('o2', 'o')})
+
+        self.assertRaises(config.ConflictingMergeError,
+                          lambda: c4.merge(c3))
+
+        c5 = c3.merge(c4, allow_override=True)
+
+        self.assertEqual(c5.get_option('o2').short_name(), 'o')
+
 if __name__ == '__main__':
     unittest.main()

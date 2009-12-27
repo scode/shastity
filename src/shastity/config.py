@@ -38,6 +38,13 @@ class BadOptionValueType(Exception):
     """
     pass
 
+class ConflictingMergeError(Exception):
+    """
+    Raised to indicate an attempt to merge configurations failed due
+    to an option conflict.
+    """
+    pass
+
 class Option:
     """
     Abastract base class defining the interface for all options. An
@@ -190,3 +197,81 @@ class IntOption(AbstractOption):
 
     def _validate(self, value):
         self._assertType(value, int)
+
+class Configuration(object):
+    """
+    A configuration is a set of expected (or potential) options that
+    define the outcome of some operation. Configuration instances can
+    be merged (with conflict detection).
+
+    In essence the functionality is a subset of a dict, plus some
+    additions. The existence of the class hierarchy is mostly for
+    interface/documentation purposes.
+    """
+    def options(self):
+        """
+        Return all options in this configuration.
+
+        @return An iterable of Option instances.
+        """
+        raise NotImplementedError()
+
+    def merge(self, other, allow_override=False):
+        """
+        Merge the other configuration with this one, producting a new
+        Configuration.
+
+        @param other: The other Configuration instance.
+        @param allow_overwrite: Whether to allow options in
+                                the other configuration to
+                                override our own. If not,
+                                confliction options will
+                                result in a ConflictingMergeError.
+
+        @return The result of the merger (a Configuration instance).
+        """
+        raise NotImplementedError()
+
+class DefaultConfiguration(Configuration):
+    def __init__(self, opts=None):
+        """
+        @param opts: None, or dict of name->option mappings.
+        """
+        self.__options = dict()
+
+        if opts:
+            for name, opt in opts.iteritems():
+                assert name == opt.name()
+                self.add_option(opt)
+
+    def options(self):
+        return self.__options
+
+    def remove_option(self, name):
+        del self.__options[name]
+
+    def add_option(self, option):
+        name = option.name()
+        if name in self.__options:
+            raise DuplicateOptionError(name)
+
+        self.__options[name] = option
+
+    def get_option(self, name):
+        return self.__options[name]
+
+    def has_option(self, name):
+        return (name in self.__options)
+
+    def merge(self, other, allow_override=False):
+        ret = DefaultConfiguration(self.options())
+
+        for name, opt in other.options().iteritems():
+            if ret.has_option(opt.name()):
+                if allow_override:
+                    ret.remove_option(opt.name())
+                else:
+                    raise ConflictingMergeError(opt.name())
+            ret.add_option(opt)
+
+        return ret
