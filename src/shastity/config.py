@@ -132,6 +132,7 @@ class AbstractOption(Option):
         self.__short_name = short_name
 
         self.__set = False
+        self.__value = None
 
     def name(self):
         return self.__long_name
