@@ -50,6 +50,9 @@ class Option:
     """
     def name(self):
         """
+        Return the name of the option. The convention is for
+        hyphen-separated lower-case names (i.e., 'name-of-my-option').
+
         @return The name (key) of this option.
         """
         pass
@@ -117,8 +120,17 @@ class AbstractOption(Option):
     options. Subclasses implement _validate_value() and
     _parse_value().
     """
-    def __init__(self):
+    def __init__(self, long_name, short_name=None):
+        self.__long_name = long_name
+        self.__short_name = short_name
+
         self.__set = False
+
+    def name(self):
+        return self.__long_name
+
+    def short_name(self):
+        return self.__short_name
 
     def parse(self, value):
         self.set(self._parse(value))
