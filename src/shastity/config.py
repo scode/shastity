@@ -208,6 +208,12 @@ class Configuration(object):
     In essence the functionality is a subset of a dict, plus some
     additions. The existence of the class hierarchy is mostly for
     interface/documentation purposes.
+
+    @ivar opts Accessor to an object which has an attribute for each
+               configuation option, such that conf.opts.some_option is
+               the equivalent of
+               conf.options()['some-option'].get(). Note the
+               equivalent of hyphens and underscores.
     """
     def options(self):
         """
@@ -233,6 +239,11 @@ class Configuration(object):
         """
         raise NotImplementedError()
 
+    def __not_implemented(self):
+        raise NotImplementedError()
+
+    opts = property(__not_implemented)
+
 class DefaultConfiguration(Configuration):
     def __init__(self, opts=None):
         """
@@ -244,6 +255,32 @@ class DefaultConfiguration(Configuration):
             for name, opt in opts.iteritems():
                 assert name == opt.name()
                 self.add_option(opt)
+
+        class OptionGetter(object):
+            def __init__(self, config):
+                self.__config = config
+
+            def __getattr__(self, name):
+                n = name.replace('_', '-')
+
+                if self.__config.has_option(n):
+                    return self.__config.get_option(n).get()
+                else:
+                    raise AttributeError('configuration has no option %s' % (n,))
+
+            def __setattr__(self, name, value):
+                if name.startswith('_'):
+                    self.__dict__[name] = value
+                else:
+                    raise ValueError('may not set options (name: %s) through the dynamic proxy' % (name,))
+
+            def __delattr__(self, name):
+                if name.startswith('_'):
+                    del self.__dict__[name]
+                else:
+                    raise ValueError('may not delete options (name: %s) through the dynamic proxy' % (name,))
+
+        self.__option_getter = OptionGetter(self)
 
     def options(self):
         return self.__options
@@ -276,3 +313,6 @@ class DefaultConfiguration(Configuration):
             ret.add_option(opt)
 
         return ret
+
+    opts = property(lambda self: self.__option_getter)
+

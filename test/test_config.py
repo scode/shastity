@@ -58,5 +58,14 @@ class ConfigTests(unittest.TestCase):
 
         self.assertEqual(c5.get_option('o2').short_name(), 'o')
 
+    def test_default_configuration_option_getter(self):
+        opt = config.StringOption('o-1')
+        c = config.DefaultConfiguration({'o-1': opt})
+
+        opt.set('value')
+
+        self.assertTrue(hasattr(c.opts, 'o_1'))
+        self.assertEqual(opt.get(), c.opts.o_1)
+
 if __name__ == '__main__':
     unittest.main()
