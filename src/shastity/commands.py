@@ -3,7 +3,7 @@
 # Copyright (c) 2009 Peter Schuller <peter.schuller@infidyne.com>
 
 """
-Operational interface to shastity.
+Operational command interface to shastity.
 
 Provides an easy-to-use high-level library interface to invoking all
 of shastities main functions, de-coupled from the normal command line
