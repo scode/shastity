@@ -8,10 +8,10 @@ yet.
 
 shastity is a command line based backup software which provides the
 ability to backup local file system contents to a variety of storage
-backends. It is specifically designed to play well with eentually
+backends. It is specifically designed to play well with eveqntually
 consistent storage such as Amazon S3. It also supports encryption
 (hence the name) of backed up data to allow for backups to
-semi-trusted or untrusted storage. All backed up file conents is
+semi-trusted or untrusted storage. All backed up file contents is
 stored in a block-wise fashion with hash-based de-duplication.
 
 Just to give a quick couple of examples, in the simplest of cases,
