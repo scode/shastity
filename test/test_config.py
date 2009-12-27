@@ -60,11 +60,21 @@ class ConfigTests(unittest.TestCase):
 
     def test_default_configuration_option_getter(self):
         opt = config.StringOption('o-1')
-        c = config.DefaultConfiguration({'o-1': opt})
+        opt2 = config.StringOption('non-specified-option')
+        c = config.DefaultConfiguration({'o-1': opt,
+                                         'non-specified-option': opt2})
 
         opt.set('value')
 
         self.assertEqual(opt.get(), c.opts.o_1)
+
+        # caller asked for non-existent option
+        self.assertRaises(AttributeError,
+                          lambda: c.opts.nonexistent_option)
+
+        # user did not provide a value for an existing option
+        self.assertRaises(config.RequiredOptionMissingError,
+                          lambda: c.opts.non_specified_option)
 
 if __name__ == '__main__':
     unittest.main()
