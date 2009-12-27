@@ -64,7 +64,6 @@ class ConfigTests(unittest.TestCase):
 
         opt.set('value')
 
-        self.assertTrue(hasattr(c.opts, 'o_1'))
         self.assertEqual(opt.get(), c.opts.o_1)
 
 if __name__ == '__main__':

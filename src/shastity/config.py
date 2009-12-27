@@ -212,7 +212,7 @@ class Configuration(object):
     @ivar opts Accessor to an object which has an attribute for each
                configuation option, such that conf.opts.some_option is
                the equivalent of
-               conf.options()['some-option'].get(). Note the
+               conf.options()['some-option'].get_required(). Note the
                equivalent of hyphens and underscores.
     """
     def options(self):
@@ -264,7 +264,7 @@ class DefaultConfiguration(Configuration):
                 n = name.replace('_', '-')
 
                 if self.__config.has_option(n):
-                    return self.__config.get_option(n).get()
+                    return self.__config.get_option(n).get_required()
                 else:
                     raise AttributeError('configuration has no option %s' % (n,))
 
