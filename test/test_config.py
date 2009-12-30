@@ -14,6 +14,9 @@ class ConfigTests(unittest.TestCase):
         self.assertEqual(config.StringOption('long-name', 'l').name(), 'long-name')
         self.assertEqual(config.StringOption('long-name', 'l').short_name(), 'l')
 
+    def test_default(self):
+        self.assertEqual(config.StringOption('testname', default='test').get(), 'test')
+
     def test_required(self):
         self.assertRaises(config.RequiredOptionMissingError,
                           lambda: config.StringOption('testname').get_required())

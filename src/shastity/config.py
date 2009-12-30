@@ -134,12 +134,12 @@ class AbstractOption(Option):
     options. Subclasses implement _validate_value() and
     _parse_value().
     """
-    def __init__(self, long_name, short_name=None):
+    def __init__(self, long_name, short_name=None, default=None):
         self.__long_name = long_name
         self.__short_name = short_name
 
-        self.__set = False
-        self.__value = None
+        self.__set = (default is not None)
+        self.__value = default
 
     def name(self):
         return self.__long_name
