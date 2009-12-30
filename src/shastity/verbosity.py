@@ -2,12 +2,16 @@
 
 # Copyright (c) 2009 Peter Schuller <peter.schuller@infidyne.com>
 
-_map = dict(debug=8,
-            info=5,
-            notice=4,
-            warning=3,
-            error=2,
-            critical=1)
+import shastity.logging as logging
+
+_name_map = dict(DEBUG=8,
+                 INFO=5,
+                 NOTICE=4,
+                 WARNING=3,
+                 ERROR=2,
+                 CRITICAL=1)
+
+_level_map = dict([(getattr(logging, k), k) for k, v in _name_map.iteritems() ])
 
 class InvalidVerbosityLevel(Exception):
     pass
@@ -18,9 +22,19 @@ def to_level(verbosity):
     match does not exist, return one that that will include a subset
     of the requested amount of information.
     """
-    candidates = [ v for k, v in _map.iteritems() if v <= verbosity ]
+    candidates = [ v for k, v in _name_map.iteritems() if v <= verbosity ]
 
     if not candidates:
         raise InvalidVerbosityLevel(verbosity)
 
     return reduce(max, candidates)
+
+def to_verbosity(level):
+    """
+    Given a log level (level from the logging module), return its
+    verbosity level.
+    """
+    if not level in _level_map:
+        raise InvalidLogLevel(level)
+
+    return _name_map[_level_map[level]]
