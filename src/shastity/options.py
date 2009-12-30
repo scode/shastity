@@ -1,0 +1,23 @@
+# -*- coding: utf-8 -*-
+
+# Copyright (c) 2009 Peter Schuller <peter.schuller@infidyne.com>
+
+"""
+Configuration options for shastity.
+
+Contains global and command-specific options.
+"""
+
+from __future__ import absolute_import
+from __future__ import with_statement
+
+import shastity.config as config
+import shastity.logging as logging
+
+def GlobalOptions():
+    """
+    Instantiate a Configuration of global options that apply to
+    shastity regardless of which command is running.
+    """
+    return [ config.IntOption('verbosity', 'v', verbosity.to_verbosity(logging.DEBUG)) ]
+
