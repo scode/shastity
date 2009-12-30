@@ -206,6 +206,18 @@ class IntOption(AbstractOption):
     def _validate(self, value):
         self._assertType(value, int)
 
+class BoolOption(AbstractOption):
+    def _parse(self, s):
+        if s.lower() == 'true' or s == '1':
+            return True
+        if s.lower() == 'false' or s == '0':
+            return False
+
+        raise OptionParseError('invalid boolean: %s' % (s,))
+
+    def _validate(self, value):
+        self._assertType(value, bool)
+
 class Configuration(object):
     """
     A configuration is a set of expected (or potential) options that

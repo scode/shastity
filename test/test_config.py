@@ -28,6 +28,17 @@ class ConfigTests(unittest.TestCase):
         config.IntOption('testname').parse('5')
         self.assertRaises(config.BadOptionValueType, lambda: config.IntOption('testname').set('5'))
 
+    def test_bool_option(self):
+        config.BoolOption('testname').parse('true')
+        config.BoolOption('testname').parse('True')
+        config.BoolOption('testname').parse('1')
+        config.BoolOption('testname').parse('0')
+        config.BoolOption('testname').parse('false')
+        config.BoolOption('testname').parse('False')
+
+        self.assertRaises(config.OptionParseError,
+                          lambda: config.BoolOption('testname').parse('notabool'))
+
     def test_default_configuration_creation(self):
         c = config.DefaultConfiguration()
         self.assertFalse(c.has_option('a'))
