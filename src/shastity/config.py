@@ -38,6 +38,13 @@ class BadOptionValueType(Exception):
     """
     pass
 
+class OptionParseError(Exception):
+    """
+    Raised to indicate the string representation of of an option could
+    not be parsed.
+    """
+    pass
+
 class ConflictingMergeError(Exception):
     """
     Raised to indicate an attempt to merge configurations failed due
