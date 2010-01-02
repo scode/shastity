@@ -18,6 +18,7 @@ import optparse
 import sys
 
 import shastity.commands as commands
+import shastity.options as options
 
 class CommandLineError(Exception):
     """
@@ -47,6 +48,19 @@ def _build_parser():
     parser = optparse.OptionParser(usage='%prog <command> [args] [options]',
                                    epilog=' '.join(epilog))
 
+    cmdname = _find_command()
+
+    if cmdname is not None and not commands.has_command(cmdname):
+        raise CommandLineError('unknown command: %s (see --help)' % (cmdname,))
+
+    if cmdname is not None:
+        cmd = commands.get_command(cmdname)
+        cfg = cmd.options
+    else:
+        cfg = options.GlobalOptions()
+
+    # todo populate
+
     return parser
 
 def _interpret_cmdline(options, args):
@@ -64,13 +78,10 @@ def main():
 
         if command is None:
             option_parser.print_help(file=sys.stderr)
+            sys.exit(1)
         else:
-            if commands.has_command(command):
-                getattr(commands, command)(*args, **(dict(config=config)))
-            else:
-                raise CommandLineError('unknown command: %s (see --help)' % (command,))
-
-        sys.exit(0)
+            getattr(commands, command)(*args, **(dict(config=config)))
+            sys.exit(0)
     except CommandLineError, e:
         logging.error('shastity: command line error: %s', unicode(e))
     except Exception, e:

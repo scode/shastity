@@ -85,17 +85,24 @@ def has_command(name):
     """
     return (len([ cmd for cmd in all_commands() if cmd.name == name]) > 0)
 
-def persist(config):
+def get_command(name):
+    matching = [ cmd for cmd in _all_commands if cmd.name == name]
+
+    assert len(matching) == 1
+
+    return matching[0]
+
+def persist(src_path, dst_uri, config):
     raise NotImplementedError('persist not implemented')
 
-def materialize(config):
+def materialize(src_uri, dst_path, config):
     raise NotImplementedError('materialze not implemented')
 
-def verify(config):
+def verify(src_path, dst_uri, config):
     raise NotImplementedError('very not implemented')
 
-def garbage_collect(config):
+def garbage_collect(config, dst_uri):
     raise NotImplementedError('garbage_collect not implemented')
 
-def test_backend(config):
+def test_backend(config, dst_uri):
     raise NotImplementedError('test-backend not implemented')
