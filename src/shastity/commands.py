@@ -58,6 +58,15 @@ class Command(object):
 
 _all_commands = [ Command('persist',
                           ['src-path', 'dst-uri'],
+                          options.GlobalOptions()),
+                  Command('materialize',
+                          ['src-uri', 'dst-path'],
+                          options.GlobalOptions()),
+                  Command('verify',
+                          ['src-path', 'dst-uri'],
+                          options.GlobalOptions()),
+                  Command('garbage-collect',
+                          ['dst-uri'],
                           options.GlobalOptions()) ]
 
 def all_commands():
@@ -75,3 +84,12 @@ def has_command(name):
 
 def persist(config):
     raise NotImplementedError('persist not implemented')
+
+def materialize(config):
+    raise NotImplementedError('materialze not implemented')
+
+def verify(config):
+    raise NotImplementedError('very not implemented')
+
+def garbage_collect(config):
+    raise NotImplementedError('garbage-collect not implemented')
