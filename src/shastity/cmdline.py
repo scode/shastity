@@ -40,7 +40,12 @@ def _find_command():
         return sys.argv[1]
 
 def _build_parser():
-    parser = optparse.OptionParser(usage='%prog <command> [args] [options]')
+    # This gets squashed by option parser. Something else to fix.
+    epilog = ([ "Available commands: " ] +
+              [ '%s ' % (cmd.name,) for cmd in sorted(commands.all_commands()) ])
+
+    parser = optparse.OptionParser(usage='%prog <command> [args] [options]',
+                                   epilog=' '.join(epilog))
 
     return parser
 
