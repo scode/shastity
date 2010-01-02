@@ -95,7 +95,7 @@ def verify(config):
     raise NotImplementedError('very not implemented')
 
 def garbage_collect(config):
-    raise NotImplementedError('garbage-collect not implemented')
+    raise NotImplementedError('garbage_collect not implemented')
 
 def test_backend(config):
     raise NotImplementedError('test-backend not implemented')
