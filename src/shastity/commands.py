@@ -62,19 +62,24 @@ class Command(object):
 
 _all_commands = [ Command('persist',
                           ['src-path', 'dst-uri'],
-                          options.GlobalOptions()),
+                          options.GlobalOptions(),
+                          description='Persist (backup) a directory tree.'),
                   Command('materialize',
                           ['src-uri', 'dst-path'],
-                          options.GlobalOptions()),
+                          options.GlobalOptions(),
+                          description='Materialize (restore) a directory tree.'),
                   Command('verify',
                           ['src-path', 'dst-uri'],
-                          options.GlobalOptions()),
+                          options.GlobalOptions(),
+                          description='Verify that a directory tree matches that which has previously been persisted.'),
                   Command('garbage-collect',
                           ['dst-uri'],
-                          options.GlobalOptions()),
+                          options.GlobalOptions(),
+                          description='Garbage collect backend, removing unreferenced data (thus reclaiming space).'),
                   Command('test-backend',
                           ['dst-uri'],
-                          options.GlobalOptions())]
+                          options.GlobalOptions(),
+                          description='Perform tests on the backend to confirm it works.')]
 
 def all_commands():
     """
