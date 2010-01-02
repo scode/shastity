@@ -40,7 +40,7 @@ def _find_command():
         return sys.argv[1]
 
 def _build_parser():
-    parser = optparse.OptionParser()
+    parser = optparse.OptionParser(usage='%prog <command> [args] [options]')
 
     return parser
 
