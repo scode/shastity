@@ -26,7 +26,7 @@ In concrete terms, each command will have associated with it::
   - Information about positional arguments for purpose of display to humans.
   - Information about options that may apply to the command.
 
-In plain python, a command C with poitional arguments pos1, pos2,
+In plain python, a command C with positional arguments pos1, pos2,
 ... poN and a set of options O (in the form of a Configuration
 instance) translates to a function call on this module of the form:
 
