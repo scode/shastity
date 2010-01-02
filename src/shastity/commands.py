@@ -67,7 +67,10 @@ _all_commands = [ Command('persist',
                           options.GlobalOptions()),
                   Command('garbage-collect',
                           ['dst-uri'],
-                          options.GlobalOptions()) ]
+                          options.GlobalOptions()),
+                  Command('test-backend',
+                          ['dst-uri'],
+                          options.GlobalOptions())]
 
 def all_commands():
     """
@@ -93,3 +96,6 @@ def verify(config):
 
 def garbage_collect(config):
     raise NotImplementedError('garbage-collect not implemented')
+
+def test_backend(config):
+    raise NotImplementedError('test-backend not implemented')
