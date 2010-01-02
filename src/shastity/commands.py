@@ -46,15 +46,19 @@ import shastity.options as options
 # listings to the user become too verbose.
 
 class Command(object):
-    def __init__(self, name, args, options):
+    def __init__(self, name, args, options, description=None, long_help=None):
         """
         @param name: Name - string.
         @param args: List of arguments (list of name strings for human use).
         @param options: Configuration instance for the command.
+        @param description: Short one-liner description, if given.
+        @param long_help: Long potentially multi-line description, if given.
         """
         self.name = name
         self.args = args
         self.options = options
+        self.description = description
+        self.long_help = long_help
 
 _all_commands = [ Command('persist',
                           ['src-path', 'dst-uri'],
