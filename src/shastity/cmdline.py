@@ -55,11 +55,13 @@ def _build_parser():
 
     if cmdname is not None:
         cmd = commands.get_command(cmdname)
-        cfg = cmd.options
+        opts = cmd.options
     else:
-        cfg = options.GlobalOptions()
+        opts = options.GlobalOptions()
 
-    # todo populate
+    for opt in opts:
+        parser.add_option(('-' + opt.short_name()) if opt.short_name else None,
+                          '--' + opt.name())
 
     return parser
 
