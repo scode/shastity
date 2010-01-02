@@ -13,6 +13,7 @@ from __future__ import with_statement
 
 import shastity.config as config
 import shastity.logging as logging
+import shastity.verbosity as verbosity
 
 def GlobalOptions():
     """

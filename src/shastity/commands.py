@@ -40,6 +40,8 @@ library interface, while keeping the implementation identical.
 from __future__ import absolute_import
 from __future__ import with_statement
 
+import shastity.options as options
+
 # In the future we'll have groups of commands too, or else command
 # listings to the user become too verbose.
 
@@ -54,8 +56,22 @@ class Command(object):
         self.args = args
         self.options = options
 
+_all_commands = [ Command('persist',
+                          ['src-path', 'dst-uri'],
+                          options.GlobalOptions()) ]
+
 def all_commands():
     """
     Returns a list of all commands. The order of the list is significant.
     """
-    pass
+    return _all_commands
+
+def has_command(name):
+    """
+    Convenience function to check whether there is a command by the
+    given name.
+    """
+    return (len([ cmd for cmd in all_commands() if cmd.name == name]) > 0)
+
+def persist(config):
+    raise NotImplementedError('persist not implemented')
