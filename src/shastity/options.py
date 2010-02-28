@@ -23,7 +23,8 @@ def GlobalOptions():
     shastity regardless of which command is running.
     """
     return [ config.IntOption('verbosity', 'v', verbosity.to_verbosity(logging.DEBUG)),
-             config.IntOption('block-size', None, DEFAULT_BLOCK_SIZE) ]
+             config.IntOption('block-size', None, DEFAULT_BLOCK_SIZE,
+                              short_help='The size in bytes of storage blocks.') ]
 
 
 
