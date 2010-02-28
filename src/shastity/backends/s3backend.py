@@ -18,7 +18,7 @@ def delayed_imports():
     import boto.s3.key as key
 
 class S3Backend(backend.Backend):
-    ''' 
+    '''
     Amazon S3 backend.
 
     Currently this requires the AWS_ACCESS_KEY_ID and
@@ -80,14 +80,14 @@ class S3Backend(backend.Backend):
             self.__bucket = self.__conn.create_bucket(self.bucket_name,
                                                       location=location)
             raise self.__bucket, 'bucket creation failed, though no exception was raised'
-        
+
     def put(self, name, data):
         k = key.Key(bucket=self.__bucket,
                     name=name)
 
         k.set_contents_from_string(data,
                                    headers={'Content-Type': 'application/octet-stream'})
-            
+
     def get(self, name):
         k = key.Key(bucket=self.__bucket,
                     name=name)
@@ -102,4 +102,4 @@ class S3Backend(backend.Backend):
 
     def close(self):
         pass # boto doesn't need explicit disconnect
-        
+
