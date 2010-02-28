@@ -95,5 +95,7 @@ def main():
     except Exception, e:
         logging.exception('shastity: error: %s', unicode(e))
 
-    sys.exit(1) # todo: communiate more detail to callers
+    # On demand, we should have some errors yield well-defined return
+    # codes. For now, we always return 1 on failure.
+    sys.exit(1)
 
