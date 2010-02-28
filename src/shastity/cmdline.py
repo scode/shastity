@@ -41,7 +41,8 @@ def _find_command():
         return sys.argv[1]
 
 def _build_parser():
-    # This gets squashed by option parser. Something else to fix.
+    # Newlines/formatting is squashed by option parser. Something else
+    # to fix.
     epilog = ([ "Available commands: " ] +
               [ cmd.name for cmd in sorted(commands.all_commands()) ])
 
