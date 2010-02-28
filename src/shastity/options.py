@@ -15,10 +15,16 @@ import shastity.config as config
 import shastity.logging as logging
 import shastity.verbosity as verbosity
 
+DEFAULT_BLOCK_SIZE = 1*1024*1024
+
 def GlobalOptions():
     """
     Instantiate a Configuration of global options that apply to
     shastity regardless of which command is running.
     """
-    return [ config.IntOption('verbosity', 'v', verbosity.to_verbosity(logging.DEBUG)) ]
+    return [ config.IntOption('verbosity', 'v', verbosity.to_verbosity(logging.DEBUG)),
+             config.IntOption('block-size', None, DEFAULT_BLOCK_SIZE) ]
+
+
+
 
