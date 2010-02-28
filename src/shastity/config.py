@@ -81,6 +81,23 @@ class Option:
         """
         pass
 
+    def short_help(self):
+        """
+        @return Short one-liner type of help for the option, or None
+                if not available.
+        """
+        pass
+
+    def long_help(self):
+        """
+        @return Long (potentially multiple paragraphs) of help for the option, or
+                None if not available.
+        """
+        pass
+
+    def long_help(self):
+        pass
+
     def parse(self, s):
         """
         Parse a string representation of the desired value of the
@@ -134,9 +151,13 @@ class AbstractOption(Option):
     options. Subclasses implement _validate_value() and
     _parse_value().
     """
-    def __init__(self, long_name, short_name=None, default=None):
+    def __init__(self, long_name, short_name=None, default=None,
+                 short_help=None, long_help=None):
         self.__long_name = long_name
         self.__short_name = short_name
+
+        self.__short_help = short_help
+        self.__long_help = long_help
 
         self.__set = (default is not None)
         self.__value = default
@@ -146,6 +167,12 @@ class AbstractOption(Option):
 
     def short_name(self):
         return self.__short_name
+
+    def short_help(self):
+        return self.__short_help
+
+    def long_help(self):
+        return self.__long_help
 
     def parse(self, value):
         self.set(self._parse(value))

@@ -67,7 +67,8 @@ def _build_parser():
 
     for opt in opts:
         parser.add_option(('-' + opt.short_name()) if opt.short_name() else '',
-                          '--' + opt.name())
+                          '--' + opt.name(),
+                          help=opt.short_help())
 
     return parser
 
