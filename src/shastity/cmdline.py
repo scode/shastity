@@ -41,14 +41,6 @@ def _find_command():
         return sys.argv[1]
 
 def _build_parser():
-    # Newlines/formatting is squashed by option parser. Something else
-    # to fix.
-    epilog = ([ "Available commands: " ] +
-              [ cmd.name for cmd in sorted(commands.all_commands()) ])
-
-    parser = optparse.OptionParser(usage='%prog <command> [args] [options]',
-                                   epilog=' '.join(epilog))
-
     cmdname = _find_command()
 
     if cmdname is not None and not commands.has_command(cmdname):
@@ -59,6 +51,19 @@ def _build_parser():
         opts = cmd.options
     else:
         opts = options.GlobalOptions()
+
+    # Epilog newlines/formatting is squashed by option parser. Something else
+    # to fix.
+    if cmdname is None:
+        epilog = ([ "Available commands: " ] +
+                  [ cmd.name for cmd in sorted(commands.all_commands()) ])
+        usage = '%prog <command> [args] [options]'
+    else:
+        epilog = ['%s: %s' % (cmdname, cmd.__doc__)]
+        usage = '%%prog %s [args] [options]' % (cmdname,)
+
+    parser = optparse.OptionParser(usage=usage,
+                                   epilog=' '.join(epilog))
 
     for opt in opts:
         parser.add_option(('-' + opt.short_name()) if opt.short_name else None,
