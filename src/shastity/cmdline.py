@@ -66,7 +66,7 @@ def _build_parser():
                                    epilog=' '.join(epilog))
 
     for opt in opts:
-        parser.add_option(('-' + opt.short_name()) if opt.short_name else None,
+        parser.add_option(('-' + opt.short_name()) if opt.short_name() else '',
                           '--' + opt.name())
 
     return parser
