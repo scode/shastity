@@ -197,3 +197,15 @@ integrity of blocks. That is, a block referenced by its hash in the
 manifest file must exist in the collection of blocks.
 
 TODO: provide example
+
+
+=== Encryption ===
+Before storing a file the backend encrypts the filename (hash of file
+content or name of manifest) using a repo-wide key with AES in CBC-mode.
+
+The filename is encrypted and not hashed (for example with HMAC) since
+we want to be able to reverse the encryption when doing GC, and when
+listing manifestos.
+
+The file contents is encrypted using AES in CBC mode with the same key
+as the filenames, but the data is salted. TODO: be specific.
