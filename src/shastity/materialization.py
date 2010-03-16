@@ -148,6 +148,4 @@ def materialize(fs, destpath, entryiter, sq):
                     for block_num, blockname in enumerate(blocknames) ]
             for op in ops:
                 sq.enqueue(op)
-
-
-
+    sq.wait()
