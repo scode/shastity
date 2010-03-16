@@ -41,6 +41,13 @@ from __future__ import absolute_import
 from __future__ import with_statement
 
 import shastity.options as options
+import shastity.traversal as traversal
+import shastity.manifest as manifest
+import shastity.filesystem as filesystem
+import shastity.persistence as persistence
+import shastity.materialization as materialization
+import shastity.storagequeue as storagequeue
+import shastity.backends.s3backend as s3backend
 
 # In the future we'll have groups of commands too, or else command
 # listings to the user become too verbose.
@@ -101,11 +108,40 @@ def get_command(name):
 
     return matching[0]
 
+CONCURRENCY = 10
+def make_backend_data(dst_uri):
+    ret = s3backend.S3Backend(dst_uri)
+    ret.setCryptoKey("hejsan")
+    return ret
+
+def make_backend_manifest(dst_uri):
+    ret = s3backend.S3Backend(dst_uri)
+    ret.setCryptoKey("hejsan")
+    return ret
+
 def persist(src_path, dst_uri, config):
-    raise NotImplementedError('persist not implemented')
+    mpath, label, dpath = dst_uri.split(',')
+    fs = filesystem.LocalFileSystem()
+    traverser = traversal.traverse(fs, src_path)
+    sq = storagequeue.StorageQueue(lambda: make_backend_data(dpath),
+                                   CONCURRENCY)
+    mf = list(persistence.persist(fs,
+                                  traverser,
+                                  None,
+                                  src_path,
+                                  sq,
+                                  blocksize=2000))
+    manifest.write_manifest(make_backend_manifest(mpath), label, mf)
 
 def materialize(src_uri, dst_path, config):
-    raise NotImplementedError('materialze not implemented')
+    mpath, label, dpath = src_uri.split(',')
+    fs = filesystem.LocalFileSystem()
+    fs.mkdir(dst_path)
+    mf = list(manifest.read_manifest(make_backend_manifest(mpath),
+                                     label))
+    sq = storagequeue.StorageQueue(lambda: make_backend_data(dpath),
+                                   CONCURRENCY)
+    materialization.materialize(fs, dst_path, mf, sq)
 
 def verify(src_path, dst_uri, config):
     raise NotImplementedError('very not implemented')

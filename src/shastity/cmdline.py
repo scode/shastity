@@ -75,7 +75,7 @@ def _build_parser():
 def _interpret_cmdline(options, args):
     cmdname = _find_command()
 
-    return (cmdname, (), dict(), None)
+    return (cmdname, sys.argv[2:], dict(), None)
 
 def main():
     try:
