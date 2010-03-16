@@ -9,7 +9,11 @@ File storage backend interface.
 from __future__ import absolute_import
 from __future__ import with_statement
 
+from Crypto.Cipher import AES
+import struct
+
 import shastity.logging as logging
+import shastity.hash as hash
 
 log = logging.get_logger(__name__)
 
@@ -118,10 +122,34 @@ class Backend(object):
 
         @param identifier The identifying URL/name/path/etc of this
         backend.'''
+        
         self.identifier = identifier
+        self.cryptoKey = None
 
         log.info('instantiating backend of type %s with identifier %s',
                  self.__class__.__name__, self.identifier)
+
+    def setCryptoKey(self, cryptoKey):
+        self.cryptoKey = hash.make_hasher('sha512')(cryptoKey)[1]        
+
+    def encryptName(self, name):
+        if not self.cryptoKey:
+            return name
+        crypt = AES.new(self.cryptoKey[:16], AES.MODE_CBC)
+        s = struct.pack("!l", len(name)) + name
+        if len(s) % 16:
+            s = s + " " * (16 - len(s) % 16)
+        ret = crypt.encrypt(s)
+        return ''.join(["%.2x" % (ord(x)) for x in ret])
+
+    def decryptFilename(self, cfn):
+        if not self.cryptoKey:
+            return cfn
+        crypt = AES.new(self.cryptokey[:16], AES.MODE_CBC)
+        s = ''.join([chr(int(x,16)) for x in re.findall('(..)', cfn)])
+        dec = crypt.decrypt(s)
+        l = struct.unpack("!l", dec[:4])[0]
+        return dec[4:4+l]
 
     def __enter__(self):
         '''Returns self.'''
