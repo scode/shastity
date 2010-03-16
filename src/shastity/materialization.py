@@ -131,9 +131,9 @@ def materialize(fs, destpath, entryiter, sq):
             # TODO: fix perms
             curdir = path
         else:
-            assert curdir is not None, 'no curdir - first entry not directory?'
-            assert path.startswith(curdir), ('%s does not start with %s - out of order?'
-                                             '' % (path, curdir))
+            #assert curdir is not None, 'no curdir - first entry not directory?'
+            #assert path.startswith(curdir), ('%s does not start with %s - out of order?'
+            #                                 '' % (path, curdir))
             f = fs.open(local_path, 'w')
             # TODO: fix perms before any writing happens
             # TODO: and remember to optionally fsync to avoid security vuln in case
