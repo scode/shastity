@@ -9,7 +9,7 @@ File storage backend interface.
 from __future__ import absolute_import
 from __future__ import with_statement
 
-from Crypto.Cipher import AES
+import Crypto.Cipher.AES as AES
 import struct
 
 import shastity.logging as logging
