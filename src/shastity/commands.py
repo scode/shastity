@@ -150,7 +150,7 @@ def materialize(src_uri, dst_path, config):
 
 def list_manifest(uri):
     pass
-    
+
 def verify(src_path, dst_uri, config):
     raise NotImplementedError('very not implemented')
 
