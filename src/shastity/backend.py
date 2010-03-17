@@ -122,7 +122,7 @@ class Backend(object):
 
         @param identifier The identifying URL/name/path/etc of this
         backend.'''
-        
+
         self.identifier = identifier
         self.cryptoKey = None
 
@@ -141,7 +141,7 @@ class Backend(object):
         ''' Checks whether backend storage exists. The definition of
         "exists" is up to the backend; some may not have such a
         concept at all, in which case it always exists.
-        
+
         The main purpose for the exists()/create() interface is to
         allow shastity to initialize, if needed, storage prior to main
         operation (where multiple concurrent operations may occurr),
@@ -191,7 +191,7 @@ class Backend(object):
 
         @type name string
         @param name The name of the file to get.
-        
+
         @rtype bytes
         @return The contents of the file.'''
         raise NotImplementedError
