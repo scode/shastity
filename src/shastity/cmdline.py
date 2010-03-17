@@ -78,18 +78,17 @@ def _build_parser():
                                    epilog=' '.join(epilog))
 
     for opt in config.options():
-        parser.add_option(('-' + opt.short_name()) if opt.short_name() else '',
-                          '--' + opt.name(),
-                          help=opt.short_help())
+        opt.populate_optparser(parser)
 
     return parser
 
 def _interpret_cmdline(options, args):
     cmdname = _find_command()
 
-    config = _make_config(cmdname)
+    config = _make_config(cmdname) # should use guaranteed-same as parser builder
 
-    # TODO: actually change config acc. to options
+    for opt in config.options():
+        opt.interpret_optparser_options(options)
 
     return (cmdname, sys.argv[2:], dict(), config)
 

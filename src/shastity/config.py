@@ -139,11 +139,23 @@ class Option:
         """
         pass
 
+    def populate_optparser(self, parser):
+        """
+        @param parser OptionParser or other thing accepting add_option().
+        """
+        pass
+
+    def interpret_optparser_options(self, opts):
+        """
+        @param Options instance in the style of an OptionParser's parse_args() result.
+        """
+        pass
+
     def __str__(self):
-        return str(self.name)
+        return str(self.name())
 
     def __unicode__(self):
-        return unicode(self.name)
+        return unicode(self.name())
 
 class AbstractOption(Option):
     """
@@ -195,6 +207,22 @@ class AbstractOption(Option):
             raise RequiredOptionMissingError(unicode(self), comment=comment)
 
         return self.get()
+
+    def populate_optparser(self, parser):
+        """
+        @param parser OptionParser or other thing accepting add_option().
+        """
+        # TODO: type handling.
+        parser.add_option(('-' + self.short_name()) if self.short_name() else '',
+                          '--' + self.name(),
+                          help=self.short_help())
+
+    def interpret_optparser_options(self, opts):
+        pyname = self.name().replace('-', '_')
+        optval = getattr(opts, pyname)
+
+        if optval is not None:
+            self.parse(optval)
 
     def _parse(self, value):
         """
