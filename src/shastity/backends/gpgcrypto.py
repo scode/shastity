@@ -43,6 +43,7 @@ def encDec(key, data, extra):
 
     # password pipe
     pass_r, pass_w = pipeWrap()
+    # TODO: do not assume location of gpg
     p = subprocess.Popen(("/usr/bin/gpg -q --batch %s "
                           + " --compress-level 0 --passphrase-fd %d")
                          % (extra, pass_r.fileno()),
