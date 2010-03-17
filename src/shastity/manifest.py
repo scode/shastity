@@ -6,7 +6,7 @@
 Individual manifest management.
 
 A manifest contains all information about a particular backup, except
-the contents of data blocks. Manifests are assuemd to be of
+the contents of data blocks. Manifests are assumed to be of
 "managable" size, fitting comfortably in memory.
 
 Manifests in memory are basically lists of (path, metadata, hashes)
