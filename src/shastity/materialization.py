@@ -131,6 +131,8 @@ def materialize(fs, destpath, entryiter, sq):
             # TODO: fix perms
             curdir = path
         else:
+            # TODO: figure out why these needed to be commented out,
+            # and whether they should be removed or not.
             #assert curdir is not None, 'no curdir - first entry not directory?'
             #assert path.startswith(curdir), ('%s does not start with %s - out of order?'
             #                                 '' % (path, curdir))
