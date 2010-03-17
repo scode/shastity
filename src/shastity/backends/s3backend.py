@@ -81,26 +81,23 @@ class S3Backend(backend.Backend):
                                                       location=location)
             raise self.__bucket, 'bucket creation failed, though no exception was raised'
 
-    def put(self, uname, data):
-        name = self.encryptName(uname)
+    def put(self, name, data):
         k = key.Key(bucket=self.__bucket,
                     name=name)
 
         k.set_contents_from_string(data,
                                    headers={'Content-Type': 'application/octet-stream'})
 
-    def get(self, uname):
-        name = self.encryptName(uname)
+    def get(self, name):
         k = key.Key(bucket=self.__bucket,
                     name=name)
 
         return k.get_contents_as_string()
 
     def list(self):
-        return [ self.decryptName(k.name) for k in self.__bucket.list() ]
+        return [ k.name for k in self.__bucket.list() ]
 
-    def delete(self, uname):
-        name = self.encryptName(uname)
+    def delete(self, name):
         self.__bucket.delete_key(name)
 
     def close(self):

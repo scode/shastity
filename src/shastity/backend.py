@@ -61,7 +61,7 @@ class Backend(object):
     for file I/O will be "reasonably small"; thus backends can assume
     that data being put and gotten to/from the store will fit
     comfortably in RAM, and that it is okay to perhaps make a copy of
-    a block of data and otherwise treat is as a medium-to-large piece
+    a block of data and otherwise treat it as a medium-to-large piece
     of data, rather than a *huge* piece of data. This is an assumption
     that is part of the public interface of shastity and something we
     communicate to the user.
@@ -77,7 +77,7 @@ class Backend(object):
     effort is made to be compatible with legacy 8.3 file system
     conventions or similar; any such acrobatics would have to be
     implemented by a particular backend, taking great care to adher to
-    the semantics mandaged by each call.
+    the semantics mandated by each call.
 
     Consistency guarantees
     ======================
@@ -129,28 +129,6 @@ class Backend(object):
         log.info('instantiating backend of type %s with identifier %s',
                  self.__class__.__name__, self.identifier)
 
-    def setCryptoKey(self, cryptoKey):
-        self.cryptoKey = hash.make_hasher('sha512')(cryptoKey)[1]        
-
-    def encryptName(self, name):
-        if not self.cryptoKey:
-            return name
-        crypt = AES.new(self.cryptoKey[:16], AES.MODE_CBC)
-        s = struct.pack("!l", len(name)) + name
-        if len(s) % 16:
-            s = s + " " * (16 - len(s) % 16)
-        ret = crypt.encrypt(s)
-        return ''.join(["%.2x" % (ord(x)) for x in ret])
-
-    def decryptFilename(self, cfn):
-        if not self.cryptoKey:
-            return cfn
-        crypt = AES.new(self.cryptokey[:16], AES.MODE_CBC)
-        s = ''.join([chr(int(x,16)) for x in re.findall('(..)', cfn)])
-        dec = crypt.decrypt(s)
-        l = struct.unpack("!l", dec[:4])[0]
-        return dec[4:4+l]
-
     def __enter__(self):
         '''Returns self.'''
         return self
@@ -186,17 +164,20 @@ class Backend(object):
 
         The put operation must satisfy several characteristics:
 
-          - The operation must atomically either succeed or not; the backend
-            must guarantee that a half-finished or otherwise failed put operation
-            will not cause a particially put files to be available and visible to
-            subsequent list() or get().
+          - The operation must atomically either succeed or not; the
+            backend must guarantee that a half-finished or otherwise
+            failed put operation will not cause a particially put
+            files to be available and visible to subsequent list() or
+            get().
 
-          - When the put completes successfully, the file is considered to be written
-            successfully and persistently (see consistency notes in class docs). In particular
+          - When the put completes successfully, the file is
+            considered to be written successfully and persistently
+            (see consistency notes in class docs). In particular
             whichever put happens *last* must take presedence.
 
-          - Duplicate put operations absolutely *must* be handled, *or* the backend's list() must
-            be strictly up-to-date with respect to put():s.
+          - Duplicate put operations absolutely *must* be handled,
+            *or* the backend's list() must be strictly up-to-date with
+            respect to put():s.
 
         @type name string
         @param name The name of the file.

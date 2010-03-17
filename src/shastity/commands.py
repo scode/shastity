@@ -48,6 +48,7 @@ import shastity.persistence as persistence
 import shastity.materialization as materialization
 import shastity.storagequeue as storagequeue
 import shastity.backends.s3backend as s3backend
+import shastity.backends.gpgcrypto as gpgcrypto
 
 # In the future we'll have groups of commands too, or else command
 # listings to the user become too verbose.
@@ -86,7 +87,12 @@ _all_commands = [ Command('persist',
                   Command('test-backend',
                           ['dst-uri'],
                           options.GlobalOptions(),
-                          description='Perform tests on the backend to confirm it works.')]
+                          description='Perform tests on the backend to confirm it works.'),
+                  Command('list-manifest',
+                          ['uri'],
+                          options.GlobalOptions(),
+                          description='List names of manifests'),
+                  ]
 
 def all_commands():
     """
@@ -109,21 +115,18 @@ def get_command(name):
     return matching[0]
 
 CONCURRENCY = 10
-def make_backend_data(dst_uri):
+def make_backend(dst_uri):
     ret = s3backend.S3Backend(dst_uri)
-    ret.setCryptoKey("hejsan")
-    return ret
-
-def make_backend_manifest(dst_uri):
-    ret = s3backend.S3Backend(dst_uri)
-    ret.setCryptoKey("hejsan")
+    #if 'manifest' in dst_uri:
+    ret = gpgcrypto.DataCryptoGPG(ret, 'hejsan')
+    ret = gpgcrypto.NameCrypto(ret, 'hejsan')
     return ret
 
 def persist(src_path, dst_uri, config):
     mpath, label, dpath = dst_uri.split(',')
     fs = filesystem.LocalFileSystem()
     traverser = traversal.traverse(fs, src_path)
-    sq = storagequeue.StorageQueue(lambda: make_backend_data(dpath),
+    sq = storagequeue.StorageQueue(lambda: make_backend(dpath),
                                    CONCURRENCY)
     mf = list(persistence.persist(fs,
                                   traverser,
@@ -131,18 +134,22 @@ def persist(src_path, dst_uri, config):
                                   src_path,
                                   sq,
                                   blocksize=2000))
-    manifest.write_manifest(make_backend_manifest(mpath), label, mf)
+    manifest.write_manifest(make_backend(mpath), label, mf)
 
 def materialize(src_uri, dst_path, config):
     mpath, label, dpath = src_uri.split(',')
     fs = filesystem.LocalFileSystem()
     fs.mkdir(dst_path)
-    mf = list(manifest.read_manifest(make_backend_manifest(mpath),
+    mf = list(manifest.read_manifest(make_backend(mpath),
                                      label))
-    sq = storagequeue.StorageQueue(lambda: make_backend_data(dpath),
+    sq = storagequeue.StorageQueue(lambda: make_backend(dpath),
                                    CONCURRENCY)
     materialization.materialize(fs, dst_path, mf, sq)
 
+
+def list_manifest(uri):
+    pass
+    
 def verify(src_path, dst_uri, config):
     raise NotImplementedError('very not implemented')
 

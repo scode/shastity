@@ -1,0 +1,20 @@
+
+== Block PUT scheduling ==
+If there are many small blocks and many big blocks in the queue, they should
+be scheduled so that big ones run in the background while the small ones
+pop in and out. This is because big blocks are limited by bandwidth and small
+ones by latency.
+
+== GC ==
+In order to GC you need access to all crypto keys, or you won't be able to
+read the manifests to know what blocks are in use, and you won't know the
+encrypted names of the blocks when you want to delete them.
+
+== GPG ==
+Use GPG for data encryption? KeyCzar?
+Manifest could contain which crypto wrapper to use for a given block.
+That way you don't have to re-upload if you change your mind.
+
+== Amazon MD5 ==
+Store MD5 as amazon metadata.
+Also double-check when materializing.
