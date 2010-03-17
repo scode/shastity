@@ -153,7 +153,7 @@ def getBackend(uri):
     type,ident = uri.split(':',1)
     if type == 's3':
         return lambda x: s3backend.S3Backend(x), ident
-    raise NotImplementedError('very not implemented')
+    raise NotImplementedError('backend type %s not implemented' % (type))
 
 def list_manifest(uri, config):
     b,ident = getBackend(uri)
