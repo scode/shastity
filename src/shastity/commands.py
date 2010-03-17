@@ -114,8 +114,9 @@ def get_command(name):
 
     return matching[0]
 
-CONCURRENCY = 10
+CONCURRENCY = 10 # TODO: hard-coded
 def make_backend(dst_uri):
+    # TODO: for testing only, implement for real
     ret = s3backend.S3Backend(dst_uri)
     #if 'manifest' in dst_uri:
     ret = gpgcrypto.DataCryptoGPG(ret, 'hejsan')
