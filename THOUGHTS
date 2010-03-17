@@ -5,6 +5,15 @@ be scheduled so that big ones run in the background while the small ones
 pop in and out. This is because big blocks are limited by bandwidth and small
 ones by latency.
 
+A fairly simple algorithm here might be to have two logical queues;
+one for small items and one for big ones.
+
+It would have the nice benefit that the concurrency can be kept high
+for latency critical aspects that are cheap (in terms of memory) to
+keep highly concurrent, while limiting extreme concurrencies for big
+data that might cause memory to become a bottleneck in trying to
+achieve wire speeds.
+
 == GC ==
 In order to GC you need access to all crypto keys, or you won't be able to
 read the manifests to know what blocks are in use, and you won't know the
