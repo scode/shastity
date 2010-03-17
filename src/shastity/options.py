@@ -17,14 +17,21 @@ import shastity.verbosity as verbosity
 
 DEFAULT_BLOCK_SIZE = 1*1024*1024
 
+def _config(opts):
+    """
+    @param opts: List of Option:s.
+    @return A corresponding Configuration instance.
+    """
+    return config.DefaultConfiguration(dict([(opt.name(), opt) for opt in opts]))
+
 def GlobalOptions():
     """
     Instantiate a Configuration of global options that apply to
     shastity regardless of which command is running.
     """
-    return [ config.IntOption('verbosity', 'v', verbosity.to_verbosity(logging.DEBUG)),
-             config.IntOption('block-size', None, DEFAULT_BLOCK_SIZE,
-                              short_help='The size in bytes of storage blocks.') ]
+    return _config([ config.IntOption('verbosity', 'v', verbosity.to_verbosity(logging.DEBUG)),
+                     config.IntOption('block-size', None, DEFAULT_BLOCK_SIZE,
+                                      short_help='The size in bytes of storage blocks.') ])
 
 
 

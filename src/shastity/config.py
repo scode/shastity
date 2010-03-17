@@ -329,7 +329,7 @@ class DefaultConfiguration(Configuration):
         self.__option_getter = OptionGetter(self)
 
     def options(self):
-        return self.__options
+        return self.__options.values()
 
     def remove_option(self, name):
         del self.__options[name]

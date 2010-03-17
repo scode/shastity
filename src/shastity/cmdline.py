@@ -19,6 +19,7 @@ import sys
 
 import shastity.commands as commands
 import shastity.options as options
+import shastity.verbosity as verbosity
 
 class CommandLineError(Exception):
     """
@@ -40,17 +41,28 @@ def _find_command():
     else:
         return sys.argv[1]
 
+def _make_config(cmdname):
+    """
+    @param cmdname: Command name of None (for global options).
+    @return Configuration instance.
+    """
+    if cmdname is not None:
+        cmd = commands.get_command(cmdname)
+        opts = cmd.options
+    else:
+        opts = options.GlobalOptions()
+
+    return opts
+
 def _build_parser():
     cmdname = _find_command()
 
     if cmdname is not None and not commands.has_command(cmdname):
         raise CommandLineError('unknown command: %s (see --help)' % (cmdname,))
 
-    if cmdname is not None:
-        cmd = commands.get_command(cmdname)
-        opts = cmd.options
-    else:
-        opts = options.GlobalOptions()
+    config = _make_config(cmdname)
+
+    cmd = commands.get_command(cmdname) if cmdname is not None else None
 
     # Epilog newlines/formatting is squashed by option parser. Something else
     # to fix.
@@ -65,7 +77,7 @@ def _build_parser():
     parser = optparse.OptionParser(usage=usage,
                                    epilog=' '.join(epilog))
 
-    for opt in opts:
+    for opt in config.options():
         parser.add_option(('-' + opt.short_name()) if opt.short_name() else '',
                           '--' + opt.name(),
                           help=opt.short_help())
@@ -75,7 +87,11 @@ def _build_parser():
 def _interpret_cmdline(options, args):
     cmdname = _find_command()
 
-    return (cmdname, sys.argv[2:], dict(), None)
+    config = _make_config(cmdname)
+
+    # TODO: actually change config acc. to options
+
+    return (cmdname, sys.argv[2:], dict(), config)
 
 def main():
     try:
@@ -84,6 +100,8 @@ def main():
         options, args = option_parser.parse_args()
 
         command, args, kwargs, config = _interpret_cmdline(options, args)
+
+        logging.basicConfig(level=verbosity.to_level(config.get_option('verbosity').get_required()))
 
         if command is None:
             option_parser.print_help(file=sys.stderr)
