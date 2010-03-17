@@ -208,4 +208,5 @@ we want to be able to reverse the encryption when doing GC, and when
 listing manifestos.
 
 The file contents is encrypted using AES in CBC mode with the same key
-as the filenames, but the data is salted. TODO: be specific.
+as the filenames, but the data is salted. TODO: be specific.  TODO:
+Security implications of using the same key?
