@@ -120,7 +120,7 @@ def persist(src_path, dst_uri, config):
     mpath, label, dpath = dst_uri.split(',')
     fs = filesystem.LocalFileSystem()
     traverser = traversal.traverse(fs, src_path)
-    sq = storagequeue.StorageQueue(getBackendFactory(dpath),
+    sq = storagequeue.StorageQueue(get_backend_factory(dpath),
                                    CONCURRENCY)
     mf = list(persistence.persist(fs,
                                   traverser,
@@ -128,22 +128,22 @@ def persist(src_path, dst_uri, config):
                                   src_path,
                                   sq,
                                   blocksize=2000))
-    manifest.write_manifest(getBackendFactory(mpath)(), label, mf)
+    manifest.write_manifest(get_backend_factory(mpath)(), label, mf)
 
 def materialize(src_uri, dst_path, config):
     mpath, label, dpath = src_uri.split(',')
     fs = filesystem.LocalFileSystem()
     fs.mkdir(dst_path)
-    mf = list(manifest.read_manifest(getBackendFactory(mpath)(),
+    mf = list(manifest.read_manifest(get_backend_factory(mpath)(),
                                      label))
-    sq = storagequeue.StorageQueue(getBackendFactory(dpath),
+    sq = storagequeue.StorageQueue(get_backend_factory(dpath),
                                    CONCURRENCY)
     materialization.materialize(fs, dst_path, mf, sq)
 
 
 
-def getBackendFactory(uri):
-    """getBackendFactory(uri)
+def get_backend_factory(uri):
+    """get_backend_factory(uri)
 
     Parses a URI and creates the factory.
 
@@ -158,7 +158,7 @@ def getBackendFactory(uri):
     raise NotImplementedError('backend type %s not implemented' % (type))
 
 def list_manifest(uri, config):
-    b = getBackendFactory(uri)()
+    b = get_backend_factory(uri)()
     print "%-20s %6s %7s" % ('Manifest', 'Files', 'Blocks')
     for mft in b.list():
         mf = list(manifest.read_manifest(b, mft))
