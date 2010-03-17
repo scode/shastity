@@ -148,8 +148,20 @@ def materialize(src_uri, dst_path, config):
     materialization.materialize(fs, dst_path, mf, sq)
 
 
-def list_manifest(uri):
-    pass
+
+def getBackend(uri):
+    type,ident = uri.split(':',1)
+    if type == 's3':
+        return lambda x: s3backend.S3Backend(x), ident
+    raise NotImplementedError('very not implemented')
+
+def list_manifest(uri, config):
+    b,ident = getBackend(uri)
+    b = b(ident)
+    b = gpgcrypto.DataCryptoGPG(b, 'hejsan')
+    b = gpgcrypto.NameCrypto(b, 'hejsan')
+    for mf in b.list():
+        print "Manifest: %s" % (mf)
 
 def verify(src_path, dst_uri, config):
     raise NotImplementedError('very not implemented')

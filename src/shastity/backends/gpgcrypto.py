@@ -8,6 +8,7 @@ from __future__ import with_statement
 import subprocess
 import os
 import struct
+import re
 from Crypto.Cipher import AES
 
 import shastity.backend as backend
@@ -119,7 +120,7 @@ class NameCrypto(BackendWrapper):
         return ''.join(["%.2x" % (ord(x)) for x in ret])
 
     def __dec(self, cfn):
-        crypt = AES.new(self.cryptokey[:16], AES.MODE_CBC)
+        crypt = AES.new(self.cryptoKey[:16], AES.MODE_CBC)
         s = ''.join([chr(int(x,16)) for x in re.findall('(..)', cfn)])
         dec = crypt.decrypt(s)
         l = struct.unpack("!l", dec[:4])[0]
