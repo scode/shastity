@@ -115,19 +115,12 @@ def get_command(name):
     return matching[0]
 
 CONCURRENCY = 10 # TODO: hard-coded
-def make_backend(dst_uri):
-    # TODO: for testing only, implement for real
-    ret = s3backend.S3Backend(dst_uri)
-    #if 'manifest' in dst_uri:
-    ret = gpgcrypto.DataCryptoGPG(ret, 'hejsan')
-    ret = gpgcrypto.NameCrypto(ret, 'hejsan')
-    return ret
 
 def persist(src_path, dst_uri, config):
     mpath, label, dpath = dst_uri.split(',')
     fs = filesystem.LocalFileSystem()
     traverser = traversal.traverse(fs, src_path)
-    sq = storagequeue.StorageQueue(lambda: make_backend(dpath),
+    sq = storagequeue.StorageQueue(getBackendFactory(dpath),
                                    CONCURRENCY)
     mf = list(persistence.persist(fs,
                                   traverser,
@@ -135,33 +128,44 @@ def persist(src_path, dst_uri, config):
                                   src_path,
                                   sq,
                                   blocksize=2000))
-    manifest.write_manifest(make_backend(mpath), label, mf)
+    manifest.write_manifest(getBackendFactory(mpath)(), label, mf)
 
 def materialize(src_uri, dst_path, config):
     mpath, label, dpath = src_uri.split(',')
     fs = filesystem.LocalFileSystem()
     fs.mkdir(dst_path)
-    mf = list(manifest.read_manifest(make_backend(mpath),
+    mf = list(manifest.read_manifest(getBackendFactory(mpath)(),
                                      label))
-    sq = storagequeue.StorageQueue(lambda: make_backend(dpath),
+    sq = storagequeue.StorageQueue(getBackendFactory(dpath),
                                    CONCURRENCY)
     materialization.materialize(fs, dst_path, mf, sq)
 
 
 
-def getBackend(uri):
+def getBackendFactory(uri):
+    """getBackendFactory(uri)
+
+    Parses a URI and creates the factory.
+
+    TODO: crypto stuff are added by magic, and only s3 is supported
+    """
     type,ident = uri.split(':',1)
     if type == 's3':
-        return lambda x: s3backend.S3Backend(x), ident
+        ret = lambda: s3backend.S3Backend(ident)
+        ret2 = lambda: gpgcrypto.DataCryptoGPG(ret(), 'hejsan')
+        ret3 = lambda: gpgcrypto.NameCrypto(ret2(), 'hejsan')
+        return ret3
     raise NotImplementedError('backend type %s not implemented' % (type))
 
 def list_manifest(uri, config):
-    b,ident = getBackend(uri)
-    b = b(ident)
-    b = gpgcrypto.DataCryptoGPG(b, 'hejsan')
-    b = gpgcrypto.NameCrypto(b, 'hejsan')
-    for mf in b.list():
-        print "Manifest: %s" % (mf)
+    b = getBackendFactory(uri)()
+    print "%-20s %6s %7s" % ('Manifest', 'Files', 'Blocks')
+    for mft in b.list():
+        mf = list(manifest.read_manifest(b, mft))
+        flatten = lambda z: reduce(lambda x,y: x + y, z)
+        print "%-20s %6d %7d" % (mft,
+                                 len(mf),
+                                 len(flatten([x[2] for x in mf])))
 
 def verify(src_path, dst_uri, config):
     raise NotImplementedError('very not implemented')
