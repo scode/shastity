@@ -88,10 +88,10 @@ def main():
         if command is None:
             option_parser.print_help(file=sys.stderr)
             sys.exit(1)
-        else:
-            getattr(commands,
-                    command.replace('-','_'))(*args, **(dict(config=config)))
-            sys.exit(0)
+
+        getattr(commands, command.replace('-','_'))(config, *args)
+        sys.exit(0)
+
     except CommandLineError, e:
         logging.error('shastity: command line error: %s', unicode(e))
     except Exception, e:

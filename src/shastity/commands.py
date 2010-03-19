@@ -30,7 +30,7 @@ In plain python, a command C with positional arguments pos1, pos2,
 ... poN and a set of options O (in the form of a Configuration
 instance) translates to a function call on this module of the form:
 
-  C(pos1, pos2, ..., posN, options=O)
+  C(options=O, pos1, pos2, ..., posN)
 
 The concept is specifically meant to translate well into a command
 line interface while still being fairly idiomatic and usable as a
@@ -128,7 +128,7 @@ def get_all_blockhashes(mfs, unique = True):
         ret = list(set(ret))
     return ret
 
-def persist(src_path, dst_uri, config):
+def persist(config, src_path, dst_uri):
     mpath, label, dpath = dst_uri.split(',')
 
     be = get_backend_factory(mpath)()
@@ -149,7 +149,7 @@ def persist(src_path, dst_uri, config):
                                   skip_blocks=uploaded))
     manifest.write_manifest(be, label, mf)
 
-def materialize(src_uri, dst_path, config):
+def materialize(config, src_uri, dst_path):
     mpath, label, dpath = src_uri.split(',')
     fs = filesystem.LocalFileSystem()
     fs.mkdir(dst_path)
