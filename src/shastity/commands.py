@@ -115,9 +115,27 @@ def get_command(name):
     return matching[0]
 
 CONCURRENCY = 10 # TODO: hard-coded
+def flatten(z):
+    return reduce(lambda x,y: x + y, z)
+
+def get_all_manifests(be):
+    return [(x, list(manifest.read_manifest(be, x)))
+            for x in manifest.list_manifests(be)]
+
+def get_all_blockhashes(mfs, unique = True):
+    ret = flatten([x[2] for x in flatten(mfs)])
+    if unique:
+        ret = list(set(ret))
+    return ret
 
 def persist(src_path, dst_uri, config):
     mpath, label, dpath = dst_uri.split(',')
+
+    be = get_backend_factory(mpath)()
+    mfs = zip(*get_all_manifests(be))[1]
+    uploaded = get_all_blockhashes(mfs)
+
+    # run persist
     fs = filesystem.LocalFileSystem()
     traverser = traversal.traverse(fs, src_path)
     sq = storagequeue.StorageQueue(get_backend_factory(dpath),
@@ -127,8 +145,9 @@ def persist(src_path, dst_uri, config):
                                   None,
                                   src_path,
                                   sq,
-                                  blocksize=2000))
-    manifest.write_manifest(get_backend_factory(mpath)(), label, mf)
+                                  blocksize=2000,
+                                  skip_blocks=uploaded))
+    manifest.write_manifest(be, label, mf)
 
 def materialize(src_uri, dst_path, config):
     mpath, label, dpath = src_uri.split(',')
