@@ -40,6 +40,12 @@ import shastity.spencode as spencode
 
 log = logging.get_logger(__name__)
 
+class ManifestError(Exception):
+    def __init__(self, lineno, line, msg):
+        self.lineno = lineno
+        self.line = line
+        self.msg = msg
+
 def write_manifest(backend, name, entry_generator):
     """
     @param backend A storage backend (dedicated to manifests)
@@ -78,12 +84,23 @@ def read_manifest(backend, name):
     mf_lines = [ line.strip() for line in backend.get(name).split('\n') ]
 
     version = None
-    if len(mf_lines) == 0 or mf_lines[0] != 'shastity':
-        raise "TODO: wrong format of manifest file. Missing 'shastity' line"
-    del mf_lines[0]
+    lineno = 1
 
-    for head in mf_lines[:]:
-        del mf_lines[0]
+    if len(mf_lines) == 0:
+        raise ManifestError(lineno,
+                            '',
+                            "Manifest empty")
+
+    if  mf_lines[0] != 'shastity':
+        raise ManifestError(lineno,
+                            mf_lines[0],
+                            "First line not 'shastity'")
+
+    lineno += 1
+
+    for head in mf_lines[lineno-1:]:
+        lineno += 1
+
         if head == 'end':
             break
 
@@ -94,15 +111,22 @@ def read_manifest(backend, name):
 
         # unknown
         else:
-            raise "TODO: invalid manifest header line"
+            raise ManifestError(lineno,
+                                head,
+                                "Invalid header line: %s" % (head))
 
     if len(mf_lines) == 0:
-        raise "TODO: Header error or no data. Either way manifest file error."
+        raise ManifestError(lineno,
+                            '',
+                            "Header error or no data.")
 
     if version is None:
-        raise "TODO: wrong format of manifest file. No version number."
+        raise ManifestError(lineno,
+                            '',
+                            "Required manifest header 'version' missing")
 
-    for line in mf_lines:
+    for line in mf_lines[lineno-1:]:
+        lineno += 1
         (md, path, rest) = [ s.strip() for s in line.split('|') ]
 
         md = metadata.FileMetaData.from_string(md)
