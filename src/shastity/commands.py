@@ -161,7 +161,9 @@ def persist(config, src_path, dst_uri):
                                   skip_blocks=uploaded))
     manifest.write_manifest(be, label, mf)
 
-def materialize(config, src_uri, dst_path):
+def materialize(config, src_uri, dst_path, *files):
+    if len(files) == 0:
+        files = None
     mpath, label, dpath = src_uri.split(',')
     fs = filesystem.LocalFileSystem()
     fs.mkdir(dst_path)
@@ -169,9 +171,7 @@ def materialize(config, src_uri, dst_path):
                                      label))
     sq = storagequeue.StorageQueue(get_backend_factory(dpath),
                                    CONCURRENCY)
-    materialization.materialize(fs, dst_path, mf, sq)
-
-
+    materialization.materialize(fs, dst_path, mf, sq, files)
 
 def get_backend_factory(uri):
     """get_backend_factory(uri)

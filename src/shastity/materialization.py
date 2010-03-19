@@ -23,7 +23,7 @@ log = logging.get_logger(__name__)
 class DestinationPathNotDirectory(Exception):
     pass
 
-def materialize(fs, destpath, entryiter, sq):
+def materialize(fs, destpath, entryiter, sq, files = None):
     '''
     @type fs FileSystem instance.
     @param fs File system into which to materialize the stream.
@@ -36,6 +36,9 @@ def materialize(fs, destpath, entryiter, sq):
     @type sq StorageQueue
     @param sq Storage queue via which to perform read operations necessary in
               order to populate the tree.
+
+    @type files list of strings
+    @param files List of files to materalize. If None materialize all.
     '''
     # We traverse the list in order, thus ensuring that directories
     # are created prior to their contents. However, we also want to
@@ -120,6 +123,8 @@ def materialize(fs, destpath, entryiter, sq):
 
     curdir = None
     for path, metadata, hashes in entryiter:
+        if files is not None and path not in files:
+            continue
         local_path = os.path.join(destpath, path)
 
         log.info('materializing [%s]', path)
