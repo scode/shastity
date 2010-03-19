@@ -136,8 +136,12 @@ def persist(config, src_path, dst_uri):
     mpath, label, dpath = dst_uri.split(',')
 
     be = get_backend_factory(mpath)()
-    mfs = zip(*get_all_manifests(be))[1]
-    uploaded = get_all_blockhashes(mfs)
+    mfs = get_all_manifests(be)
+    if len(mfs) != 0:
+        mfs = zip(*mfs)[1]
+        uploaded = get_all_blockhashes(mfs)
+    else:
+        uploaded = []
 
     # run persist
     fs = filesystem.LocalFileSystem()
@@ -184,6 +188,11 @@ def list_manifest(config, uri):
     b = get_backend_factory(uri)()
     lmfs = list(get_all_manifests(b))
     lmfs.sort()
+
+    if not len(lmfs):
+        print "Found no manifests"
+        return
+
     labels,mfs = zip(*lmfs)
     uploaded = get_all_blockhashes(mfs, unique=False)
 
