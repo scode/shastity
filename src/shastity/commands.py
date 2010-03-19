@@ -92,6 +92,10 @@ _all_commands = [ Command('persist',
                           ['uri'],
                           options.GlobalOptions(),
                           description='List names of manifests'),
+                  Command('common-blocks',
+                          ['uri'],
+                          options.GlobalOptions(),
+                          description='Find common blocks in two or more manifests'),
                   ]
 
 def all_commands():
@@ -176,17 +180,42 @@ def get_backend_factory(uri):
         return ret3
     raise NotImplementedError('backend type %s not implemented' % (type))
 
-def list_manifest(uri, config):
+def list_manifest(config, uri):
     b = get_backend_factory(uri)()
-    print "%-20s %6s %7s" % ('Manifest', 'Files', 'Blocks')
-    for mft in b.list():
-        mf = list(manifest.read_manifest(b, mft))
-        flatten = lambda z: reduce(lambda x,y: x + y, z)
-        print "%-20s %6d %7d" % (mft,
-                                 len(mf),
-                                 len(flatten([x[2] for x in mf])))
+    lmfs = list(get_all_manifests(b))
+    lmfs.sort()
+    labels,mfs = zip(*lmfs)
+    uploaded = get_all_blockhashes(mfs, unique=False)
 
-def verify(src_path, dst_uri, config):
+    print "%-20s %6s %7s %7s" % ('Manifest', 'Files', 'Blocks', 'Shared')
+
+    for label,mf in lmfs:
+        shared = 0
+        blocks = flatten([x[2] for x in mf])
+        for h in blocks:
+            if uploaded.count(h) > 1:
+                shared += 1
+        print "%-20s %6d %7d %7d" % (label,
+                                    len(mf),
+                                    len(blocks),
+                                    shared)
+
+def common_blocks(config, uri, *mf_names):
+    b = get_backend_factory(uri)()
+    mfs = [manifest.read_manifest(b, x) for x in mf_names]
+    blocks = [get_all_blockhashes([x]) for x in mfs]
+    all_blocks = flatten(blocks)
+    before = [len(x) for x in blocks]
+    [ [bl.remove(x) for bl in blocks]
+       for x in list(set(all_blocks))
+       if all_blocks.count(x) == len(mf_names)
+       ]
+    after = [len(x) for x in blocks]
+    for nm,bf,af in zip(mf_names,before,after):
+        print '%d unique in %s' % (af, nm)
+    print '%d in common' % (before[0] - after[0])
+
+def verify(config, src_path, dst_uri):
     raise NotImplementedError('very not implemented')
 
 def garbage_collect(config, dst_uri):
