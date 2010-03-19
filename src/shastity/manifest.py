@@ -31,6 +31,7 @@ from __future__ import absolute_import
 from __future__ import with_statement
 
 import  os.path
+import re
 
 import shastity.filesystem as filesystem
 import shastity.logging as logging
@@ -46,12 +47,15 @@ def write_manifest(backend, name, entry_generator):
     @type  name A string.
     @param name Name of manifest; must not contain dots.
     
-    @param entry_generator Backup entry generator producting all entries, in order, for inclusion
-                           in the manifest.
+    @param entry_generator Backup entry generator producting all
+                           entries, in order, for inclusion in the
+                           manifest.
     """
     assert '.' not in name, 'manifest names cannot contain dots'
 
-    mf_lines = []
+    mf_lines = ['shastity',
+                'version 1',
+                'end']
 
     for (path, metadata, hashes) in entry_generator:
         md = metadata.to_string()
@@ -72,6 +76,31 @@ def read_manifest(backend, name):
     assert '.' not in name, 'manifest names cannot contain dots'
     
     mf_lines = [ line.strip() for line in backend.get(name).split('\n') ]
+
+    version = None
+    if len(mf_lines) == 0 or mf_lines[0] != 'shastity':
+        raise "TODO: wrong format of manifest file. Missing 'shastity' line"
+    del mf_lines[0]
+
+    for head in mf_lines[:]:
+        del mf_lines[0]
+        if head == 'end':
+            break
+
+        # version
+        m = re.match(r'version (\d+)', head)
+        if m:
+            version = int(m.group(1))
+
+        # unknown
+        else:
+            raise "TODO: invalid manifest header line"
+
+    if len(mf_lines) == 0:
+        raise "TODO: Header error or no data. Either way manifest file error."
+
+    if version is None:
+        raise "TODO: wrong format of manifest file. No version number."
 
     for line in mf_lines:
         (md, path, rest) = [ s.strip() for s in line.split('|') ]
