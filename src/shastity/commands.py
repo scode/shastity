@@ -96,6 +96,10 @@ _all_commands = [ Command('persist',
                           ['uri'],
                           options.GlobalOptions(),
                           description='Find common blocks in two or more manifests'),
+                  Command('get-block',
+                          ['uri', 'block-name', 'local-name'],
+                          options.GlobalOptions(),
+                          description='Get a backend block by its plaintext name'),
                   ]
 
 def all_commands():
@@ -223,6 +227,13 @@ def common_blocks(config, uri, *mf_names):
     for nm,bf,af in zip(mf_names,before,after):
         print '%d unique in %s' % (af, nm)
     print '%d in common' % (before[0] - after[0])
+
+
+def get_block(config, uri, block_name, local_name=None):
+    if local_name is None:
+        local_name = block_name
+    b = get_backend_factory(uri)()
+    open(local_name, 'w').write(b.get(block_name))
 
 def verify(config, src_path, dst_uri):
     raise NotImplementedError('very not implemented')
