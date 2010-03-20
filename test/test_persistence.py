@@ -13,6 +13,7 @@ import unittest
 
 import shastity.backends.directorybackend as directorybackend
 import shastity.backends.memorybackend as memorybackend
+import shastity.backends.s3backend as s3backend
 import shastity.filesystem as fs
 import shastity.hash as hash
 import shastity.logging as logging
