@@ -79,7 +79,7 @@ class S3Backend(backend.Backend):
 
             self.__bucket = self.__conn.create_bucket(self.bucket_name,
                                                       location=location)
-            raise self.__bucket, 'bucket creation failed, though no exception was raised'
+            assert self.__bucket, 'bucket creation failed, though no exception was raised'
 
     def put(self, name, data):
         self.get_bucket()
