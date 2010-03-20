@@ -45,18 +45,25 @@ class S3Backend(backend.Backend):
     def __connect(self):
         '''Connect, leaving self.__conn and self.__bucket valid.'''
         self.__conn = None   # make sure it's bound even on failure
-        self.__bucket = None # ditto
+        self.__the_bucket = None # ditto
 
         log.debug('attempting to connect to s3')
         self.__conn = connection.S3Connection(host=self.__opts.get('s3_host', connection.S3Connection.DefaultHost))
         self.__conn.calling_format = connection.SubdomainCallingFormat()
-        self.__bucket = self.__conn.lookup(self.bucket_name)
+
+        self.__the_bucket = self.__conn.lookup(self.bucket_name)
+
+    def __bucket(self):
+        if self.__the_bucket is None:
+            self.__the_bucket = self.__conn.get_bucket(self.bucket_name)
+
+        return self.__the_bucket
 
     def exists(self):
-        if self.__bucket is not None:
-            self.__bucket = self.__conn.lookup(self.bucket_name)
+        if not self.__the_bucket:
+            self.__the_bucket = self.__conn.lookup(self.bucket_name)
 
-        return self.__bucket is not None
+        return (self.__the_bucket is not None)
 
     def create(self):
         if not self.exists():
@@ -82,8 +89,7 @@ class S3Backend(backend.Backend):
             assert self.__bucket, 'bucket creation failed, though no exception was raised'
 
     def put(self, name, data):
-        self.get_bucket()
-        k = key.Key(bucket=self.__bucket,
+        k = key.Key(bucket=self.__bucket(),
                     name=name)
 
         k.set_contents_from_string(data,
@@ -91,23 +97,16 @@ class S3Backend(backend.Backend):
                                                 'application/octet-stream'})
 
     def get(self, name):
-        self.get_bucket()
-        k = key.Key(bucket=self.__bucket,
+        k = key.Key(bucket=self.__bucket(),
                     name=name)
 
         return k.get_contents_as_string()
 
-    def get_bucket(self):
-        if self.__bucket is None:
-            self.__bucket == self.__conn.get_bucket(self.bucket_name)
-
     def list(self):
-        self.get_bucket()
-        return [ k.name for k in self.__bucket.list() ]
+        return [ k.name for k in self.__bucket().list() ]
 
     def delete(self, name):
-        self.get_bucket()
-        self.__bucket.delete_key(name)
+        self.__bucket().delete_key(name)
 
     def close(self):
         pass # boto doesn't need explicit disconnect
