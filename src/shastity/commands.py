@@ -30,7 +30,7 @@ In plain python, a command C with positional arguments pos1, pos2,
 ... poN and a set of options O (in the form of a Configuration
 instance) translates to a function call on this module of the form:
 
-  C(pos1, pos2, ..., posN, options=O)
+  C(options=O, pos1, pos2, ..., posN)
 
 The concept is specifically meant to translate well into a command
 line interface while still being fairly idiomatic and usable as a
@@ -92,6 +92,14 @@ _all_commands = [ Command('persist',
                           ['uri'],
                           options.GlobalOptions(),
                           description='List names of manifests'),
+                  Command('common-blocks',
+                          ['uri'],
+                          options.GlobalOptions(),
+                          description='Find common blocks in two or more manifests'),
+                  Command('get-block',
+                          ['uri', 'block-name', 'local-name'],
+                          options.GlobalOptions(),
+                          description='Get a backend block by its plaintext name'),
                   ]
 
 def all_commands():
@@ -115,9 +123,31 @@ def get_command(name):
     return matching[0]
 
 CONCURRENCY = 10 # TODO: hard-coded
+def flatten(z):
+    return reduce(lambda x,y: x + y, z)
 
-def persist(src_path, dst_uri, config):
+def get_all_manifests(be):
+    return [(x, list(manifest.read_manifest(be, x)))
+            for x in manifest.list_manifests(be)]
+
+def get_all_blockhashes(mfs, unique = True):
+    ret = flatten([x[2] for x in flatten(mfs)])
+    if unique:
+        ret = list(set(ret))
+    return ret
+
+def persist(config, src_path, dst_uri):
     mpath, label, dpath = dst_uri.split(',')
+
+    be = get_backend_factory(mpath)()
+    mfs = get_all_manifests(be)
+    if len(mfs) != 0:
+        mfs = zip(*mfs)[1]
+        uploaded = get_all_blockhashes(mfs)
+    else:
+        uploaded = []
+
+    # run persist
     fs = filesystem.LocalFileSystem()
     traverser = traversal.traverse(fs, src_path)
     sq = storagequeue.StorageQueue(get_backend_factory(dpath),
@@ -127,10 +157,13 @@ def persist(src_path, dst_uri, config):
                                   None,
                                   src_path,
                                   sq,
-                                  blocksize=2000))
-    manifest.write_manifest(get_backend_factory(mpath)(), label, mf)
+                                  blocksize=2000,
+                                  skip_blocks=uploaded))
+    manifest.write_manifest(be, label, mf)
 
-def materialize(src_uri, dst_path, config):
+def materialize(config, src_uri, dst_path, *files):
+    if len(files) == 0:
+        files = None
     mpath, label, dpath = src_uri.split(',')
     fs = filesystem.LocalFileSystem()
     fs.mkdir(dst_path)
@@ -138,9 +171,7 @@ def materialize(src_uri, dst_path, config):
                                      label))
     sq = storagequeue.StorageQueue(get_backend_factory(dpath),
                                    CONCURRENCY)
-    materialization.materialize(fs, dst_path, mf, sq)
-
-
+    materialization.materialize(fs, dst_path, mf, sq, files)
 
 def get_backend_factory(uri):
     """get_backend_factory(uri)
@@ -157,17 +188,54 @@ def get_backend_factory(uri):
         return ret3
     raise NotImplementedError('backend type %s not implemented' % (type))
 
-def list_manifest(uri, config):
+def list_manifest(config, uri):
     b = get_backend_factory(uri)()
-    print "%-20s %6s %7s" % ('Manifest', 'Files', 'Blocks')
-    for mft in b.list():
-        mf = list(manifest.read_manifest(b, mft))
-        flatten = lambda z: reduce(lambda x,y: x + y, z)
-        print "%-20s %6d %7d" % (mft,
-                                 len(mf),
-                                 len(flatten([x[2] for x in mf])))
+    lmfs = list(get_all_manifests(b))
+    lmfs.sort()
 
-def verify(src_path, dst_uri, config):
+    if not len(lmfs):
+        print "Found no manifests"
+        return
+
+    labels,mfs = zip(*lmfs)
+    uploaded = get_all_blockhashes(mfs, unique=False)
+
+    print "%-20s %6s %7s %7s" % ('Manifest', 'Files', 'Blocks', 'Shared')
+
+    for label,mf in lmfs:
+        shared = 0
+        blocks = flatten([x[2] for x in mf])
+        for h in blocks:
+            if uploaded.count(h) > 1:
+                shared += 1
+        print "%-20s %6d %7d %7d" % (label,
+                                    len(mf),
+                                    len(blocks),
+                                    shared)
+
+def common_blocks(config, uri, *mf_names):
+    b = get_backend_factory(uri)()
+    mfs = [manifest.read_manifest(b, x) for x in mf_names]
+    blocks = [get_all_blockhashes([x]) for x in mfs]
+    all_blocks = flatten(blocks)
+    before = [len(x) for x in blocks]
+    [ [bl.remove(x) for bl in blocks]
+       for x in list(set(all_blocks))
+       if all_blocks.count(x) == len(mf_names)
+       ]
+    after = [len(x) for x in blocks]
+    for nm,bf,af in zip(mf_names,before,after):
+        print '%d unique in %s' % (af, nm)
+    print '%d in common' % (before[0] - after[0])
+
+
+def get_block(config, uri, block_name, local_name=None):
+    if local_name is None:
+        local_name = block_name
+    b = get_backend_factory(uri)()
+    open(local_name, 'w').write(b.get(block_name))
+
+def verify(config, src_path, dst_uri):
     raise NotImplementedError('very not implemented')
 
 def garbage_collect(config, dst_uri):

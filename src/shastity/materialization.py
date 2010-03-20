@@ -12,6 +12,7 @@ from __future__ import with_statement
 
 import os.path
 import threading
+import re
 
 import shastity.filesystem as filesystem
 import shastity.logging as logging
@@ -23,7 +24,7 @@ log = logging.get_logger(__name__)
 class DestinationPathNotDirectory(Exception):
     pass
 
-def materialize(fs, destpath, entryiter, sq):
+def materialize(fs, destpath, entryiter, sq, files = None):
     '''
     @type fs FileSystem instance.
     @param fs File system into which to materialize the stream.
@@ -36,6 +37,9 @@ def materialize(fs, destpath, entryiter, sq):
     @type sq StorageQueue
     @param sq Storage queue via which to perform read operations necessary in
               order to populate the tree.
+
+    @type files list of strings
+    @param files List of files to materalize. If None materialize all.
     '''
     # We traverse the list in order, thus ensuring that directories
     # are created prior to their contents. However, we also want to
@@ -127,10 +131,19 @@ def materialize(fs, destpath, entryiter, sq):
         assert not path.startswith('/')
 
         if metadata.is_directory:
+            if files is not None:
+                for f in files:
+                    if re.search("^" + path, f):
+                        break
+                else:
+                    continue
+
             fs.mkdir(local_path)
             # TODO: fix perms
             curdir = path
         else:
+            if files is not None and path not in files:
+                continue
             # TODO: figure out why these needed to be commented out,
             # and whether they should be removed or not.
             #assert curdir is not None, 'no curdir - first entry not directory?'

@@ -6,7 +6,7 @@
 Individual manifest management.
 
 A manifest contains all information about a particular backup, except
-the contents of data blocks. Manifests are assuemd to be of
+the contents of data blocks. Manifests are assumed to be of
 "managable" size, fitting comfortably in memory.
 
 Manifests in memory are basically lists of (path, metadata, hashes)
@@ -31,6 +31,7 @@ from __future__ import absolute_import
 from __future__ import with_statement
 
 import  os.path
+import re
 
 import shastity.filesystem as filesystem
 import shastity.logging as logging
@@ -39,6 +40,12 @@ import shastity.spencode as spencode
 
 log = logging.get_logger(__name__)
 
+class ManifestError(Exception):
+    def __init__(self, lineno, line, msg):
+        self.lineno = lineno
+        self.line = line
+        self.msg = msg
+
 def write_manifest(backend, name, entry_generator):
     """
     @param backend A storage backend (dedicated to manifests)
@@ -46,12 +53,15 @@ def write_manifest(backend, name, entry_generator):
     @type  name A string.
     @param name Name of manifest; must not contain dots.
     
-    @param entry_generator Backup entry generator producting all entries, in order, for inclusion
-                           in the manifest.
+    @param entry_generator Backup entry generator producting all
+                           entries, in order, for inclusion in the
+                           manifest.
     """
     assert '.' not in name, 'manifest names cannot contain dots'
 
-    mf_lines = []
+    mf_lines = ['shastity',
+                'version 1',
+                'end']
 
     for (path, metadata, hashes) in entry_generator:
         md = metadata.to_string()
@@ -73,7 +83,50 @@ def read_manifest(backend, name):
     
     mf_lines = [ line.strip() for line in backend.get(name).split('\n') ]
 
-    for line in mf_lines:
+    version = None
+    lineno = 1
+
+    if len(mf_lines) == 0:
+        raise ManifestError(lineno,
+                            '',
+                            "Manifest empty")
+
+    if  mf_lines[0] != 'shastity':
+        raise ManifestError(lineno,
+                            mf_lines[0],
+                            "First line not 'shastity'")
+
+    lineno += 1
+
+    for head in mf_lines[lineno-1:]:
+        lineno += 1
+
+        if head == 'end':
+            break
+
+        # version
+        m = re.match(r'version (\d+)', head)
+        if m:
+            version = int(m.group(1))
+
+        # unknown
+        else:
+            raise ManifestError(lineno,
+                                head,
+                                "Invalid header line: %s" % (head))
+
+    if len(mf_lines) == 0:
+        raise ManifestError(lineno,
+                            '',
+                            "Header error or no data.")
+
+    if version is None:
+        raise ManifestError(lineno,
+                            '',
+                            "Required manifest header 'version' missing")
+
+    for line in mf_lines[lineno-1:]:
+        lineno += 1
         (md, path, rest) = [ s.strip() for s in line.split('|') ]
 
         md = metadata.FileMetaData.from_string(md)

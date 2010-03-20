@@ -1,5 +1,14 @@
 # -*- coding: utf-8 -*-
 
+"""
+Crypto wrappers for backends.
+
+Backends are modified like so:
+    be = s3backend('mybucket')
+    be = DataCryptoGPG(be, 'data content password')
+    be = NameCrypto(be, 'file name password')
+    be.put('foo', 'bar')
+"""
 from __future__ import absolute_import
 from __future__ import with_statement
 
@@ -72,6 +81,10 @@ def encDec(key, data, extra):
     return ret
 
 class BackendWrapper(backend.Backend):
+    """BackendWrapper(backend.Backend)
+
+    Base class for backend wrappers. By default changes nothing.
+    """
     def __init__(self, next):
         self.next = next
 
@@ -85,6 +98,10 @@ class BackendWrapper(backend.Backend):
         return self.next.list(*args)
     
 class DataCryptoGPG(BackendWrapper):
+    """DataCryptoGPG(BackendWrapper)
+
+    Encrypt backend 'file' data using GPG. Does not change 'file' name.
+    """
     def __init__(self, next, cryptoKey):
         BackendWrapper.__init__(self, next)
         self.cryptoKey = cryptoKey
@@ -96,6 +113,15 @@ class DataCryptoGPG(BackendWrapper):
         return dec(self.cryptoKey, self.next.get(key))
 
 class NameCrypto(BackendWrapper):
+    """NameCrypto(BackendWrapper)
+
+    Encrypt backend 'file' names. Not content.
+
+    new name = aes(sha512('key'), 'length of old name' + 'old name' + padding)
+
+    Since all names (except manifests) are hashes to begin with, there
+    should be no problem with related plaintext attacks.
+    """
     def __init__(self, next, cryptoKey):
         BackendWrapper.__init__(self, next)
         self.cryptoKey = hash.make_hasher('sha512')(cryptoKey)[1]

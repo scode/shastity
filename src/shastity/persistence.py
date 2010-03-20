@@ -41,7 +41,8 @@ def _persist_file(fs,
                   meta,
                   sq,
                   blocksize,
-                  hasher):
+                  hasher,
+                  skip_blocks):
     '''Persist a single file and return its entry to be yielded back
     to the parent caller. Parameters match those of persist().'''
     # TODO: fstat() after open to make sure we are not subject to
@@ -76,9 +77,13 @@ def _persist_file(fs,
                 
                 algo, hash = hasher(block)
                 hashes.append((algo, hash))
-                # todo: don't put if file exists
-                sq.enqueue(storagequeue.PutOperation(name=hash,
-                                                     data=block))
+                if (algo,hash) not in skip_blocks:
+                    #print "Putting block"
+                    sq.enqueue(storagequeue.PutOperation(name=hash,
+                                                         data=block))
+                else:
+                    #print "Skipping block"
+                    pass
             return (stripped_path, meta, hashes)
 
 def persist(fs,
@@ -87,7 +92,8 @@ def persist(fs,
             basepath,
             sq,
             blocksize=DEFAULT_BLOCKSIZE,
-            hasher=DEFAULT_HASHER):
+            hasher=DEFAULT_HASHER,
+            skip_blocks = []):
     '''Take an incoming traversal stream and persist in backing
     storage, while yielding appropriate (path, metadata, blocks)
     tuples. The third entry in that tuple is a list of (algo, hash)
@@ -105,7 +111,10 @@ def persist(fs,
     for path, meta in traversal:
         # Future: Do traversal/incremental optimization logic here.
         log.info('persisting [%s]', path)
-        yield _persist_file(fs, path, basepath, meta, sq, blocksize=blocksize, hasher=hasher)
+        yield _persist_file(fs, path, basepath, meta, sq,
+                            blocksize=blocksize,
+                            hasher=hasher,
+                            skip_blocks=skip_blocks)
 
     sq.wait()
 
