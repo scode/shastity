@@ -100,7 +100,7 @@ def main():
 
         command, args, kwargs, config = _interpret_cmdline(options, args)
 
-        logging.basicConfig(level=verbosity.to_level(config.get_option('verbosity').get_required()))
+        logging.getLogger().setLevel(verbosity.to_level(config.get_option('verbosity').get_required()))
 
         if command is None:
             option_parser.print_help(file=sys.stderr)
