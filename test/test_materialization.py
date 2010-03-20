@@ -113,7 +113,7 @@ class LocalFileSystemTests(MaterializationBaseCase, unittest.TestCase):
         return directorybackend.DirectoryBackend(self.tempdir)
 
 if os.getenv('SHASTITY_UNITTEST_S3_BUCKET') != None:
-    class S3Tests(PersistenceBaseCase, unittest.TestCase):
+    class S3Tests(MaterializationBaseCase, unittest.TestCase):
         def make_file_system(self):
             return fs.LocalFileSystem()
 
