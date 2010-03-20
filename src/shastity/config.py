@@ -293,7 +293,7 @@ class Configuration(object):
         """
         Return all options in this configuration.
 
-        @return An iterable of Option instances.
+        @return A dict of name->option mappings.
         """
         raise NotImplementedError()
 
@@ -357,7 +357,7 @@ class DefaultConfiguration(Configuration):
         self.__option_getter = OptionGetter(self)
 
     def options(self):
-        return self.__options.values()
+        return self.__options
 
     def remove_option(self, name):
         del self.__options[name]
