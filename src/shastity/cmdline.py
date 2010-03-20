@@ -90,7 +90,7 @@ def _interpret_cmdline(options, args):
     for opt in config.options().itervalues():
         opt.interpret_optparser_options(options)
 
-    return (cmdname, sys.argv[2:], dict(), config)
+    return (cmdname, args[1:], dict(), config)
 
 def main():
     try:
