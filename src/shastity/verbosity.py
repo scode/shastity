@@ -22,12 +22,20 @@ def to_level(verbosity):
     match does not exist, return one that that will include a subset
     of the requested amount of information.
     """
-    candidates = [ v for k, v in _name_map.iteritems() if v <= verbosity ]
+    candidates = [ (k, v) for k, v in _name_map.iteritems() if v <= verbosity ]
 
     if not candidates:
         raise InvalidVerbosityLevel(verbosity)
 
-    return reduce(max, candidates)
+    def better_candidate(a, b):
+        if a[1] > b[1]:
+            return a
+        else:
+            return b
+
+    best_name, best_level = reduce(better_candidate, candidates)
+
+    return getattr(logging, best_name)
 
 def to_verbosity(level):
     """
