@@ -77,7 +77,7 @@ def _build_parser():
     parser = optparse.OptionParser(usage=usage,
                                    epilog=' '.join(epilog))
 
-    for opt in config.options():
+    for opt in config.options().itervalues():
         opt.populate_optparser(parser)
 
     return parser
@@ -87,7 +87,7 @@ def _interpret_cmdline(options, args):
 
     config = _make_config(cmdname) # should use guaranteed-same as parser builder
 
-    for opt in config.options():
+    for opt in config.options().itervalues():
         opt.interpret_optparser_options(options)
 
     return (cmdname, sys.argv[2:], dict(), config)
@@ -100,7 +100,7 @@ def main():
 
         command, args, kwargs, config = _interpret_cmdline(options, args)
 
-        logging.basicConfig(level=verbosity.to_level(config.get_option('verbosity').get_required()))
+        logging.getLogger().setLevel(verbosity.to_level(config.get_option('verbosity').get_required()))
 
         if command is None:
             option_parser.print_help(file=sys.stderr)

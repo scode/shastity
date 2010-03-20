@@ -27,5 +27,16 @@ class VerbosityTests(unittest.TestCase):
         self.assertTrue(l('WARNING') > l('ERROR'))
         self.assertTrue(l('ERROR') > l('CRITICAL'))
 
+    def test_both(self):
+        def tstlvl(lvl):
+            self.assertEqual(lvl, verbosity.to_level(verbosity.to_verbosity(lvl)))
+
+        tstlvl(logging.DEBUG)
+        tstlvl(logging.INFO)
+        tstlvl(logging.NOTICE)
+        tstlvl(logging.WARNING)
+        tstlvl(logging.ERROR)
+        tstlvl(logging.CRITICAL)
+
 if __name__ == '__main__':
     unittest.main()
