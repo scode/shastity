@@ -80,7 +80,7 @@ def read_manifest(backend, name):
             contained in the manifest.
     """
     assert '.' not in name, 'manifest names cannot contain dots'
-    
+
     mf_lines = [ line.strip() for line in backend.get(name).split('\n') ]
 
     version = None

@@ -31,8 +31,12 @@ def GlobalOptions():
     """
     return _config([ config.IntOption('verbosity', 'v', verbosity.to_verbosity(logging.DEBUG)),
                      config.IntOption('block-size', None, DEFAULT_BLOCK_SIZE,
-                                      short_help='The size in bytes of storage blocks.') ])
+                                      short_help='The size in bytes of storage blocks.'),
+                     config.StringOption('config', 'c', '~/.shastity',
+                                         short_help='Config file.'),
+                     ]
+                   )
 
-
-
-
+def EncryptionOptions():
+    return _config([config.StringOption('crypto-key', 'k', None,
+                                        short_help='Encryption key')])

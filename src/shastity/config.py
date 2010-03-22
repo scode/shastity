@@ -146,10 +146,14 @@ class Option:
         pass
 
     def interpret_optparser_options(self, opts):
+        """interpret_optparser_options(opts)
+
+        @param opts Options instance in the style of an OptionParser's
+                    parse_args() result.
+
+        @return Canonical (long) name of option, or None if option is unknown
         """
-        @param Options instance in the style of an OptionParser's parse_args() result.
-        """
-        pass
+        return None
 
     def __str__(self):
         return str(self.name())
@@ -223,6 +227,8 @@ class AbstractOption(Option):
 
         if optval is not None:
             self.parse(optval)
+            return self.name()
+        return None
 
     def _parse(self, value):
         """

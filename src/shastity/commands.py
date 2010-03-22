@@ -145,8 +145,10 @@ def get_all_blockhashes(mfs, unique = True):
 
 def persist(config, src_path, dst_uri):
     mpath, label, dpath = dst_uri.split(',')
+    crypto_key = config.get_option('crypto-key').get_required()
 
-    be = get_backend_factory(mpath)()
+    be = get_backend_factory(mpath, crypto_key)()
+
     mfs = get_all_manifests(be)
     if len(mfs) != 0:
         mfs = zip(*mfs)[1]
@@ -157,7 +159,7 @@ def persist(config, src_path, dst_uri):
     # run persist
     fs = filesystem.LocalFileSystem()
     traverser = traversal.traverse(fs, src_path)
-    sq = storagequeue.StorageQueue(get_backend_factory(dpath),
+    sq = storagequeue.StorageQueue(get_backend_factory(dpath, crypto_key),
                                    CONCURRENCY)
     mf = list(persistence.persist(fs,
                                   traverser,
@@ -172,26 +174,28 @@ def materialize(config, src_uri, dst_path, *files):
     if len(files) == 0:
         files = None
     mpath, label, dpath = src_uri.split(',')
+    crypto_key = config.get_option('crypto-key').get_required()
     fs = filesystem.LocalFileSystem()
     fs.mkdir(dst_path)
-    mf = list(manifest.read_manifest(get_backend_factory(mpath)(),
+    mf = list(manifest.read_manifest(get_backend_factory(mpath, crypto_key)(),
                                      label))
-    sq = storagequeue.StorageQueue(get_backend_factory(dpath),
+    sq = storagequeue.StorageQueue(get_backend_factory(dpath, crypto_key),
                                    CONCURRENCY)
     materialization.materialize(fs, dst_path, mf, sq, files)
 
-def get_backend_factory(uri):
-    """get_backend_factory(uri)
+def get_backend_factory(uri, crypto_key):
+    """get_backend_factory(uri, crypto_key)
 
     Parses a URI and creates the factory.
 
-    TODO: crypto stuff are added by magic, and only s3 is supported
+    TODO: crypto stuff are added by magic, and only s3 is supported.
+          This should be configurable
     """
     type,ident = uri.split(':',1)
     if type == 's3':
         ret = lambda: s3backend.S3Backend(ident)
-        ret2 = lambda: gpgcrypto.DataCryptoGPG(ret(), 'hejsan')
-        ret3 = lambda: gpgcrypto.NameCrypto(ret2(), 'hejsan')
+        ret2 = lambda: gpgcrypto.DataCryptoGPG(ret(), crypto_key)
+        ret3 = lambda: gpgcrypto.NameCrypto(ret2(), crypto_key)
         return ret3
     raise NotImplementedError('backend type %s not implemented' % (type))
 
@@ -203,7 +207,8 @@ def show_manifest(config, uri, label):
                       r"\1" + sep,
                       str(n))
 
-    b = get_backend_factory(uri)()
+    crypto_key = config.get_option('crypto-key').get_required()
+    b = get_backend_factory(uri, crypto_key)()
     print "%10s %7s %14s %s" % ('Attr','Blocks','Bytes','Name')
     print "-" * (10 + 7 + 14 + 2 + 10)
     totblocks = 0
@@ -225,7 +230,9 @@ def show_manifest(config, uri, label):
                                 )
 
 def list_manifest(config, uri):
-    b = get_backend_factory(uri)()
+    b = get_backend_factory(uri,
+                            config.get_option('crypto-key').get_required())()
+
     lmfs = list(get_all_manifests(b))
     lmfs.sort()
 
@@ -250,7 +257,8 @@ def list_manifest(config, uri):
                                     shared)
 
 def common_blocks(config, uri, *mf_names):
-    b = get_backend_factory(uri)()
+    b = get_backend_factory(uri,
+                            config.get_option('crypto-key').get_required())()
     mfs = [manifest.read_manifest(b, x) for x in mf_names]
     blocks = [get_all_blockhashes([x]) for x in mfs]
     all_blocks = flatten(blocks)
@@ -268,7 +276,8 @@ def common_blocks(config, uri, *mf_names):
 def get_block(config, uri, block_name, local_name=None):
     if local_name is None:
         local_name = block_name
-    b = get_backend_factory(uri)()
+    b = get_backend_factory(uri,
+                            config.get_option('crypto-key').get_required())()
     open(local_name, 'w').write(b.get(block_name))
 
 def verify(config, src_path, dst_uri):

@@ -3,7 +3,6 @@ TODO before first release
 * Unit tests for gpg crypto.
 * Put generalized backend wrapping somewhere other than gpgcrypto backend.
 * Proper cmdline parsing
-* Optional verbose output
 * Summary output after persist/materialize
 * Optionally get already-uploaded list from the data bucket, in case the last
   backup broke before manifest was written.

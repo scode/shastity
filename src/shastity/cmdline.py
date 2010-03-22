@@ -17,9 +17,11 @@ import logging
 import optparse
 import sys
 import locale
+import os.path
 
 import shastity.commands as commands
 import shastity.options as options
+import shastity.config as config
 import shastity.verbosity as verbosity
 
 class CommandLineError(Exception):
@@ -52,6 +54,10 @@ def _make_config(cmdname):
         opts = cmd.options
     else:
         opts = options.GlobalOptions()
+
+    if cmdname in ('list-manifest', 'persist', 'materialize', 'get-blocks',
+                   'show-manifest'):
+        opts = opts.merge(options.EncryptionOptions())
 
     return opts
 
@@ -86,12 +92,36 @@ def _build_parser():
 def _interpret_cmdline(options, args):
     cmdname = _find_command()
 
-    config = _make_config(cmdname) # should use guaranteed-same as parser builder
+    # should use guaranteed-same as parser builder
+    config = _make_config(cmdname)
 
+    given_options = []
     for opt in config.options().itervalues():
-        opt.interpret_optparser_options(options)
+        longopt = opt.interpret_optparser_options(options)
+        if longopt is not None:
+            given_options.append(longopt)
 
-    return (cmdname, args[1:], dict(), config)
+    return (cmdname, args[1:], given_options, config)
+
+def _interpret_config_file(options, given_options, config):
+    try:
+        f = open(os.path.expanduser(config.get_option('config')
+                                    .get_required()))
+    except IOError, e:
+        logging.warning("shastity: can't open config file: %s", unicode(e))
+    else:
+        for line in f:
+            line = line.strip()
+            k,v = line.split(' ',1)
+            if k not in given_options:
+                try:
+                    config.get_option(k).parse(v)
+                except KeyError, e:
+                    # config file option not valid with current command
+                    pass
+
+def setLogLevel(config):
+    logging.getLogger().setLevel(verbosity.to_level(config.get_option('verbosity').get_required()))
 
 def main():
     try:
@@ -108,13 +138,16 @@ def main():
         option_parser = _build_parser()
 
         options, args = option_parser.parse_args()
+        command, args, given_options, config= _interpret_cmdline(options, args)
 
-        command, args, kwargs, config = _interpret_cmdline(options, args)
+        setLogLevel(config)
 
-        logging.getLogger().setLevel(verbosity.to_level(config.get_option('verbosity').get_required()))
+        _interpret_config_file(options, given_options, config)
+
+        setLogLevel(config)
 
         if command is None:
-            option_parser.print_help(file=sys.stderr)
+            option_parser.print_help(file=sys.stdout)
             sys.exit(1)
 
         getattr(commands, command.replace('-','_'))(config, *args)
@@ -128,4 +161,3 @@ def main():
     # On demand, we should have some errors yield well-defined return
     # codes. For now, we always return 1 on failure.
     sys.exit(1)
-
