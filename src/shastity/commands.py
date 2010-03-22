@@ -146,6 +146,7 @@ def get_all_blockhashes(mfs, unique = True):
 def persist(config, src_path, dst_uri):
     mpath, label, dpath = dst_uri.split(',')
     crypto_key = config.get_option('crypto-key').get_required()
+    blocksize = config.get_option('block-size').get_required()
 
     be = get_backend_factory(mpath, crypto_key)()
 
@@ -166,7 +167,7 @@ def persist(config, src_path, dst_uri):
                                   None,
                                   src_path,
                                   sq,
-                                  blocksize=2000,
+                                  blocksize=blocksize,
                                   skip_blocks=uploaded))
     manifest.write_manifest(be, label, mf)
 
