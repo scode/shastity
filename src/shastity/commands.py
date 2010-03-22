@@ -40,6 +40,9 @@ library interface, while keeping the implementation identical.
 from __future__ import absolute_import
 from __future__ import with_statement
 
+import re
+import locale
+
 import shastity.options as options
 import shastity.traversal as traversal
 import shastity.manifest as manifest
@@ -100,6 +103,10 @@ _all_commands = [ Command('persist',
                           ['uri', 'block-name', 'local-name'],
                           options.GlobalOptions(),
                           description='Get a backend block by its plaintext name'),
+                  Command('show-manifest',
+                          ['uri', 'label'],
+                          options.GlobalOptions(),
+                          description='Show manifest in readable format'),
                   ]
 
 def all_commands():
@@ -187,6 +194,35 @@ def get_backend_factory(uri):
         ret3 = lambda: gpgcrypto.NameCrypto(ret2(), 'hejsan')
         return ret3
     raise NotImplementedError('backend type %s not implemented' % (type))
+
+def show_manifest(config, uri, label):
+    def number_group(n, sep):
+        # TODO: if boto didn't bork out we would use locale instead of re:
+        # return locale.format('%d', attr.size, grouping=True)
+        return re.sub(r'(\d)(?=(\d{3})+$)',
+                      r"\1" + sep,
+                      str(n))
+
+    b = get_backend_factory(uri)()
+    print "%10s %7s %14s %s" % ('Attr','Blocks','Bytes','Name')
+    print "-" * (10 + 7 + 14 + 2 + 10)
+    totblocks = 0
+    totsize = 0
+    for name,attr,sums in manifest.read_manifest(b, label):
+        totblocks += len(sums)
+        totsize += attr.size
+        print "%10s %7s %14s %s" % (
+            str(attr).split(' ',1)[0],
+            number_group(len(sums), "'"),
+            number_group(attr.size, "'"),
+            name,
+            )
+    print "-" * (10 + 7 + 14 + 2 + 10)
+    print "%10s %7s %14s %s" % ('',
+                                number_group(totblocks, "'"),
+                                number_group(totsize, "'"),
+                                'Total'
+                                )
 
 def list_manifest(config, uri):
     b = get_backend_factory(uri)()

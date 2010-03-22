@@ -16,6 +16,7 @@ from __future__ import with_statement
 import logging
 import optparse
 import sys
+import locale
 
 import shastity.commands as commands
 import shastity.options as options
@@ -94,6 +95,16 @@ def _interpret_cmdline(options, args):
 
 def main():
     try:
+        # TODO:
+        # Boto assumes English locale. It will fail with others.
+        # (Date field in S3 request)
+        # locale.setlocale(locale.LC_ALL, '')
+        pass
+    except locale.Error:
+        # too many people have broken locale, so ignore?
+        pass
+    try:
+
         option_parser = _build_parser()
 
         options, args = option_parser.parse_args()
