@@ -5,3 +5,5 @@ TODO before first release
 * Proper cmdline parsing
 * Optional verbose output
 * Summary output after persist/materialize
+* Optionally get already-uploaded list from the data bucket, in case the last
+  backup broke before manifest was written.

@@ -22,3 +22,41 @@ backend, set the environment variable:
 
 To the name of the bucket to use for testing.
 
+== Getting started ==
+
+=== Get Amazon AWS account ===
+
+=== Install shastity ===
+
+./setup.py install
+
+=== Set up ~/.shastity ===
+cat > ~/.shastity
+aws_access_key_id your-access-id-here
+aws_secret_access_key your-key-here
+crypto-key hejsan
+verbosity 2
+^D
+chmod 600 ~/.shastity
+
+=== Create data & manifest buckets ===
+TODO: create buckets with shastity
+
+s3cmd mb s3://manifest-bucket
+s3cmd mb s3://data-bucket
+
+=== Persist some data ===
+shastity persist  /path/to/stuff \
+         s3:manifest-bucket,manifest-name,s3:data-bucket
+
+=== Show manifest ===
+shastity list-manifest s3:manifest-bucket
+
+shastity show-manifest s3:manifest-bucket manifest-name
+
+=== Materialize data ===
+mkdir shastity-temp
+shastity materialize s3:manifest-bucket,manifest-name,s3:data-bucket \
+         shastity-temp
+
+find shastity-temp
