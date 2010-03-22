@@ -56,7 +56,7 @@ def _make_config(cmdname):
         opts = options.GlobalOptions()
 
     if cmdname in ('list-manifest', 'persist', 'materialize', 'get-blocks',
-                   'show-manifest'):
+                   'show-manifest', 'common-blocks'):
         opts = opts.merge(options.EncryptionOptions())
 
     return opts
