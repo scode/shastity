@@ -67,15 +67,7 @@ def encDec(key, data, extra):
     with pass_w.fdopen('w') as f:
         f.write(key)
 
-    # write data
-    p.stdin.write(data)
-    p.stdin.close()
-
-    # subprocess expects p.stdin to be open, so endulge it
-    p.stdin = open('/dev/null','w')
-
-    # Get results
-    ret = p.stdout.read()
+    ret = p.communicate(input=data)[0]
     if p.wait():
         raise "GPG failed"
     return ret
