@@ -81,6 +81,7 @@ def _persist_file(fs,
                     #print "Putting block"
                     sq.enqueue(storagequeue.PutOperation(name=hash,
                                                          data=block))
+                    skip_blocks.append( (algo,hash) )
                 else:
                     #print "Skipping block"
                     pass
@@ -108,13 +109,14 @@ def persist(fs,
     '''
     assert incremental is None, 'incremental optimization not yet implemented'
     
+    skipblocks = skip_blocks[:]
     for path, meta in traversal:
         # Future: Do traversal/incremental optimization logic here.
         log.info('persisting [%s]', path)
         yield _persist_file(fs, path, basepath, meta, sq,
                             blocksize=blocksize,
                             hasher=hasher,
-                            skip_blocks=skip_blocks)
+                            skip_blocks=skipblocks)
 
     sq.wait()
 
