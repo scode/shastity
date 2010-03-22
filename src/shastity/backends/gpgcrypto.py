@@ -140,6 +140,6 @@ class NameCrypto(BackendWrapper):
         s = ''.join([chr(int(x,16)) for x in re.findall('(..)', cfn)])
         dec = crypt.decrypt(s)
         l = struct.unpack("!l", dec[:4])[0]
-        if not (0 < (len(dec) - l) < 16):
+        if not (0 < l < len(dec)):
             raise "TODO: I don't think your crypto key is correct"
         return dec[4:4+l]
