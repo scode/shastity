@@ -29,6 +29,10 @@
   (blobstore/put-blob store "key" (.getBytes "value"))
   (is (beq (blobstore/get-blob store "key") "value")))
 
+(defstore-test put-empty-blob store
+  (blobstore/put-blob store "key" (.getBytes ""))
+  (is (beq (blobstore/get-blob store "key") (.getBytes ""))))
+
 (defstore-test delete store
   (blobstore/put-blob store "key" (.getBytes "value"))
   (is (beq (blobstore/get-blob store "key") "value"))
