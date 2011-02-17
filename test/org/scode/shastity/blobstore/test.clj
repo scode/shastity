@@ -29,6 +29,23 @@
   (blobstore/put-blob store "key" (.getBytes "value"))
   (is (beq (blobstore/get-blob store "key") "value")))
 
+(defstore-test delete store
+  (blobstore/put-blob store "key" (.getBytes "value"))
+  (is (beq (blobstore/get-blob store "key") "value"))
+  (blobstore/delete-blob store "key")
+  (is (beq (blobstore/get-blob store "key") nil)))
+
+(defstore-test list-blobs-empty store
+  (is (= (set (seq (blobstore/list-blobs store))) #{})))
+
+(defstore-test list-blobs-single store
+  (blobstore/put-blob store "key" (.getBytes "value"))
+  (is (= (set (seq (blobstore/list-blobs store))) #{"key"})))
+
+(defstore-test list-blobs-multiple store
+  (blobstore/put-blob store "key1" (.getBytes "value1"))
+  (blobstore/put-blob store "key2" (.getBytes "value2"))
+  (is (= (set (seq (blobstore/list-blobs store))) #{"key1" "key2"})))
 
 
 
