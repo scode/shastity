@@ -2,10 +2,10 @@
   (:require [clojure.string :as string]))
 
 (def ^{:private true} *default-path* "~/.shastity/config")
-(def ^{:private true} *config* (ref nil))
+(def ^{:private true} *config* (atom nil))
 
 (defn- expand-home
-  "Expant ~ to user.home, non-intelligently."
+  "Expand ~ to user.home, non-intelligently."
   [s]
   (string/replace s "~" (System/getProperty "user.home")))
 
@@ -19,14 +19,17 @@
 (defn default-config-location
   []
   "Returns the default location of the shastity configuration file."
-  nil) ; TODO
+  (expand-home @*default-path*))
+
+(defn read-config
+  []
+  {}) ; TODO
 
 (defn get
   "Get the currently active configuration."
   []
-  (if @config
-    config
-    (dosync
-      (if (ensure config)
-        config
-        (ref-set config (read-config (default-config-location)))))))
+  (if-let [c @*config*]
+    c
+    (do
+      (compare-and-set! *config* nil (read-config (default-config-location)))
+      @*config*)))
