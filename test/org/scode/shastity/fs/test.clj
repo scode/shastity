@@ -21,6 +21,24 @@
     (is (.endsWith (.getName tmpfile) "suffix"))
     (.delete tmpfile)))
 
+(deftest tempdir
+  (let [tmpdir (io/as-file (fs/tempdir))]
+    (is (.exists tmpdir))
+    (.delete tmpdir)))
+
+(deftest tempdir-prefix
+  (let [tmpdir (io/as-file (fs/tempfile "prefix"))]
+    (is (.exists tmpdir))
+    (is (.startsWith (.getName tmpdir) "prefix"))
+    (.delete tmpdir)))
+
+(deftest tempdir-suffix-directory
+  (let [tmpdir (io/as-file (fs/tempfile "prefix" "suffix"))]
+    (is (.exists tmpdir))
+    (is (.startsWith (.getName tmpdir) "prefix"))
+    (is (.endsWith (.getName tmpdir) "suffix"))
+    (.delete tmpdir)))
+
 ; TODO: Test w/ directory once we have tempdir.
 
 (deftest with-tempfile
