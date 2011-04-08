@@ -25,7 +25,7 @@
   []
   {}) ; TODO
 
-(defn get
+(defn get-current
   "Get the currently active configuration."
   []
   (if-let [c @*config*]
