@@ -62,14 +62,25 @@ public class Bytes {
     }
 
     /**
-     * Construct a Bytes instance representing the given String encoded in UTF-8.
+     * Equivalent of Bytes.encode(str, "UTF-8").
+     *
+     * @param str The string to encode
+     * @return The Bytes.
+     */
+    public static Bytes encode(String str) {
+        return Bytes.encode(str, "UTF-8");
+    }
+
+    /**
+     * Construct a Bytes instance representing the given String encoded in the
+     * given charset.
      *
      * @param str The string.
      * @throws RuntimeException if an UnsupportedEncodingException is thrown.
      *
      * @return The Bytes instance.
      */
-    public static Bytes fromString(String str) {
+    public static Bytes encode(String str, String charset) {
         // Rely on String.getBytes() returning something we own.
         try {
             return Bytes.wrapArray(str.getBytes("UTF-8"));
@@ -134,11 +145,22 @@ public class Bytes {
     }
 
     /**
+     * Equivalent of decode("UTF-8").
+     * 
+     * @return The decoded string.
+     */
+    public String decode() {
+        return this.decode("UTF-8");
+    }
+
+    /**
      * @throws RuntimeException if an UnsupportedEncodingException is thrown
+     *
+     * @param charset The
      *
      * @return The string.
      */
-    public String toStringFromUtf8() {
+    public String decode(String charset) {
         try {
             return new String(this.array, "UTF-8");
         } catch (UnsupportedEncodingException e) {
