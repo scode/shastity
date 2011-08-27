@@ -37,7 +37,7 @@ public class Bytes {
             this.array = new byte[bytes.length];
             System.arraycopy(bytes, 0, this.array, 0, bytes.length);
         } else {
-            this.array = array;
+            this.array = bytes;
         }
     }
 
