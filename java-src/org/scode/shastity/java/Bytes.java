@@ -90,21 +90,6 @@ public class Bytes {
     }
 
     /**
-     * @param ch 0-9a-f
-     * @throws IllegalArgumentException if not 0-9a-f
-     * @return The int
-     */
-    private static int hexCharToValue(char ch) {
-        if (ch >= '0' && ch <= '9') {
-            return (ch - '0');
-        } else if (ch >= 'a' && ch <= 'f') {
-            return (ch - 'a');
-        } else {
-            throw new IllegalArgumentException("hex char must be 0-9 or a-f");
-        }
-    }
-
-    /**
      * Return a Bytes instance containing the bytes reprecented hexadecimally (lower case alphas) in the
      * given string.
      *
@@ -122,8 +107,14 @@ public class Bytes {
         byte[] arr = new byte[hex.length() / 2];
 
         for (int i = 0; i < arr.length; i++) {
-            arr[i] = (byte)((hexCharToValue(hex.charAt(i * 2)) << 4)
-                    | (hexCharToValue(hex.charAt(i * 2 + 1))));
+            int v1 = Character.digit(hex.charAt(i * 2), 16) << 4;
+            int v2 = Character.digit(hex.charAt(i * 2 + 1), 16);
+
+            if (v1 == -1 || v2 == -1) {
+                throw new IllegalArgumentException("invalid hex character encountered");
+            }
+
+            arr[i] = (byte)(v1 | v2);
         }
 
         return Bytes.wrapArray(arr);
