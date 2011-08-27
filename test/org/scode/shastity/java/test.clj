@@ -24,3 +24,6 @@
   (is (= 1 (.length (Bytes/fromHex "76"))))
   (is (= "test" (.decode (Bytes/fromHex "74657374"))))
   (is (= "test" (.decode (Bytes/fromHex (.toHex (Bytes/encode "test")))))))
+
+(deftest byte-length
+  (is (= 4 (.length (Bytes/encode "test")))))
