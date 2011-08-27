@@ -25,5 +25,11 @@
   (is (= "test" (.decode (Bytes/fromHex "74657374"))))
   (is (= "test" (.decode (Bytes/fromHex (.toHex (Bytes/encode "test")))))))
 
+(deftest byte-hex-full-range
+  (doall (for [x (range -128 127)]
+           (let [b (byte-array 1)]
+             (aset-byte b 0 x)
+             (is (= x (aget (.getMutableByteArray (Bytes/fromHex (.toHex (Bytes/wrapArray b)))) 0)))))))
+
 (deftest byte-length
   (is (= 4 (.length (Bytes/encode "test")))))

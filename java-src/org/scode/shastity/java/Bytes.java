@@ -128,9 +128,9 @@ public class Bytes {
     public String toHex() {
         StringBuffer sb = new StringBuffer();
 
-        for (int b : this.array) {
-            sb.append(hexAlphas[b >> 4]);
-            sb.append(hexAlphas[b & 0x0F]);
+        for (byte b : this.array) {
+            sb.append(hexAlphas[(b & 0xF0) >> 4]);
+            sb.append(hexAlphas[(b & 0x0F)]);
         }
         return sb.toString();
     }
