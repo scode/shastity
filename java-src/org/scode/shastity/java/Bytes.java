@@ -8,7 +8,7 @@ package org.scode.shastity.java;
 public class Bytes {
     public static Bytes EMPTY = new Bytes();
 
-    private static byte[] array;
+    private byte[] array;
 
     /**
      * Create an empty Bytes.
