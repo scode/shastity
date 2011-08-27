@@ -1,4 +1,4 @@
-(ns org.scode.shastity
+(ns org.scode.shastity.main
   (:gen-class)
   (:require [clojure.contrib.command-line :as cmdline]))
 
