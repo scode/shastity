@@ -8,7 +8,7 @@ import java.util.Arrays;
  * strict immutability enforced.
  */
 public class Bytes {
-    public static Bytes EMPTY = new Bytes();
+    public static final Bytes EMPTY = new Bytes();
 
     private byte[] array;
 
