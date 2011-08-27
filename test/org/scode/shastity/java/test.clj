@@ -2,4 +2,5 @@
   (:import [org.scode.shastity.java Bytes])
   (:use [clojure.test]))
 
-
+(deftest byte-empty-equals
+  (is (= Bytes/EMPTY (Bytes.))))

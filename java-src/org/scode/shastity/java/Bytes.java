@@ -1,5 +1,7 @@
 package org.scode.shastity.java;
 
+import java.util.Arrays;
+
 /**
  * Bytes is a thin wrapper around a byte[] array which allows treating bytestrings as values, and avoids
  * accidentally leaking mutable state. The underlying byte[] is accessible by explicit request, so there is no
@@ -53,5 +55,22 @@ public class Bytes {
 
     public byte[] getMutableByteArray() {
         return this.array;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Bytes bytes = (Bytes) o;
+
+        if (!Arrays.equals(array, bytes.array)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return array != null ? Arrays.hashCode(array) : 0;
     }
 }
