@@ -4,9 +4,10 @@ import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 
 /**
- * Bytes is a thin wrapper around a byte[] array which allows treating bytestrings as values, and avoids
- * accidentally leaking mutable state. The underlying byte[] is accessible by explicit request, so there is no
- * strict immutability enforced.
+ * Bytes is a thin wrapper around a byte[] array which allows treating bytestrings as values (hashCode/equals),
+ * and avoids accidentally leaking mutable state.
+ *
+ * The underlying byte[] is accessible by explicit request, so there is no strict immutability enforced.
  */
 public class Bytes {
     public static final Bytes EMPTY = new Bytes();
