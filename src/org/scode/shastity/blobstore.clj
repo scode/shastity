@@ -6,6 +6,7 @@
   equivalent to S3 style eventual consistency."
   (put-blob [store name value] "Put a blob (byte array) into the store")
   (get-blob [store name] "Get a blob (byte array) from the store; nil if non-existent")
+  (has-blob [store name] "Return whether the blob exists in the store")
   (delete-blob [store name] "Delete a blob (byte array) from the store")
   (list-blobs [store] "Return seqable of all names in the store"))
 
