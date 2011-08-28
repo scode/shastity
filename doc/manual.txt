@@ -96,7 +96,7 @@ This is determined only by the contents of the file (there is no
 separate piece of information that says that the text "hello world" is
 stored in that file; it is determined solely based on the text
 itself).
-   
+
 In order to accomplish the mapping from content ("hello world" above)
 to storage location (the file 6f5902ac237024bdd0c176cb93063dc4 above),
 a cryptographic hashing algorithm is used. In the above example, MD5
@@ -200,13 +200,23 @@ TODO: provide example
 
 
 === Encryption ===
-Before storing a file the backend encrypts the filename (hash of file
-content or name of manifest) using a repo-wide key with AES in CBC-mode.
+NOTE: this describes intended implementation, not reality.
 
-The filename is encrypted and not hashed (for example with HMAC) since
-we want to be able to reverse the encryption when doing GC, and when
-listing manifestos.
+Previous sections have described the fundamentals of the shastity
+storage models, without taking into account encryption. Encryption is
+done as follows.
 
-The file contents is encrypted using AES in CBC mode with the same key
-as the filenames, but the data is salted. TODO: be specific.  TODO:
-Security implications of using the same key?
+Each backup repository is associated with an encryption key; a
+"secret" that must be kept safe by the user. The encryption key is
+used for encryption as follows:
+
+  * The *names* of all uploaded files are encrypted. This includes both
+    manifest filenames as well as the content-addressible blob filenames.
+  * The *contents* of all uploaded files are encrypted.
+
+The reason the names are encrypted and not hashed/MAC:ed is that we
+want to be able to reverse the filenames when performing a garbage
+collection operation.
+
+TODO: Security implications of using the same key for fname crypto and contents?
+
