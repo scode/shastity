@@ -1,5 +1,7 @@
 package org.scode.shastity.java;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 
@@ -60,6 +62,10 @@ public class Bytes {
 
     public byte[] getMutableByteArray() {
         return this.array;
+    }
+
+    public InputStream getInputStream() {
+        return new ByteArrayInputStream(this.array);
     }
 
     /**
