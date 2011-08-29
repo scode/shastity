@@ -55,6 +55,10 @@
   (blobstore/delete-blob store "key")
   (is (= (blobstore/get-blob store "key") nil)))
 
+(defstore-test delete-non-existing store
+  (is (not (blobstore/has-blob store "key")))
+  (blobstore/delete-blob store "key"))
+
 (defstore-test list-blobs-empty store
   (is (= (set (seq (blobstore/list-blobs store))) #{})))
 
