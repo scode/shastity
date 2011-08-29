@@ -5,11 +5,12 @@
 
 (deftype S3Store [s3-client bucket-name path]
   ;; TODO: prefix vs. path; validate trailing / if need be
-  ;; TODO: md5 and other metadata, content length
   ;; TODO: list-blobs should stream
   ;; TODO: existence check triggers spurious logging by the AWS SDK :(
   blobstore/BlobStore
-  (put-blob [store name value] (.putObject s3-client bucket-name (str path name) (.getInputStream value) (ObjectMetadata.)))
+  (put-blob [store name value] (let [meta-data (ObjectMetadata.)]
+                                 (.setContentLength meta-data (.length value))
+                                 (.putObject s3-client bucket-name (str path name) (.getInputStream value) meta-data)))
   (has-blob [store name] (try
                            (let [meta-data (.getObjectMetadata s3-client bucket-name (str path name))]
                              true)
