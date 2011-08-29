@@ -7,7 +7,7 @@
 (deftype S3Store [s3-client bucket-name path]
   ;; TODO: prefix vs. path; validate trailing / if need be
   ;; TODO: md5 and other metadata, content length
-  ;; TODO: existence test broken - check api; we don't get a nice exception back and having to use listObjects sucks
+  ;; TODO: existence test broken - use getStatuCode() (which I previously missed existed)
   ;; TODO: list-blobs should stream
   blobstore/BlobStore
   (put-blob [store name value] (.putObject s3-client bucket-name (str path name) (.getInputStream value) (ObjectMetadata.)))
