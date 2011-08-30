@@ -71,5 +71,15 @@
   (blobstore/put-blob store "key2" (Bytes/encode "value2"))
   (is (= (set (seq (blobstore/list-blobs store))) #{"key1" "key2"})))
 
+(defstore-test list-blobs-many store
+  ; This is currently pretty s3 specific in its usefulness. Set page size small enough
+  ; that we can comfortable do our "more than a page or two" unit test with a reasonable
+  ; number of accesses. Should maybe not use defstore-test for this and just specifically
+  ; test s3.
+  (binding [org.scode.shastity.blobstore.s3/*s3-listing-page-size* 3]
+    (doall (for [i (range 10)]
+             (blobstore/put-blob store (str "key" i) (Bytes/encode (str "value" i)))))
+    (is (= (set (seq (blobstore/list-blobs store))) (set (map #(str "key" %1) (range 10)))))))
+
 
 
