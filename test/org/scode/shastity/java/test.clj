@@ -17,13 +17,16 @@
     (is (= b (.getMutableByteArray (Bytes/wrapArray b))))))
 
 (deftest byte-utf8
-  (is (= "åäö" (.decode (Bytes/encode "åäö")))))
+  ;; c3b6 is utf-8 for o-with-two-dots, f6 is same in latin1
+  (is (= 1 (.length (.decode (Bytes/fromHex "c3b6")))))
+  (is (= "f6" (.toHex (Bytes. (.getBytes (.decode (Bytes/fromHex "c3b6")) "latin1"))))))
 
 (deftest byte-hex
   (is (= "74657374" (.toHex (Bytes/encode "test"))))
   (is (= 1 (.length (Bytes/fromHex "76"))))
   (is (= "test" (.decode (Bytes/fromHex "74657374"))))
-  (is (= "test" (.decode (Bytes/fromHex (.toHex (Bytes/encode "test")))))))
+  (is (= "test" (.decode (Bytes/fromHex (.toHex (Bytes/encode "test"))))))
+  (is (= "c3b6" (.toHex (Bytes/fromHex "c3b6")))))
 
 (deftest byte-hex-full-range
   (doall (for [x (range -128 127)]
