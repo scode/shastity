@@ -1,5 +1,13 @@
+== Random stuff ==
+
+* POSIX: JNI, JNA, external process?
+** JNI/JNA is annoying for build reasons. External process for communication reasons, but siomple to provide a portable .c file + Makefile.
+** Would always be possible to use shastity without native integration for doing things like just backing up a hierarchy of images where you don't care.
+* Release: Make official .jar releases with no dependency other than JDK (and C compiler for native parts if needed).
+** Users to be encouraged to store such things safely with their backups or elsewhere to not depend on github/upstream.
 
 == Block PUT scheduling ==
+
 If there are many small blocks and many big blocks in the queue, they should
 be scheduled so that big ones run in the background while the small ones
 pop in and out. This is because big blocks are limited by bandwidth and small
@@ -14,16 +22,48 @@ keep highly concurrent, while limiting extreme concurrencies for big
 data that might cause memory to become a bottleneck in trying to
 achieve wire speeds.
 
+A problem is that it means that once one queue is full, a persist
+process must still continue and not block on the queue. So it will
+have to queue up stuff to be done later in a safe way that doesn't
+cause memory consumption issues.
+
+I think a good first solution is to not introduce complexity at all,
+and just have a concurrency which is defined by memory use and have
+that limit be at least N times the block size, N being the concurrency
+needed to saturate whatever you want to saturate when transfering
+large files. This will mean that concurrency is actually continuously
+dynamic depending on the size of things being uploaded - though of
+course subject to some maximum hard concurrency limit which may be
+relevant depending on backend.
+
 == GC ==
 In order to GC you need access to all crypto keys, or you won't be able to
 read the manifests to know what blocks are in use, and you won't know the
 encrypted names of the blocks when you want to delete them.
 
-== GPG ==
+== Crypto ==
 Use GPG for data encryption? KeyCzar?
 Manifest could contain which crypto wrapper to use for a given block.
 That way you don't have to re-upload if you change your mind.
 
+UPDATE: KeyCzar doesn't seem very alive, people have issues with it,
+and format isn't guaranteed. GPG is out because of shell tool reasons
+among other things. Let's just go for using standard Java crypto and
+doing our own, at the cost of having to get some input from crypto
+people to confirm with reasonable certainty that we're doing things
+correctly from a security standpoint.
+
+Should provide an easy way (cmdline options) for someone to decrypt
+and encrypt individual blocks independently of the persist/depersist
+process. Should also be exposed as a library so that a developer can
+easily write a tool that does encryption/decryption without
+re-factoring the shastity code base...
+
 == Amazon MD5 ==
 Store MD5 as amazon metadata.
 Also double-check when materializing.
+
+UPDATE: Why? (Split people editing this file.) We have our own
+checksum anyway. But yes, MD5 should certainly be set during the
+upload process by the S3 backend. But I don't see a need to consider
+backend specific checksumming outside of the backend.
