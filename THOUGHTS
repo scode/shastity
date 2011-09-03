@@ -67,3 +67,100 @@ UPDATE: Why? (Split people editing this file.) We have our own
 checksum anyway. But yes, MD5 should certainly be set during the
 upload process by the S3 backend. But I don't see a need to consider
 backend specific checksumming outside of the backend.
+
+== Manifest format ==
+Primary goals are:
+
+* (1) Very easy to manually inspect/use/understand and deal with via shell tools
+* (2) Must scale to large backups (hundreds of millions of files)
+* (3) Must scale to large individual files (at least 1 TB)
+
+We will propose a file format and then look at how the requirements
+are fulfilled.
+
+Let us apply compression (e.g. gzip, or bzip2, or blocked gzip) to the
+entire file so we do not need to be very careful about being verbose
+as long as it's repeated and compressible.
+
+Let's have the manifest be line-oriented, and start with a single
+line:
+
+  shastity 1.0 manifest # this is a backup manifest for shastity
+
+And then a list of lines, sorted on path, of:
+
+  $path $meta $hash1 $hash2 ... $hashN
+
+Assume that path and meta are both encoded with a simple escaping
+mechanism to eliminate any whitespace and generally non-ascii stuff
+for easy handling in a shell.
+
+Further:
+
+* path is the plain path
+* meta is a not-so-human-readable data structure (probably a clojure map) of
+  meta-data; here we can stuff arbitrary stuff in an extensible manner without
+  breaking basic simplicity. having "arbitrary blob" means that from a development
+  standpoint we don't need a lot of code to handle this, and can just serialize a clojure
+  data structure - done. it's still not super-opaque though if someone is truly in a pinch.
+* hashes are hexdigests
+* there may be zero hashes (e.g., in the case of a symlink)
+
+How does this stack up?
+
+(1) is very well catered do. You can obtain a list of blocks to append
+to construct a file by doing stuff like:
+
+  `cat manifest | egrep ^/path/to/file\ | tr \ \\n | tail -n +3`
+
+And restoring it is as easy as:
+
+  `for block in $(cat manifest | egrep ^/path/to/file\ | tr \ \\n | tail -n +3) ; do store-get $block >> file ; done`
+
+Assuming `store-get` is something which grabs a block from
+store. Obviously slight adjustments may be necessary.
+
+(2) mainly has to do with the size and handling of a manifest. A very
+non-scientific test is a "find ." in my home directory containing a
+mix of manually cared-for data files and stuff like vcs checkouts of
+non-trivial projects like openjdk. I had 347 thousand files, and the
+file listing became 28 MB in size. After gzip compression it's down to
+2.1 MB. Let's say that a 10x compression ratio is pretty okay. Let's
+further arbitrarily use 100 million files as a test case. Let's assume
+the typical path is roughly 50 bytes long, and is compressible by 10x
+by gzip.
+
+With those numbers, 100 million paths translate into 476 MBs of
+manifest data for the paths. Even assuming a total data size of 1k per
+file including fs overhead, that's pretty reasonable (< 1% of data is
+manifest data).
+
+hexdigests are another matter, but can be efficiently tweaked
+depending on what's being backed up and there is an obvious
+relationship between block size and manifest size. If you truly have
+huge files with a huge number of changes spread out and want a small
+block size - then yeah, you're going to have to have a lot of meta
+data. Tough. :)
+
+So (3), already touched upon: We're fine. Let's assume a 1 TB file and
+a 5 MB block size. That's roughly 200k of memory per hexdigest byte or
+8 MB of text assuming 40 byte hex digests. This is *quite* reasonable
+to have as a single line of text; shells won't explode, memory use
+won't explode when doing a read-line operation in code, etc.
+
+So, with the only streaming need being to stream the entire file, we
+can treat each line in the file as an object and process it with
+reasonable memory use. We are using a reasonable amount of disk space
+and bandwidth for the manifests in relation to the amount of data and
+the amount of files being backed up.
+
+We have no O(n) memory use for any N which is not "reasonably
+bounded".
+
+For incremental backups, nothing prevents from using the manifest
+format incrementally to some extent (though it adds complexity and
+makes manifests non-standalone). Typical use-case should probably be
+non-incremental, but incremental would be nice when e.g. doing
+continuous backups based on file system change monitoring and things
+like that.
+
