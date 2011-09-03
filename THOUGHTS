@@ -85,9 +85,13 @@ as long as it's repeated and compressible.
 Let's have the manifest be line-oriented, and start with a single
 line:
 
-  shastity 1.0 manifest # this is a backup manifest for shastity
+  # shastity 1.0 manifest
 
-And then a list of lines, sorted on path, of:
+And let's have the final line be (containing hex digest of all preceeding data):
+
+  # shastity 1.0 manifest hexdigest HEXHEXHEX
+
+In between, a list of lines, sorted on path, of:
 
   $path $meta $hash1 $hash2 ... $hashN
 
@@ -163,4 +167,53 @@ makes manifests non-standalone). Typical use-case should probably be
 non-incremental, but incremental would be nice when e.g. doing
 continuous backups based on file system change monitoring and things
 like that.
+
+== Ensuring backup consistency ==
+
+There are some nice things that are possible given shastity's data
+model. We can verify integrity of individual blocks indepdendently of
+others; so we can do things like probabilistically sampling 0.1% of
+blocks and report any problems to the user. This offers a good way to
+detect systematic problems in the storage backend that affect a
+non-trivial amount of data, without actually needing to read
+everything from the store.
+
+Such a test can also be made in a deterministically forward fashion;
+e.g. test 1% of blocks every day in such a way that after 100 days
+everything has been tested.
+
+The same goes for manifests, being very "independent". They can be
+checked for consistency either fully or probabilistically.
+
+So; we have some good basics for doing intelligent things. Those
+things need to be implement too of course. Some potential features to
+have:
+
+* "shastity random-blob-consistency-check 1%" - check 1% pseudo-random blocks in store
+* "shastity rolling-blob-consistency-check 57/100" - check 1% of blobs in a 100-step process, this being step 57
+* "shastity random-manifest-check 1%"
+* "shastity rolling-manifest-check 57/100"
+* "shastity compare" - attempt to compare on-disk state with manifest.
+* When operating in a mode which elides checksumming for files whose meta-data matches that of a previous
+  manifest, we can support probabilistically hashing anyway such that the user can hope to detect cases
+  where the performance optimzation is broken.
+
+== Performance/system issues ==
+
+* We could support use of mincore() and posix_fadvise() to try to avoid evicting page cache.
+* We could support rate limited reads from disk.
+* We SHOULD be able to operate in a "native" mode where we accurately traverse directories
+  using proper use of the posix API, to not be vulnerable to volatile paths or metadata/data.
+  Until this is supported, use of file system snapshots (which is recommended anyway) eliminates
+  this problem.
+
+== Scalable use at organizations ==
+
+* We could support using the same blob store for independent collections of manifests. We must however
+  be careful about garbage collection.
+* We could support sharding over multiple blob stores to facilitate easy scalability by adding servers
+  without complex operations. We can even support this without requireing some kind of stop-and-copy-and-start
+  process by being consciece during reads of potential locations of data. Use consistent hashing. Means copying
+  a lot of data in between hosts, but makes it trivial and devoid of a bunch of meta data and consistency concerns.
+
 
