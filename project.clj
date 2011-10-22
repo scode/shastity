@@ -3,6 +3,6 @@
   :url "https://github.com/scode/shastity"
   :dependencies [[org.clojure/clojure "1.2.1"]
                  [org.clojure/clojure-contrib "1.2.0"]
-                 [com.amazonaws/aws-java-sdk "1.2.7"]]
+                 [com.amazonaws/aws-java-sdk "1.2.10"]]
   :java-source-path "java-src"
   :main org.scode.shastity.main)
