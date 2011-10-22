@@ -3,7 +3,7 @@
   (:import [org.scode.shastity.java Bytes]
            [com.amazonaws.services.s3.model ObjectMetadata ListObjectsRequest AmazonS3Exception]))
 
-(def *s3-listing-page-size* 1000) ; def:ed so that unit tests can control it
+(def ^:dynamic *s3-listing-page-size* 1000) ; def:ed so that unit tests can control it
 
 (deftype S3Store [s3-client bucket-name path]
   ;; TODO: prefix vs. path; validate trailing / if need be
@@ -38,7 +38,7 @@
                                         (assert (.startsWith key path))
                                         (.substring key (.length path)))
                             get-listing (fn get-listing ([] (get-listing ""))
-                                                        ([marker] (.listObjects s3-client (ListObjectsRequest. bucket-name path marker "" *s3-listing-page-size*))))
+                                                        ([marker] (.listObjects s3-client (ListObjectsRequest. bucket-name path marker "" (Integer. *s3-listing-page-size*)))))
                             summaries-to-keys (fn [summaries] (map #(strip-key (.getKey %1)) summaries))
                             lazy-iter (fn lazy-iter ([object-listing] (lazy-iter object-listing (summaries-to-keys (seq (.getObjectSummaries object-listing)))))
                                                     ([object-listing cur-keys]
