@@ -11,6 +11,7 @@
     (is (= "test-val" (:test-key (cfg/read-config-file p))))))
 
 (deftest get-from
+  (is (= {} (cfg/get-from {})))
   (is (= "test-val" (cfg/get-from {:test-key "test-val"} :test-key)))
   (is (= "test-val" (cfg/get-from {:test-1 {:test-2 "test-val"}} :test-1 :test-2)))
   (is (= "test-val" (cfg/get-from {:test-1 {:test-2 {:test-3 "test-val"}}} :test-1 :test-2 :test-3))))

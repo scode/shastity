@@ -46,12 +46,14 @@
   [obj & keys]
   "Return the value reached by traversing obj by looking up the keys given. For example,
   (get-from {...} :a :b :c) is equivalent to (:c (:b (:a {...})))."
-  (loop [obj obj
-         key (first keys)
-         xs (rest keys)]
-    (if (seq xs)
-      (recur (get obj key) (first xs) (rest xs))
-      (get obj key))))
+  (if (seq keys)
+    (loop [obj obj
+           key (first keys)
+           xs (rest keys)]
+      (if (seq xs)
+        (recur (get obj key) (first xs) (rest xs))
+        (get obj key)))
+    obj))
 
 (defn get
   [& keys]
