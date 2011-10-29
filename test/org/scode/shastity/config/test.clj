@@ -1,6 +1,13 @@
 (ns org.scode.shastity.config.test
-  (:require [org.scode.shastity.config :as cfg])
+  (:require [clojure.java.io :as jio]
+            [org.scode.shastity.config :as cfg]
+            [org.scode.shastity.fs :as fs])
   (:use [clojure.test]))
 
+(deftest read-config-file
+  (fs/with-tempfile [p]
+    (with-open [w (jio/writer (jio/file p))]
+      (.write w "{ :test-key \"test-val\"}"))
+    (is (= "test-val" (:test-key (cfg/read-config-file p))))))
 
 

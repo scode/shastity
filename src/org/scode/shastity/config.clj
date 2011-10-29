@@ -1,5 +1,6 @@
 (ns org.scode.shastity.config
-  (:require [clojure.string :as string]))
+  (:require [clojure.string :as string]
+            [clojure.java.io :as jio]))
 
 (def ^{:private true} *default-path* "~/.shastity/config")
 (def ^{:private true} *config* (atom nil))
@@ -21,9 +22,10 @@
   "Returns the default location of the shastity configuration file."
   (expand-home @*default-path*))
 
-(defn read-config
-  []
-  {}) ; TODO
+(defn read-config-file
+  [path]
+  (with-open [r (java.io.PushbackReader. (jio/reader (jio/file path)))]
+    (read r)))
 
 (defn get-current
   "Get the currently active configuration."
@@ -31,5 +33,5 @@
   (if-let [c @*config*]
     c
     (do
-      (compare-and-set! *config* nil (read-config (default-config-location)))
+      (compare-and-set! *config* nil (read-config-file (default-config-location)))
       @*config*)))
