@@ -12,7 +12,5 @@
 
 (deftest get-from
   (is (= "test-val" (cfg/get-from {:test-key "test-val"} :test-key)))
-  (is (= "test-val" (cfg/get-from {:test-1 {:test-2 "test-val"}} :test-1 :test-2))))
-
-  
-
+  (is (= "test-val" (cfg/get-from {:test-1 {:test-2 "test-val"}} :test-1 :test-2)))
+  (is (= "test-val" (cfg/get-from {:test-1 {:test-2 {:test-3 "test-val"}}} :test-1 :test-2 :test-3))))
