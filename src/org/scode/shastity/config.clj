@@ -13,19 +13,25 @@
 (defn set-default-config-location
   "Set the default location of the configuration file. This is only meant to be set on
   early bootstrap or in unit tests; arbitrarly changing it during a shastity session
-  is not supported."
+  is not supported. Can still be over-rodden with SHASTITY_CONFIG environment variable."
   [default-path]
   (set! *default-path* default-path))
 
-(defn default-config-location
+(defn config-location
   []
-  "Returns the default location of the shastity configuration file."
-  (expand-home @*default-path*))
+  "Returns the location of the shastity configuration file. There is a default in *defualt-path* which
+  can be modified using set-default-config-lcoation (but see its documentation for limitations); it
+  can also be overridden using the SHASTITY_CONFIG environment variable."
+  (if-let [env-path (System/getProperty "SHASTITY_CONFIG")]
+    (expand-home env-path)
+    (expand-home *default-path*)))
 
 (defn read-config-file
   [path]
-  (with-open [r (java.io.PushbackReader. (jio/reader (jio/file path)))]
-    (read r)))
+  (if (.exists (jio/file path))
+    (with-open [r (java.io.PushbackReader. (jio/reader (jio/file path)))]
+      (read r))
+    {}))
 
 (defn get-current
   "Get the currently active configuration."
