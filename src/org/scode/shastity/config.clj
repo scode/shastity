@@ -57,4 +57,4 @@
 
 (defn get
   [& keys]
-  (get-from (get-current) keys))
+  (apply get-from (get-current) keys))
