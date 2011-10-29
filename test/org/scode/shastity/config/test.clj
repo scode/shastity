@@ -10,4 +10,9 @@
       (.write w "{ :test-key \"test-val\"}"))
     (is (= "test-val" (:test-key (cfg/read-config-file p))))))
 
+(deftest get-from
+  (is (= "test-val" (cfg/get-from {:test-key "test-val"} :test-key)))
+  (is (= "test-val" (cfg/get-from {:test-1 {:test-2 "test-val"}} :test-1 :test-2))))
+
+  
 

@@ -1,7 +1,8 @@
 (ns org.scode.shastity.blobstore.test
   (:require [org.scode.shastity.blobstore :as blobstore]
             [org.scode.shastity.blobstore.memory]
-            [org.scode.shastity.blobstore.s3])
+            [org.scode.shastity.blobstore.s3]
+            [org.scode.shastity.config :as cfg])
   (:import [org.scode.shastity.java Bytes]
            [com.amazonaws.services.s3 AmazonS3Client]
            [com.amazonaws.auth BasicAWSCredentials])
@@ -80,6 +81,3 @@
     (doall (for [i (range 10)]
              (blobstore/put-blob store (str "key" i) (Bytes/encode (str "value" i)))))
     (is (= (set (seq (blobstore/list-blobs store))) (set (map #(str "key" %1) (range 10)))))))
-
-
-
