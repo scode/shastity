@@ -70,9 +70,8 @@
     (dosync
       (ref-set finalized true)))
   (upload [manifest store name]
-    (let [sorted-objects (sort (comparator #(first %1) @objects))
-          string-writer (java.io.StringWriter.)]
-      (doseq [[pathname metadata hashes] sorted-objects]
+    (let [string-writer (java.io.StringWriter.)]
+      (doseq [[pathname metadata hashes] @objects]
         (doto string-writer
           (.write (encode pathname))
           (.write " ")
@@ -86,4 +85,4 @@
       (blobstore/put-blob store name (Bytes/encode (.toString string-writer))))))
 
 (defn create-manifest-writer []
-  (.InMemoryManifestWriter (ref #{}) (ref false)))
+  (.InMemoryManifestWriter (ref (sorted-set-by (comparator #(first %)))) (ref false)))
