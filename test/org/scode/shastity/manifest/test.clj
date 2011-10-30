@@ -26,6 +26,12 @@
     (is (= ["name" {:key 1} []] (manifest/decode-object (str "name " meta))))
     (is (= ["name" {:key 1} ["hash1" "hash2"]] (manifest/decode-object (str "name " meta " hash1 hash2"))))))
 
+(deftest encode-object
+  (doseq [[name meta hashes] [["name" {:key 1} []]
+                            ["name" {:key 1} [ "deadbeef" ]]
+                            ["name" {:key 1} [ "daedbeef" "beefdead" ]]]]
+    (is (= [name meta hashes] (manifest/decode-object (manifest/encode-object [name meta hashes]))))))
+
 (deftest empty-manifest
   (with-store [store]
     (let [writer (manifest/create-manifest-writer)]
