@@ -3,6 +3,11 @@
   (:import [org.scode.shastity.java Bytes])
   (:use [clojure.test]))
 
+(defmacro with-store [[name] & body]
+  "Execute body with a memory store bound to the given name."
+  `(let [~name (org.scode.shastity.blobstore.memory.MemoryStore. (ref {}))]
+     ~@body))
+
 (deftest string-encode
   (is (= "test" (manifest/encode "test")))
   (is (= "%24test" (manifest/encode "$test")))
@@ -20,6 +25,13 @@
   (is (= ["name" "meta" []] (manifest/parse-object "name meta")))
   (is (= ["name" "meta" ["hash1" "hash2"]] (manifest/parse-object "name meta hash1 hash2"))))
 
+(deftest empty-manifest
+  (with-store [store]
+    (let [writer (manifest/create-manifest-writer)]
+      (manifest/freeze writer)
+      (manifest/upload writer store "empty-manifest"))
+    (let [reader (manifest/create-manifest-reader)]
+      (is (= (seq []) (manifest/get-objects reader store "empty-manifest"))))))
 
 
 

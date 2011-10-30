@@ -114,14 +114,14 @@
 
 (deftype InMemoryManifestReader []
   ManifestReader
-  (get-objects [reader store name]
+  (get-objects [r store name]
     (let [manifest-blob (blobstore/get-blob store name)
           manifest-string (.decode manifest-blob)
-          rin (reader (java.io.StringReader. manifest-string))]
+          rin (jio/reader (java.io.StringReader. manifest-string))]
       (loop [objects (sorted-set-by (comparator #(first %)))]
         (let [line (.readLine rin)]
           (if (nil? line)
-            objects
+            (seq objects)
             (recur (conj objects (parse-object line)))))))))
 
 (defn create-manifest-writer []
