@@ -77,6 +77,28 @@
               (recur (rest remainder)))))))
     (String. (.toByteArray out) "UTF-8")))
 
+(defn encode-object [[pathname metadata hashes]] ; todo private
+  (let [string-writer (java.io.StringWriter.)]
+    (doto string-writer
+      (.write (encode pathname))
+      (.write " ")
+      (.write (encode (str metadata)))
+      (.write " "))
+    (doseq [hash hashes]
+      (doto string-writer
+        (.write hash)
+        (.write " ")))
+    (.toString string-writer)))
+
+(defn decode-object [str] ; todo private
+  (let [[name meta & hashes] (string/split str #" ")]
+    (if (or (nil? name) (nil? meta))
+      (throw (RuntimeException. (str "missing meta and maybe name in manifest line: " str)))
+      (let [dec-name (decode name)
+            dec-meta (decode meta)]
+        ;; todo: validate that hashes are appropriate hexdigests
+        [dec-name dec-meta (if (seq? hashes) hashes [])]))))
+
 ;; TODO: Replace with manifest writer using a tempfile and sorting on finalize.
 (deftype InMemoryManifestWriter [objects finalized]
   ManifestWriter
@@ -90,27 +112,9 @@
   (upload [manifest store name]
     (let [string-writer (java.io.StringWriter.)]
       (doseq [[pathname metadata hashes] @objects]
-        (doto string-writer
-          (.write (encode pathname))
-          (.write " ")
-          (.write (encode (str metadata)))
-          (.write " "))
-        (doseq [hash hashes]
-          (doto string-writer
-            (.write hash)
-            (.write " ")))
+        (.write string-writer (encode-object [pathname metadata hashes]))
         (.write string-writer "\n"))
       (blobstore/put-blob store name (Bytes/encode (.toString string-writer))))))
-
-(defn decode-object [str] ; todo private
-  (let [[name meta & hashes] (string/split str #" ")]
-    (if (or (nil? name) (nil? meta))
-      (throw (RuntimeException. (str "missing meta and maybe name in manifest line: " str)))
-      (let [dec-name (decode name)
-            dec-meta (decode meta)]
-        ;; todo: validate that hashes are appropriate hexdigests
-        [dec-name dec-meta (if (seq? hashes) hashes [])]))))
-
 
 (deftype InMemoryManifestReader []
   ManifestReader
