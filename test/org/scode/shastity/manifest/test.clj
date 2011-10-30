@@ -20,10 +20,10 @@
   (is (= "%test" (manifest/decode "%25test")))
   (is (= (.decode (Bytes/fromHex "c3b6")) (manifest/decode "%c3%b6"))))
 
-(deftest parse-object
-  (is (= ["name" "meta" ["hash1"]] (manifest/parse-object "name meta hash1")))
-  (is (= ["name" "meta" []] (manifest/parse-object "name meta")))
-  (is (= ["name" "meta" ["hash1" "hash2"]] (manifest/parse-object "name meta hash1 hash2"))))
+(deftest decode-object
+  (is (= ["name" "meta" ["hash1"]] (manifest/decode-object "name meta hash1")))
+  (is (= ["name" "meta" []] (manifest/decode-object "name meta")))
+  (is (= ["name" "meta" ["hash1" "hash2"]] (manifest/decode-object "name meta hash1 hash2"))))
 
 (deftest empty-manifest
   (with-store [store]

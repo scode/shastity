@@ -102,7 +102,7 @@
         (.write string-writer "\n"))
       (blobstore/put-blob store name (Bytes/encode (.toString string-writer))))))
 
-(defn parse-object [str] ; todo private
+(defn decode-object [str] ; todo private
   (let [[name meta & hashes] (string/split str #" ")]
     (if (or (nil? name) (nil? meta))
       (throw (RuntimeException. (str "missing meta and maybe name in manifest line: " str)))
@@ -122,7 +122,7 @@
         (let [line (.readLine rin)]
           (if (nil? line)
             (seq objects)
-            (recur (conj objects (parse-object line)))))))))
+            (recur (conj objects (decode-object line)))))))))
 
 (defn create-manifest-writer []
   (InMemoryManifestWriter. (ref (sorted-set-by (comparator #(first %)))) (ref false)))
