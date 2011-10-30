@@ -95,7 +95,7 @@
     (if (or (nil? name) (nil? meta))
       (throw (RuntimeException. (str "missing meta and maybe name in manifest line: " str)))
       (let [dec-name (decode name)
-            dec-meta (decode meta)]
+            dec-meta (read-string (decode meta))]
         ;; todo: validate that hashes are appropriate hexdigests
         [dec-name dec-meta (if (seq? hashes) hashes [])]))))
 
