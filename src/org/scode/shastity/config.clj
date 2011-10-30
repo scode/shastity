@@ -33,7 +33,7 @@
       (read r))
     {}))
 
-(defn get-current
+(defn- current-configuration
   "Get the currently active configuration."
   []
   (if-let [c @*config*]
@@ -57,4 +57,4 @@
 
 (defn lookup
   [& keys]
-  (apply lookup-from (get-current) keys))
+  (apply lookup-from (current-configuration) keys))
