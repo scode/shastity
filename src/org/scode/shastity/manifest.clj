@@ -1,15 +1,33 @@
 (ns org.scode.shastity.manifest
-  (:require [org.scode.shastity.blobstore :as blobstore])
+  (:require [org.scode.shastity.blobstore :as blobstore]
+            [clojure.string :as string]
+            [clojure.java.io :as jio])
   (:import [org.scode.shastity.java Bytes]))
 
 (defprotocol ManifestWriter
-  ""
+  "A thin abstraction for ceating a manifest. We do not want to use a native clojure data structure because we
+  do not want to keep an entire manifest in memory. The operations we want to do are essentially to incrementally add
+  to one, and to stream through a manifest (in sorted order).
+
+  In a future clojure, maybe we can use streams for this. For now, I have this. Better suggestions welcome, as
+  I am not sure what would be most idiomatic.
+
+  The distinction between freeze and upload is there because it is presume that there may be work involved that is
+  locally performance-bound (e.g, doing a merge-sort of data on disk) and it is nice to schedule that separately
+  from the upload which is backend bound (presumably).
+
+  For reading a manifest, a ManifestReader is used."
   (add-object [manifest pathname metadata hashes]
     "Add the given pathname (must be unique) to the manifest, associating the given meta-data and seqable of hashes.")
   (freeze [manifest]
     "Finalize the manifest, producing contentes ready to be uploaded and preventing further paths to be added.")
   (upload [manifest store name]
     "Upload the manifest to the given blob store under the given name."))
+
+(defprotocol ManifestReader
+  "Counterpart of ManifestWrite. See its documentation for general rationale."
+  (get-objects [reader store name]
+    "Get sequence (presumably either small or lazy) of objets in the manifest, in sorter (on name) order. "))
 
 (def ^:private ^:dynamic *character-whitelist* (into #{}
                                                  (str
@@ -84,5 +102,31 @@
         (.write string-writer "\n"))
       (blobstore/put-blob store name (Bytes/encode (.toString string-writer))))))
 
+(defn parse-object [str] ; todo private
+  (let [[name meta & hashes] (string/split str #" ")]
+    (if (or (nil? name) (nil? meta))
+      (throw (RuntimeException. (str "missing meta and maybe name in manifest line: " str)))
+      (let [dec-name (decode name)
+            dec-meta (decode meta)]
+        ;; todo: validate that hashes are appropriate hexdigests
+        [dec-name dec-meta (if (seq? hashes) hashes [])]))))
+
+
+(deftype InMemoryManifestReader []
+  ManifestReader
+  (get-objects [reader store name]
+    (let [manifest-blob (blobstore/get-blob store name)
+          manifest-string (.decode manifest-blob)
+          rin (reader (java.io.StringReader. manifest-string))]
+      (loop [objects (sorted-set-by (comparator #(first %)))]
+        (let [line (.readLine rin)]
+          (if (nil? line)
+            objects
+            (recur (conj objects (parse-object line)))))))))
+
 (defn create-manifest-writer []
-  (.InMemoryManifestWriter (ref (sorted-set-by (comparator #(first %)))) (ref false)))
+  (InMemoryManifestWriter. (ref (sorted-set-by (comparator #(first %)))) (ref false)))
+
+(defn create-manifest-reader []
+  (InMemoryManifestReader.))
+
