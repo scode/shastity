@@ -8,6 +8,9 @@
   It is specifically tailored to the shastity use case for simplicity. In particular, the blob management
   always assumes reasonably sized in-memory blobs; only list-blobs is designed to support streaming."
   (put-blob [store name value] "Put a blob (Bytes) into the store")
+  (put-blob-if-absent [store name value] "Put a blob (Bytes) into the store, if there is not yet a blob with that name.
+The hope is that an implementation may be able to implement this more efficiently than a has-blob check followed by
+a put-blob.")
   (get-blob [store name] "Get a blob (Bytes) from the store; nil if non-existent")
   (has-blob [store name] "Return whether the blob exists in the store")
   (delete-blob [store name] "Delete a blob (Bytes) from the store (do nothing if it does not exist)")

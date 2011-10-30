@@ -45,6 +45,12 @@
   (blobstore/put-blob store "key" (Bytes/encode ""))
   (is (= (blobstore/get-blob store "key") (Bytes/encode ""))))
 
+(defstore-test put-if-absent store
+  (blobstore/put-blob-if-absent store "key" (Bytes/encode "val"))
+  (is (= (blobstore/get-blob store "key") (Bytes/encode "val")))
+  (blobstore/put-blob-if-absent store "key" (Bytes/encode "val2"))
+  (is (= (blobstore/get-blob store "key") (Bytes/encode "val"))))
+
 (defstore-test existence-check store
   (is (not (blobstore/has-blob store "key")))
   (blobstore/put-blob store "key" (Bytes/encode ""))

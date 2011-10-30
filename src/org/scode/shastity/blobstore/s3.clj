@@ -12,6 +12,8 @@
   (put-blob [store name value] (let [meta-data (ObjectMetadata.)]
                                  (.setContentLength meta-data (.length value))
                                  (.putObject s3-client bucket-name (str path name) (.getInputStream value) meta-data)))
+  ; Would be really nice of S3 has an if-not-exists feature here.
+  (put-blob-if-absent [store name value] (if (not (blobstore/has-blob store name)) (blobstore/put-blob store name value)))
   (has-blob [store name] (try
                            (let [meta-data (.getObjectMetadata s3-client bucket-name (str path name))]
                              true)
