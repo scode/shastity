@@ -11,12 +11,12 @@
   (upload [manifest store name]
     "Upload the manifest to the given blob store under the given name."))
 
-(def *character-whitelist* (into #{}
-                             (str
-                               "abcdefghijklmnopqrstuvxyz"
-                               "ABCDEFGHIJKLMNOPQRSTUVXYZ"
-                               "0123456789"
-                               "/-._~")))
+(def ^:private ^:dynamic *character-whitelist* (into #{}
+                                                 (str
+                                                   "abcdefghijklmnopqrstuvxyz"
+                                                   "ABCDEFGHIJKLMNOPQRSTUVXYZ"
+                                                   "0123456789"
+                                                   "/-._~")))
 (defn hex-byte [byte] ;todo private
   (let [int-value (let [raw-int (int byte)]
                     (if (< raw-int 0)

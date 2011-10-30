@@ -2,8 +2,8 @@
   (:require [clojure.string :as string]
             [clojure.java.io :as jio]))
 
-(def ^{:private true} *default-path* "~/.shastity/config")
-(def ^{:private true} *config* (atom nil))
+(def ^:private ^:dynamic *default-path* "~/.shastity/config")
+(def ^:private ^:dynamic *config* (atom nil))
 
 (defn- expand-home
   "Expand ~ to user.home, non-intelligently."
