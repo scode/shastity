@@ -21,16 +21,16 @@
   from the upload which is backend bound (presumably).
 
   For reading a manifest, a ManifestReader is used."
-  (add-object [manifest pathname metadata hashes]
+  (add-object [mwriter pathname metadata hashes]
     "Add the given pathname (must be unique) to the manifest, associating the given meta-data and seqable of hashes.")
-  (freeze [manifest]
+  (freeze [mwriter]
     "Finalize the manifest, producing contentes ready to be uploaded and preventing further paths to be added.")
-  (upload [manifest store name]
+  (upload [mwriter store name]
     "Upload the manifest to the given blob store under the given name."))
 
 (defprotocol ManifestReader
   "Counterpart of ManifestWrite. See its documentation for general rationale."
-  (get-objects [reader store name]
+  (get-objects [mreader store name]
     "Get sequence (presumably either small or lazy) of objets in the manifest, in sorter (on name) order. "))
 
 (def ^:private ^:dynamic *character-whitelist* (into #{}
@@ -106,14 +106,14 @@
 ;; TODO: Replace with manifest writer using a tempfile and sorting on finalize.
 (deftype InMemoryManifestWriter [objects finalized]
   ManifestWriter
-  (add-object [manifest pathname metadata hashes]
+  (add-object [mwriter pathname metadata hashes]
     (dosync
       (assert (not @finalized))
       (alter objects conj [pathname metadata hashes])))
-  (freeze [manifest]
+  (freeze [mwriter]
     (dosync
       (ref-set finalized true)))
-  (upload [manifest store name]
+  (upload [mwriter store name]
     (let [string-writer (java.io.StringWriter.)]
       (doseq [[pathname metadata hashes] @objects]
         (.write string-writer (encode-object [pathname metadata hashes]))
@@ -122,7 +122,7 @@
 
 (deftype InMemoryManifestReader []
   ManifestReader
-  (get-objects [r store name]
+  (get-objects [mreader store name]
     (let [manifest-blob (blobstore/get-blob store name)
           manifest-string (.decode manifest-blob)
           rin (jio/reader (java.io.StringReader. manifest-string))]
