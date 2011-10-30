@@ -42,7 +42,7 @@
       (compare-and-set! *config* nil (read-config-file (config-location)))
       @*config*)))
 
-(defn get-from
+(defn lookup-from
   [obj & keys]
   "Return the value reached by traversing obj by looking up the keys given. For example,
   (get-from {...} :a :b :c) is equivalent to (:c (:b (:a {...})))."
@@ -55,6 +55,6 @@
         (get obj key)))
     obj))
 
-(defn get
+(defn lookup
   [& keys]
-  (apply get-from (get-current) keys))
+  (apply lookup-from (get-current) keys))

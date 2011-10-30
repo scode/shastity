@@ -11,11 +11,11 @@
 ; The store name is used as a suffix on the name of each generated test.
 (def testable-stores (apply hash-map (flatten (filter #(not (nil? %1))
                        [["memory" #(org.scode.shastity.blobstore.memory.MemoryStore. (ref {}))]
-                        (if (cfg/get :unit-testing :backends :s3)
-                          ["s3" (fn [] (let [access-key (cfg/get :unit-testing :backends :s3 :access-key)
-                                              secret-key (cfg/get :unit-testing :backends :s3 :secret-key)
-                                              bucket-name (cfg/get :unit-testing :backends :s3 :bucket-name)
-                                              bucket-path (cfg/get :unit-testing :backends :s3 :bucket-path)
+                        (if (cfg/lookup :unit-testing :backends :s3)
+                          ["s3" (fn [] (let [access-key (cfg/lookup :unit-testing :backends :s3 :access-key)
+                                              secret-key (cfg/lookup :unit-testing :backends :s3 :secret-key)
+                                              bucket-name (cfg/lookup :unit-testing :backends :s3 :bucket-name)
+                                              bucket-path (cfg/lookup :unit-testing :backends :s3 :bucket-path)
                                               s3-client (AmazonS3Client. (BasicAWSCredentials. access-key secret-key))]
                                          ;; Use time + random to "ensure" we get a clean slate. Yes, we're leaving stuff
                                          ;; after unit testing for now.
