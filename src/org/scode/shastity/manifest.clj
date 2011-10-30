@@ -4,6 +4,10 @@
             [clojure.java.io :as jio])
   (:import [org.scode.shastity.java Bytes]))
 
+; Compare pathname only.
+(defn manifest-entry-comparator [a b]
+  (compare (first a) (first b)))
+
 (defprotocol ManifestWriter
   "A thin abstraction for ceating a manifest. We do not want to use a native clojure data structure because we
   do not want to keep an entire manifest in memory. The operations we want to do are essentially to incrementally add
@@ -122,14 +126,14 @@
     (let [manifest-blob (blobstore/get-blob store name)
           manifest-string (.decode manifest-blob)
           rin (jio/reader (java.io.StringReader. manifest-string))]
-      (loop [objects (sorted-set-by (comparator #(first %)))]
+      (loop [objects (sorted-set-by manifest-entry-comparator)]
         (let [line (.readLine rin)]
           (if (nil? line)
             (seq objects)
             (recur (conj objects (decode-object line)))))))))
 
 (defn create-manifest-writer []
-  (InMemoryManifestWriter. (ref (sorted-set-by (comparator #(first %)))) (ref false)))
+  (InMemoryManifestWriter. (ref (sorted-set-by manifest-entry-comparator)) (ref false)))
 
 (defn create-manifest-reader []
   (InMemoryManifestReader.))
