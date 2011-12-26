@@ -217,3 +217,7 @@ have:
   a lot of data in between hosts, but makes it trivial and devoid of a bunch of meta data and consistency concerns.
 
 
+== Other stuff ==
+* de-duplicate manifest too, by meta-manifest (chunks defined by lexicographic order)
+* potentially multiple levels
+* splitting manifest also good for easy concurrent upload/download
