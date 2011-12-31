@@ -244,6 +244,12 @@ have:
   a low branching factor. This is primarily a potential issue in our case for concurrency reasons
   when traversing the tree.
 * Hmmm. :/
+* UPDATE: Here is the killer problem though: It drops the property of the manifest as being inherently
+  self-contained and redundant.
+* On the other hand, one could still use this method for incrementals.
+* Another problem: Reconstructing the sorted manifest is inherently a depth-first traversal.
+* On the *other* hand, if we go for this representation of a manifest, there is no longer a need *to*
+  treat the manifest as a sorted list at all to begin with.
 
 == Other stuff ==
 * potentially multiple levels
