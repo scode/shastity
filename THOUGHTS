@@ -254,3 +254,6 @@ have:
 == Other stuff ==
 * potentially multiple levels
 * splitting manifest also good for easy concurrent upload/download
+
+* should have built-in support for keeping the "secret" along with the
+  remote backups using password based encryption.
