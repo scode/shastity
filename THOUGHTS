@@ -259,3 +259,6 @@ have:
 * possibility: support asymmetric crypto so that you can keep backups of a system that are not readable
   by the secrets needed to back it up. imples we cannot optimize and avoid hashing/io based on past
   backup though.
+* possibility: keep krypto key w/ backups always, and password protect? allows changing passphrase
+  and deleting old verion of key, making backups unreadable (not just unwritable) by someone
+  with your disk.
