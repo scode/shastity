@@ -124,3 +124,12 @@ should at least be limited to leaking the fact that a known piece of
 data was backed up, and would not get anyone closer to decrypting any
 data.
 
+== Redundancy of the manifest ==
+
+In order to achieve greater resilliency to bitrot or loss of
+individual data objects, we would support a user-tunable redundancy on
+all file system meta data / directory structure information. Each node
+in the tree would be stored N times (with a deterministically
+generated name for each copy). This allows traversal of a single tree
+by alternate "physical" paths in the event of HMAC failures or missing
+objects.
