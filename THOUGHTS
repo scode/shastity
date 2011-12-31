@@ -254,6 +254,8 @@ have:
 == Other stuff ==
 * potentially multiple levels
 * splitting manifest also good for easy concurrent upload/download
-
 * should have built-in support for keeping the "secret" along with the
   remote backups using password based encryption.
+* possibility: support asymmetric crypto so that you can keep backups of a system that are not readable
+  by the secrets needed to back it up. imples we cannot optimize and avoid hashing/io based on past
+  backup though.
