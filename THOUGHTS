@@ -168,6 +168,8 @@ non-incremental, but incremental would be nice when e.g. doing
 continuous backups based on file system change monitoring and things
 like that.
 
+(See manifest de-duplication section too)
+
 == Ensuring backup consistency ==
 
 There are some nice things that are possible given shastity's data
@@ -216,8 +218,33 @@ have:
   process by being consciece during reads of potential locations of data. Use consistent hashing. Means copying
   a lot of data in between hosts, but makes it trivial and devoid of a bunch of meta data and consistency concerns.
 
+== Manifest de-duplication ==
+
+* Someone pointed out that the menifest is subjectible to
+  de-duplication as well. My first thought was to divide it into
+  lexicographic (by pathname) "chunks" and hope that granularity will
+  be good enough. But this could get complex. The I realized... let's
+  just adjust the manifest to be a tree (git style). Done. So freaking
+  beautiful. It all just automatically clicks. We get de-duplication
+  at a very natural level. If we want to cater to the case of a single
+  directory having a huge number of files in it - no problem, let's
+  just do a b-tree style division.
+* Helps concurrent in manifest upload/download.
+* No single huge manifest file.
+* Manifest is not as trivial anymore :(
+* Naive mapping scales linearly with the amount of directories. But on the other hand, we
+  already accept one bucket file per file system file, and further imposing one file per directory
+  seems like a non-problem.
+* Because the manifest would now be effectively a tree, we not become
+  very latency sensitive when traversing the manifest in order.
+* Given that we also might want to be smart about large directories, maybe one should just build a btree
+  over a sorted list of paths rather than tie anything to directory structure. But a downside of that
+  is that we don't get "natural" points of de-dup automatically, which we would otherwise get.
+* A tree node per directory means that directories with few entries effectively yield a tree with
+  a low branching factor. This is primarily a potential issue in our case for concurrency reasons
+  when traversing the tree.
+* Hmmm. :/
 
 == Other stuff ==
-* de-duplicate manifest too, by meta-manifest (chunks defined by lexicographic order)
 * potentially multiple levels
 * splitting manifest also good for easy concurrent upload/download
