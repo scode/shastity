@@ -4,57 +4,56 @@
   (:use [clojure.test]))
 
 (deftest tempfile
-  (let [tmpfile (io/as-file (fs/tempfile))]
-    (is (.exists tmpfile))
-    (.delete tmpfile)))
+  (let [tmpfile (fs/tempfile)]
+    (is (fs/exists tmpfile))
+    (fs/delete tmpfile)))
 
 (deftest tempfile-prefix
-  (let [tmpfile (io/as-file (fs/tempfile "prefix"))]
-    (is (.exists tmpfile))
-    (is (.startsWith (.getName tmpfile) "prefix"))
-    (.delete tmpfile)))
+  (let [tmpfile (fs/tempfile "prefix")]
+    (is (fs/exists tmpfile))
+    (is (.startsWith (fs/as-string (.getFileName tmpfile)) "prefix"))
+    (fs/delete tmpfile)))
 
 (deftest tempfile-suffix-directory
-  (let [tmpfile (io/as-file (fs/tempfile "prefix" "suffix"))]
-    (is (.exists tmpfile))
-    (is (.startsWith (.getName tmpfile) "prefix"))
-    (is (.endsWith (.getName tmpfile) "suffix"))
-    (.delete tmpfile)))
+  (let [tmpfile (fs/tempfile "prefix" "suffix")]
+    (is (fs/exists tmpfile))
+    (is (.startsWith (fs/as-string (.getFileName tmpfile)) "prefix"))
+    (is (.endsWith (fs/as-string (.getFileName tmpfile)) "suffix"))
+    (fs/delete tmpfile)))
 
 (deftest tempdir
-  (let [tmpdir (io/as-file (fs/tempdir))]
-    (is (.exists tmpdir))
-    (.delete tmpdir)))
+  (let [tmpdir (fs/tempdir)]
+    (is (fs/exists tmpdir))
+    (fs/delete tmpdir)))
 
 (deftest tempdir-prefix
-  (let [tmpdir (io/as-file (fs/tempfile "prefix"))]
-    (is (.exists tmpdir))
-    (is (.startsWith (.getName tmpdir) "prefix"))
-    (.delete tmpdir)))
+  (let [tmpdir (fs/tempfile "prefix")]
+    (is (fs/exists tmpdir))
+    (is (.startsWith (fs/as-string (.getFileName tmpdir)) "prefix"))
+    (fs/delete tmpdir)))
 
 (deftest tempdir-suffix-directory
-  (let [tmpdir (io/as-file (fs/tempfile "prefix" "suffix"))]
-    (is (.exists tmpdir))
-    (is (.startsWith (.getName tmpdir) "prefix"))
-    (is (.endsWith (.getName tmpdir) "suffix"))
-    (.delete tmpdir)))
+  (let [tmpdir (fs/tempfile "prefix" "suffix")]
+    (is (fs/exists tmpdir))
+    (is (.startsWith (fs/as-string (.getFileName tmpdir)) "prefix"))
+    (is (.endsWith (fs/as-string (.getFileName tmpdir)) "suffix"))
+    (fs/delete tmpdir)))
 
 ; TODO: Test w/ directory once we have tempdir.
 
 (deftest with-tempfile
   (with-local-vars [path-var nil]
     (fs/with-tempfile [tmpfile]
-      (is (.exists (io/as-file tmpfile)))
+      (is (fs/exists tmpfile))
       (var-set path-var tmpfile))
-    (is (not (.exists (io/as-file (var-get path-var)))))))
+    (is (not (fs/exists (var-get path-var))))))
 
 (deftest with-tempfile-args-passed
   (with-local-vars [path-var nil]
     (fs/with-tempfile [tmpfile "prefix" "suffix"]
-      (is (.exists (io/as-file tmpfile)))
-      (is (.startsWith (.getName (io/as-file tmpfile)) "prefix"))
-      (is (.endsWith (.getName (io/as-file tmpfile)) "suffix"))
+      (is (fs/exists tmpfile))
+      (is (.startsWith (fs/as-string (.getFileName tmpfile)) "prefix"))
+      (is (.endsWith (fs/as-string (.getFileName tmpfile)) "suffix"))
       (var-set path-var tmpfile))
-    (is (not (.exists (io/as-file (var-get path-var)))))))
-
+    (is (not (fs/exists (var-get path-var))))))
 

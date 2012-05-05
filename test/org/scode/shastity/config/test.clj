@@ -6,9 +6,9 @@
 
 (deftest read-config-file
   (fs/with-tempfile [p]
-    (with-open [w (jio/writer (jio/file p))]
+    (with-open [w (jio/writer (jio/file (fs/as-file p)))]
       (.write w "{ :test-key \"test-val\"}"))
-    (is (= "test-val" (:test-key (cfg/read-config-file p))))))
+    (is (= "test-val" (:test-key (cfg/read-config-file (fs/as-file p)))))))
 
 (deftest lookup-from
   (is (= {} (cfg/lookup-from {})))
