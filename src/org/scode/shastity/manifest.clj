@@ -2,43 +2,18 @@
   (:require [org.scode.shastity.blobstore :as blobstore]
             [clojure.string :as string]
             [clojure.java.io :as jio])
-  (:import [org.scode.shastity.java Bytes]))
+  (:import [org.scode.shastity.java Bytes]
+           [java.nio.file Path]))
 
-; Compare pathname only.
-(defn manifest-entry-comparator [a b]
-  (compare (first a) (first b)))
-
-(defprotocol ManifestWriter
-  "A thin abstraction for ceating a manifest. We do not want to use a native clojure data structure because we
-  do not want to keep an entire manifest in memory. The operations we want to do are essentially to incrementally add
-  to one, and to stream through a manifest (in sorted order).
-
-  In a future clojure, maybe we can use streams for this. For now, I have this. Better suggestions welcome, as
-  I am not sure what would be most idiomatic.
-
-  The distinction between freeze and upload is there because it is presume that there may be work involved that is
-  locally performance-bound (e.g, doing a merge-sort of data on disk) and it is nice to schedule that separately
-  from the upload which is backend bound (presumably).
-
-  For reading a manifest, a ManifestReader is used."
-  (add-object [mwriter pathname metadata hashes]
-    "Add the given pathname (must be unique) to the manifest, associating the given meta-data and seqable of hashes.")
-  (freeze [mwriter]
-    "Finalize the manifest, producing contentes ready to be uploaded and preventing further paths to be added.")
-  (upload [mwriter store name]
-    "Upload the manifest to the given blob store under the given name."))
-
-(defprotocol ManifestReader
-  "Counterpart of ManifestWrite. See its documentation for general rationale."
-  (get-objects [mreader store name]
-    "Get sequence (presumably either small or lazy) of objets in the manifest, in sorter (on name) order. "))
-
+; Whitelist of characters not encoded when they appear in file names. This whitelist cannot
+; be changed without altering the on-disk contents of meta-data. Changing it will not break
+; compatibility, but will defeat de-duplication with respect to old metadata.
 (def ^:private ^:dynamic *character-whitelist* (into #{}
                                                  (str
                                                    "abcdefghijklmnopqrstuvxyz"
                                                    "ABCDEFGHIJKLMNOPQRSTUVXYZ"
                                                    "0123456789"
-                                                   "/-._~")))
+                                                   "-._~")))
 (defn hex-byte [byte] ;todo private
   (let [int-value (let [raw-int (int byte)]
                     (if (< raw-int 0)
@@ -80,61 +55,4 @@
                 (.write out int-val))
               (recur (rest remainder)))))))
     (String. (.toByteArray out) "UTF-8")))
-
-(defn encode-object [[pathname metadata hashes]] ; todo private
-  (let [string-writer (java.io.StringWriter.)]
-    (doto string-writer
-      (.write (encode pathname))
-      (.write " ")
-      (.write (encode (str metadata)))
-      (.write " "))
-    (doseq [hash hashes]
-      (doto string-writer
-        (.write hash)
-        (.write " ")))
-    (.toString string-writer)))
-
-(defn decode-object [str] ; todo private
-  (let [[name meta & hashes] (string/split str #" ")]
-    (if (or (nil? name) (nil? meta))
-      (throw (RuntimeException. (str "missing meta and maybe name in manifest line: " str)))
-      (let [dec-name (decode name)
-            dec-meta (read-string (decode meta))]
-        ;; todo: validate that hashes are appropriate hexdigests
-        [dec-name dec-meta (if (seq? hashes) hashes [])]))))
-
-;; TODO: Replace with manifest writer using a tempfile and sorting on finalize.
-(deftype InMemoryManifestWriter [objects finalized]
-  ManifestWriter
-  (add-object [mwriter pathname metadata hashes]
-    (dosync
-      (assert (not @finalized))
-      (alter objects conj [pathname metadata hashes])))
-  (freeze [mwriter]
-    (dosync
-      (ref-set finalized true)))
-  (upload [mwriter store name]
-    (let [string-writer (java.io.StringWriter.)]
-      (doseq [[pathname metadata hashes] @objects]
-        (.write string-writer (encode-object [pathname metadata hashes]))
-        (.write string-writer "\n"))
-      (blobstore/put-blob store name (Bytes/encode (.toString string-writer))))))
-
-(deftype InMemoryManifestReader []
-  ManifestReader
-  (get-objects [mreader store name]
-    (let [manifest-blob (blobstore/get-blob store name)
-          manifest-string (.decode manifest-blob)
-          rin (jio/reader (java.io.StringReader. manifest-string))]
-      (loop [objects (sorted-set-by manifest-entry-comparator)]
-        (let [line (.readLine rin)]
-          (if (nil? line)
-            (seq objects)
-            (recur (conj objects (decode-object line)))))))))
-
-(defn create-manifest-writer []
-  (InMemoryManifestWriter. (ref (sorted-set-by manifest-entry-comparator)) (ref false)))
-
-(defn create-manifest-reader []
-  (InMemoryManifestReader.))
 

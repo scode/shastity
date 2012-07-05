@@ -1,8 +1,9 @@
 (ns org.scode.shastity.fs
   (:require [clojure.java.io :as io])
   (:import [java.nio.file Path Files Paths NoSuchFileException LinkOption]
-           [java.nio.file.attribute FileAttribute]
-           [java.io File]))
+           [java.nio.file.attribute FileAttribute FileTime]
+           [java.io File]
+           [java.util.concurrent TimeUnit]))
 
 (defn as-path [^String p]
   "Given a string p, return the nio2 Path."
@@ -14,11 +15,42 @@
 (defn as-string [^Path p]
   (.toString p))
 
+(defn mkdir [^Path p]
+  (Files/createDirectory p (make-array FileAttribute 0)))
+
 (defn delete [^Path p]
   (Files/delete p))
 
 (defn exists [^Path p]
   (Files/exists p (make-array LinkOption 0)))
+
+(defn resolve [base rel]
+  (.resolve base rel))
+
+(defn to-real [^Path p]
+  (.toRealPath p (make-array LinkOption 0)))
+
+(defn to-real-no-follow [^Path p]
+  (let [link-options (make-array LinkOption 1)]
+    (aset link-options 0 LinkOption/NOFOLLOW_LINKS)
+    (.toRealPath p link-options)))
+
+(defn is-symlink [^Path p]
+  (Files/isSymbolicLink p))
+
+(defn is-dir [^Path p]
+  (Files/isDirectory p (make-array LinkOption 0)))
+
+(defn is-regular [^Path p]
+  (Files/isRegularFile p (make-array LinkOption 0)))
+
+(defn get-mtime [^Path p]
+  "Return the mtime in nanoseconds (precision limited by OS)"
+  (Files/getLastModifiedTime p (make-array LinkOption 0)))
+
+(defn set-mtime [^Path p nanos]
+  "Set the mtime in nanoseconds (limited to OS precision)."
+  (Files/setLastModifiedTime p (FileTime/from nanos (TimeUnit/NANOSECONDS))))
 
 (defn tempfile
   ([] (tempfile "shastity-"))
