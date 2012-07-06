@@ -24,7 +24,7 @@
 (defn exists [^Path p]
   (Files/exists p (make-array LinkOption 0)))
 
-(defn resolve [base rel]
+(defn resolve-path [base rel]
   (.resolve base rel))
 
 (defn to-real [^Path p]

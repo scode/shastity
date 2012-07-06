@@ -9,10 +9,10 @@
   (doseq [[type rest] entries]
     (cond
       (= :dir type) (let [[name dir-entries] rest]
-                      (fs/mkdir (fs/resolve base name))
-                      (create-hier (fs/resolve base name) dir-entries))
+                      (fs/mkdir (fs/resolve-path base name))
+                      (create-hier (fs/resolve-path base name) dir-entries))
       (= :file type) (let [[name contents] rest]
-                       (io/barf-string (fs/resolve base name) contents))
+                       (io/barf-string (fs/resolve-path base name) contents))
       :else (throw (AssertionError. "invalid type")))))
 
 (defn memory-store []
