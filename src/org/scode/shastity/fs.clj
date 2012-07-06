@@ -1,6 +1,6 @@
 (ns org.scode.shastity.fs
   (:require [clojure.java.io :as io])
-  (:import [java.nio.file Path Files Paths NoSuchFileException LinkOption]
+  (:import [java.nio.file Path Files Paths NoSuchFileException LinkOption OpenOption]
            [java.nio.file.attribute FileAttribute FileTime]
            [java.io File]
            [java.util.concurrent TimeUnit]))
@@ -46,11 +46,14 @@
 
 (defn get-mtime [^Path p]
   "Return the mtime in nanoseconds (precision limited by OS)"
-  (Files/getLastModifiedTime p (make-array LinkOption 0)))
+  (.to (Files/getLastModifiedTime p (make-array LinkOption 0)) (TimeUnit/NANOSECONDS)))
 
 (defn set-mtime [^Path p nanos]
   "Set the mtime in nanoseconds (limited to OS precision)."
   (Files/setLastModifiedTime p (FileTime/from nanos (TimeUnit/NANOSECONDS))))
+
+(defn new-input-stream [^Path p]
+  (Files/newInputStream p (make-array OpenOption 0)))
 
 (defn tempfile
   ([] (tempfile "shastity-"))
