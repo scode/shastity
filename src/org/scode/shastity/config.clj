@@ -13,7 +13,7 @@
 (defn set-default-config-location
   "Set the default location of the configuration file. This is only meant to be set on
   early bootstrap or in unit tests; arbitrarly changing it during a shastity session
-  is not supported. Can still be over-rodden with SHASTITY_CONFIG environment variable."
+  is not supported. Can still be over-ridden with SHASTITY_CONFIG environment variable."
   [default-path]
   (set! *default-path* default-path))
 
