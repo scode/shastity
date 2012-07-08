@@ -2,18 +2,24 @@
   (:require [org.scode.shastity.manifest :as manifest]
             [org.scode.shastity.fs :as fs]
             [org.scode.shastity.hash :as hash]
-            [clojure.tools.logging :as log])
-  (:import [java.nio.file Path Files]))
+            [org.scode.shastity.blobstore :as blobstore]
+            [clojure.tools.logging :as log]
+            [clojure.string :as string])
+  (:import [org.scode.shastity.java Bytes]
+           [java.nio.file Path Files]))
 
 (defn persist-file [^Path p bs block-size]
   "Persist the file, split into blocks of block-size bytes, to the blob store.
 
   Return a seqable of blob hexdigests that make up the file."
+  ; todo: keep thread-local buffer @ size block size
   (log/infof "persisting file %s" p)
   (letfn [(upload-block [arr len]
             "Upload buffer as blob to store, returning hexdigest."
-            ; todo: actually upload
-            (hash/sha256-hex arr len))]
+            (let [hex (hash/sha256-hex arr len)]
+              (log/debugf "persisting %s if" hex)
+              (blobstore/put-blob-if-absent bs (format "blobs/%s" hex) (Bytes/fromArray arr 0 len))
+              hex))]
     (with-open [fin (fs/new-input-stream p)]
       (loop [block-pos 0
              block-buf (byte-array block-size)
@@ -21,7 +27,7 @@
         (let [max-to-read (- block-size block-pos)
               rcount (.read fin block-buf block-pos max-to-read)]
           (cond
-            (= rcount -1) (if (> 0 block-pos)
+            (= rcount -1) (if (> block-pos 0)
                             (conj hexdigests (upload-block block-buf block-pos))
                             hexdigests)
             (= rcount max-to-read) (recur 0
@@ -30,6 +36,17 @@
                                                                          (+ block-pos rcount))))
             :else (recur (+ block-pos rcount) block-buf hexdigests)))))))
 
+(defn- encode-manifest [sorted-entries]
+  (apply str (for [entry sorted-entries]
+               (cond
+                 ; TODO: encode names
+                 (= (:type entry) :symlink) (format "l %s %s\n" (:name entry) (:target :entry))
+                 (= (:type entry) :dir)     (format "d %s %s %s\n" (:name entry) (:mtime entry) (:manifest entry))
+                 (= (:type entry) :regular) (format "f %s %s %s\n"
+                                                    (:name entry)
+                                                    (:mtime entry)
+                                                    (string/join " " (:blobs entry)))
+                 :else (throw (AssertionError. "unknown type of entry"))))))
 
 (defn persist-dir [^Path p bs block-size]
   "Persist the given Path (p) to the blobstore (bs), and return
@@ -59,6 +76,10 @@ The process is recursive to any and all sub-directories."
                                                       :mtime (fs/get-mtime entry)}
                                :else {:type :skip
                                       :name (str (.getFileName (fs/to-real entry)))})))
-          sorted-entries (sort #(compare (:name %1) (:name %2)) m-entries)]
-      ;(println sorted-entries)
-      "TOOD: construct manifest")))
+          sorted-entries (sort #(compare (:name %1) (:name %2)) m-entries)
+          manifest (encode-manifest sorted-entries)
+          manifest-bytes (.getBytes manifest)
+          manifest-hex (hash/sha256-hex manifest-bytes)]
+      (log/debugf "persisting manifest %s" manifest-hex)
+      (blobstore/put-blob-if-absent bs (format "manifests/%s" manifest-hex) (Bytes/wrapArray manifest-bytes))
+      manifest-hex)))

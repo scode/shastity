@@ -60,6 +60,16 @@ public class Bytes {
         return new Bytes(bytes, false);
     }
 
+    public static Bytes fromArray(byte[] bytes) {
+        return fromArray(bytes, 0, bytes.length);
+    }
+
+    public static Bytes fromArray(byte[] bytes, int offset, int length) {
+        byte[] cpy = new byte[length];
+        System.arraycopy(bytes, offset, cpy, 0, length);
+        return wrapArray(cpy);
+    }
+
     public byte[] getMutableByteArray() {
         return this.array;
     }
