@@ -7,7 +7,7 @@
 
 (defn as-path [^String p]
   "Given a string p, return the nio2 Path."
-  (Paths/get p))
+  (Paths/get p (make-array String 0)))
 
 (defn as-file [^Path p]
   (.toFile p))
