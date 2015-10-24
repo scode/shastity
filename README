@@ -1,24 +1,6 @@
-shastity - hash-based deduplicating secure remote backups
+shastity - hash-based deduplicating secure remote storage/backup
 
-== Status ==
+## Status
 
 This is in-development software (not even alpha level). Do not
-use. Yet.
-
-== Running the unit tests ==
-
-Ensure the 'src' directory is in your python path, such as by:
-
-  export PYTHONPATH=$(pwd)/src
-
-Run all unit tests by:
-
-  python test/test.py
-
-If you want the unit tests to include tests that depend on the S3
-backend, set the environment variable:
-
-  SHASTITY_UNITTEST_S3_BUCKET
-
-To the name of the bucket to use for testing.
-
+use.
