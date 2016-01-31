@@ -26,10 +26,10 @@ impl<'a> Error for OdbError<'a> {
 
 impl<'a> fmt::Display for OdbError<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        // TODO: de-duplicate first write
+        let success = write!(f, "OdbError: {}", self.description());
         match self.cause() {
             None => {
-                write!(f, "OdbError: {}", self.description())
+                success
             }
             Some(cause) => {
                 try!(write!(f, "OdbError: {}", self.description()));
