@@ -32,7 +32,6 @@ impl<'a> fmt::Display for OdbError<'a> {
                 success
             }
             Some(cause) => {
-                try!(write!(f, "OdbError: {}", self.description()));
                 fmt::Display::fmt(cause, f)
             }
         }
