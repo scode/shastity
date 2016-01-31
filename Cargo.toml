@@ -3,3 +3,7 @@
 name = "shastity"
 version = "0.0.0"
 authors = ["Peter Schuller <peter.schuller@infidyne.com>"]
+
+[lib]
+name = "shastity"
+path = "src/shastity/lib.rs"
