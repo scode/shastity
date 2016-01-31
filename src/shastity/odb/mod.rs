@@ -27,13 +27,6 @@ impl<'a> Error for OdbError<'a> {
 impl<'a> fmt::Display for OdbError<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         try!(write!(f, "OdbError: {}", self.description()));
-        match self.cause() {
-            None => {
-                Ok(())
-            }
-            Some(cause) => {
-                fmt::Display::fmt(cause, f)
-            }
-        }
+        self.cause().map_or(Ok(()), |c| fmt::Display::fmt(c, f))
     }
 }
