@@ -27,7 +27,14 @@ impl<'a> Error for OdbError<'a> {
 impl<'a> fmt::Display for OdbError<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         try!(write!(f, "OdbError: {}", self.description()));
-        // TODO(scode): Missing separator before cause
-        self.cause().map_or(Ok(()), |c| fmt::Display::fmt(c, f))
+        match self.cause() {
+            None => {
+                Ok(())
+            },
+            Some(cause) => {
+                try!(f.write_str(" caused by: "));
+                fmt::Display::fmt(cause, f)
+            }
+        }
     }
 }
