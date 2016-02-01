@@ -1,4 +1,4 @@
-# shastity - hash-based swiss army knife of storing data
+# shastity - content addressable data toolkit
 
 ## Status
 
