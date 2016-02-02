@@ -8,7 +8,7 @@ pub struct OdbError {
 }
 
 pub trait Odb {
-    fn put(value: &[u8]) -> Result<(), Box<Error>>;
+    fn put(value: &[u8]) -> Result<Vec<u8>, Box<Error>>;
     fn get(key: &[u8]) -> Result<Vec<u8>, Box<Error>>;
 }
 
