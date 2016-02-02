@@ -1,5 +1,5 @@
-use std::fmt;
 use std::error::Error;
+use std::fmt;
 use std::vec::Vec;
 
 #[derive(Debug)]
@@ -8,7 +8,7 @@ pub struct OdbError {
 }
 
 pub trait Odb {
-    fn put(value: &[u8]) -> Box<Error>;
+    fn put(value: &[u8]) -> Result<(), Box<Error>>;
     fn get(value: &[u8]) -> Result<Vec<u8>, Box<Error>>;
 }
 
