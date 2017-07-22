@@ -56,13 +56,13 @@ impl Error for OdbError {
 
 impl fmt::Display for OdbError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        try!(write!(f, "OdbError: {}", self.description()));
+        write!(f, "OdbError: {}", self.description())?;
         match self.cause() {
             None => {
                 Ok(())
             },
             Some(cause) => {
-                try!(f.write_str(" caused by: "));
+                f.write_str(" caused by: ")?;
                 fmt::Display::fmt(cause, f)
             }
         }
