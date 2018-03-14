@@ -22,7 +22,7 @@ impl fmt::Display for StoreError {
     }
 }
 
-/// Provides storage of key->value mappings of reasonable size with weakend semantics sufficient for
+/// Provides storage of key->value mappings of reasonable size with weakened semantics sufficient for
 /// use by a content addressable store, but maximally relaxed to allow implementation
 /// flexibility and efficiency.
 ///
@@ -64,11 +64,25 @@ impl fmt::Display for StoreError {
 /// Similarly, weak_exists() may also fail to return true despite an objecte having been previously
 /// stored so long as it eventually becomes visible.
 ///
+/// weak_iter() iterates over all keys in the store, with semantics similar to weak_get(). A
+/// complete iteration may fail to observe some items due to eventual consistency, but should
+/// otherwise be complete.
+///
 /// # Deletions and its complications
 ///
-/// TODO(scode): Talk about races, including ts based cr, discovery and difficulty completely
-/// deleting.
-pub trait WeakStore {
+/// For the most part, the intention of this trait and its use is to allow for safe un-coordinated
+/// access to the store by multiple processes. Uncoordinated insertion of duplicate values will
+/// at worst result in unnecessary work, but not cause incorrectness.
+///
+/// Deletions present a coordination problem, however, because they introduce a dependency on the
+/// order of operations. Typically, deletion would only happen if an object is no longer needed
+/// due to not being referenced by any other object (this is very analogous to a garbage
+/// collector), but the act of deleting an object will be fundamentally raceful with respect
+/// to concurrent writers.
+///
+/// This problem is not solved here. Callers that rely on deletes, or are subject to deletes by
+/// others, must solve that coordination problem separately.
+pub trait WeakStore<'a> {
     /// Get an object associated with the given key.
     ///
     /// # Return value
@@ -84,6 +98,9 @@ pub trait WeakStore {
     fn weak_exists(key: &[u8]) -> Result<bool, StoreError>;
 
     fn weak_delete(key: &[u8]) -> Result<(), StoreError>;
+
+    /// Return an iterator over all keys in the store.
+    fn weak_iter() -> Result<&'a Iterator<Item = [u8]>, StoreError>;
 }
 
 /// Provides storage of key->value mappings of reasonable size with strongly consistent semantics.
