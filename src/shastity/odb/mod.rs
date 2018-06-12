@@ -2,6 +2,9 @@ use std::error::Error;
 use std::fmt;
 use std::vec::Vec;
 
+pub struct Oid(String);
+pub struct Content(Vec<u8>);
+
 #[derive(Debug)]
 pub struct OdbError {
     cause: Option<Box<Error>>
@@ -16,29 +19,21 @@ pub struct OdbError {
 ///
 /// Properties of an Odb include:
 ///
-///   - If two objects have the same key, they are identical. Thus,
+///   - If two objects have the same id, they are identical. Thus,
 ///     two objects can be compared for equality without pulling the
 ///     content out of the store.
 ///   - Once an object is recorded in the store, it does not go away
 ///     unless explicit removal if requested through some means beyond
 ///     the scope of this trait. In other words, puts are durable.
-///     For example, a loacl file system store would probably need to
-///     fsync() prior to returning. (This does not preclude e.g.
-///     in memory implementation.)
-///   - Keys can never be predicted by the caller. Only keys returned
-///     from put() can be assumed to be valid.
-///
-/// Caveats:
-///
-///   - Batch based puts would allow for greater performance w/o
-///     concurrency.
-///   - No attempt is made to support very large objects (which would
-///     complicate the interface). Chunking is recommended to be
-///     performed on top.
-///   - There is no provision for concurrent access at this time.
+///     For example, a local file system store would probably need to
+///     fsync() prior to returning. (Exact semantics are up to implementation
+///     and user configuration.)
+///   - Callers cannot construct oids other than by giving the store the contents
+///     to associate with the oid.
 pub trait Odb {
-    fn put(value: &[u8]) -> Result<Vec<u8>, Box<Error>>;
-    fn get(key: &[u8]) -> Result<Vec<u8>, Box<Error>>;
+    fn identify_object(content: &Content) -> Result<Oid, Box<Error>>;
+    fn put_object(content: &Content) -> Result<Oid, Box<Error>>;
+    fn get_object(oid: &Oid) -> Result<Content, Box<Error>>;
 }
 
 impl Error for OdbError {
