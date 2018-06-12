@@ -34,7 +34,7 @@ impl fmt::Display for StoreError {
 ///
 /// Real implementations will likely have some restrictions, but such restrictions are opaque
 /// to the caller and the user is expected to select an appropriate implementation and configuration
-/// for their use ase.
+/// for their use case.
 ///
 /// # Storage semantics
 ///
@@ -59,7 +59,7 @@ impl fmt::Display for StoreError {
 /// newly written object (even in the absence of a deletion). Callers may, depending on context,
 /// perform backoff and retries as appropriate to be resilient to eventual consistency in the store.
 /// This is not in conflict with the durability requirement, as a value could be durably written
-/// despite not yet being visible to readers.
+/// despite not yet being immediately visible to readers.
 ///
 /// Similarly, weak_exists() may also fail to return true despite an objecte having been previously
 /// stored so long as it eventually becomes visible.
