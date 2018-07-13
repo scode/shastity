@@ -7,7 +7,7 @@ pub struct Content(Vec<u8>);
 
 #[derive(Debug)]
 pub struct OdbError {
-    cause: Option<Box<Error>>
+    cause: Option<Box<Error>>,
 }
 
 /// A content addressable object database.
@@ -43,9 +43,7 @@ impl Error for OdbError {
     }
 
     fn cause(&self) -> Option<&Error> {
-        self.cause.as_ref().map(|c| {
-            &**c
-        })
+        self.cause.as_ref().map(|c| &**c)
     }
 }
 
@@ -53,9 +51,7 @@ impl fmt::Display for OdbError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "OdbError: {}", self.description())?;
         match self.cause() {
-            None => {
-                Ok(())
-            },
+            None => Ok(()),
             Some(cause) => {
                 f.write_str(" caused by: ")?;
                 fmt::Display::fmt(cause, f)

@@ -1,10 +1,11 @@
+pub mod mem;
+
 use std::error::Error;
 use std::fmt;
 
 // TODO(scode): Distinguish transient from permanent.
 #[derive(Debug)]
-pub struct StoreError {
-}
+pub struct StoreError {}
 
 impl Error for StoreError {
     fn description(&self) -> &str {
@@ -90,17 +91,17 @@ pub trait WeakStore<'a> {
     /// Ok(Some(x)) on success and the value exists.
     ///
     /// Ok(None) indicates the value does not exist, or it has not yet become readable.
-    fn weak_get(key: &[u8]) -> Result<Option<Vec<u8>>, StoreError>;
+    fn weak_get(&mut self, key: &[u8]) -> Result<Option<Vec<u8>>, StoreError>;
 
-    fn weak_put(key: &[u8], value: &[u8]) -> Result<(), StoreError>;
+    fn weak_put(&mut self, key: &[u8], value: &[u8]) -> Result<(), StoreError>;
 
     /// Determine whether a given key is associated with a value in the store.
-    fn weak_exists(key: &[u8]) -> Result<bool, StoreError>;
+    fn weak_exists(&mut self, key: &[u8]) -> Result<bool, StoreError>;
 
-    fn weak_delete(key: &[u8]) -> Result<(), StoreError>;
+    fn weak_delete(&mut self, key: &[u8]) -> Result<(), StoreError>;
 
     /// Return an iterator over all keys in the store.
-    fn weak_iter() -> Result<&'a Iterator<Item = [u8]>, StoreError>;
+    fn weak_iter(&mut self) -> Result<&'a Iterator<Item = [u8]>, StoreError>;
 }
 
 /// Provides storage of key->value mappings of reasonable size with strongly consistent semantics.
@@ -112,15 +113,20 @@ pub trait WeakStore<'a> {
 /// put_if() is guaranteed to atomically put the new value provided only if the existing value
 /// (present or absent) matches the provided expected value.
 pub trait Store {
-    fn get(key: &[u8]) -> Result<Option<Vec<u8>>, StoreError>;
+    fn get(&mut self, key: &[u8]) -> Result<Option<Vec<u8>>, StoreError>;
 
     /// Put a value in the store regardless of whether there currently exists a value associated
     /// with the same key. Any existing value is overwritten.
-    fn put(key: &[u8], value: &[u8]) -> Result<(), StoreError>;
+    fn put(&mut self, key: &[u8], value: &[u8]) -> Result<(), StoreError>;
 
     /// Put the given value into the store if and only if the current value associated with the
     /// key is expected_value (None means the value must be absent).
-    fn put_if(key: &[u8], expected_value: Option<&[u8]>, new_value: &[u8]) -> Result<(), StoreError>;
+    fn put_if(
+        &mut self,
+        key: &[u8],
+        expected_value: Option<&[u8]>,
+        new_value: &[u8],
+    ) -> Result<(), StoreError>;
 
-    fn exists(key: &[u8]) -> Result<bool, StoreError>;
+    fn exists(&mut self, key: &[u8]) -> Result<bool, StoreError>;
 }

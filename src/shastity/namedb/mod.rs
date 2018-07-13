@@ -1,2 +1,1 @@
-pub trait NameDB {
-}
+pub trait NameDB {}
