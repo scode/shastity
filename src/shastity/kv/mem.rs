@@ -14,14 +14,14 @@ impl MemWeakStore {
     }
 }
 
-
 impl<'a> kv::WeakStore<'a> for MemWeakStore {
     fn weak_get(&mut self, key: &[u8]) -> Result<Option<Vec<u8>>, kv::StoreError> {
         Ok(self.map.get(key).map(|v| v.to_vec()))
     }
 
     fn weak_put(&mut self, key: &[u8], value: &[u8]) -> Result<(), kv::StoreError> {
-        unimplemented!()
+        self.map.insert(key.to_owned(), value.to_owned());
+        Ok(())
     }
 
     fn weak_exists(&mut self, key: &[u8]) -> Result<bool, kv::StoreError> {
