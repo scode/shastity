@@ -20,3 +20,22 @@ pub fn test_put(store: &mut kv::WeakStore) {
         Err(e) => panic!("get should not have failed: {}", e),
     };
 }
+
+pub fn test_exists(store: &mut kv::WeakStore) {
+    match store.weak_exists("k".as_bytes()) {
+        Ok(true) => panic!("key should not have existed"),
+        Ok(false) => (),
+        Err(e) => panic!("weak_exists should not have failed: {}", e),
+    }
+
+    match store.weak_put("k".as_bytes(), "v".as_bytes()) {
+        Ok(()) => (),
+        Err(e) => panic!("put should have succeeded: {}", e),
+    }
+
+    match store.weak_exists("k".as_bytes()) {
+        Ok(true) => (),
+        Ok(false) => panic!("key should have existed"),
+        Err(e) => panic!("weak_exists should not have failed: {}", e),
+    }
+}

@@ -25,7 +25,7 @@ impl<'a> kv::WeakStore<'a> for MemWeakStore {
     }
 
     fn weak_exists(&mut self, key: &[u8]) -> Result<bool, kv::StoreError> {
-        unimplemented!()
+        Ok(self.map.contains_key(key))
     }
 
     fn weak_delete(&mut self, key: &[u8]) -> Result<(), kv::StoreError> {

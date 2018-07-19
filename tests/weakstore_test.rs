@@ -8,4 +8,5 @@ mod weakstore;
 fn test() {
     weakstore::test_get(&mut mem::MemWeakStore::new());
     weakstore::test_put(&mut mem::MemWeakStore::new());
+    weakstore::test_exists(&mut mem::MemWeakStore::new());
 }
