@@ -6,7 +6,7 @@ mod weakstore;
 
 #[test]
 fn test() {
-    weakstore::test_get(&mut mem::MemWeakStore::new());
-    weakstore::test_put(&mut mem::MemWeakStore::new());
-    weakstore::test_exists(&mut mem::MemWeakStore::new());
+    weakstore::test_weak_get(&mut mem::MemWeakStore::new());
+    weakstore::test_weak_put(&mut mem::MemWeakStore::new());
+    weakstore::test_weak_exists(&mut mem::MemWeakStore::new());
 }

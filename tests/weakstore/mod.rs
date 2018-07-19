@@ -1,6 +1,6 @@
 use shastity::kv;
 
-pub fn test_get(store: &mut kv::WeakStore) {
+pub fn test_weak_get(store: &mut kv::WeakStore) {
     match store.weak_get("test".as_bytes()) {
         Ok(Some(_)) => panic!("store should have been empty"),
         Ok(None) => (),
@@ -8,7 +8,7 @@ pub fn test_get(store: &mut kv::WeakStore) {
     };
 }
 
-pub fn test_put(store: &mut kv::WeakStore) {
+pub fn test_weak_put(store: &mut kv::WeakStore) {
     match store.weak_put("k".as_bytes(), "v".as_bytes()) {
         Ok(()) => (),
         Err(e) => panic!("put should have succeeded: {}", e),
@@ -21,7 +21,7 @@ pub fn test_put(store: &mut kv::WeakStore) {
     };
 }
 
-pub fn test_exists(store: &mut kv::WeakStore) {
+pub fn test_weak_exists(store: &mut kv::WeakStore) {
     match store.weak_exists("k".as_bytes()) {
         Ok(true) => panic!("key should not have existed"),
         Ok(false) => (),
