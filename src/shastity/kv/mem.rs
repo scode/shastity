@@ -29,7 +29,8 @@ impl<'a> kv::WeakStore<'a> for MemWeakStore {
     }
 
     fn weak_delete(&mut self, key: &[u8]) -> Result<(), kv::StoreError> {
-        unimplemented!()
+        self.map.remove(key);
+        Ok(())
     }
 
     fn weak_iter(&mut self) -> Result<&'a Iterator<Item = [u8]>, kv::StoreError> {
