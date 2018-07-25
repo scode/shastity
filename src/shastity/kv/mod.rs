@@ -2,6 +2,7 @@ pub mod mem;
 
 use std::error::Error;
 use std::fmt;
+use std::option::Option;
 
 // TODO(scode): Distinguish transient from permanent.
 #[derive(Debug)]
@@ -21,6 +22,19 @@ impl fmt::Display for StoreError {
     fn fmt(&self, _f: &mut fmt::Formatter) -> fmt::Result {
         unimplemented!()
     }
+}
+
+pub struct Cursor(Vec<u8>);
+
+/// The result of an iteration step against a store.
+pub struct IterationResult {
+    /// If Some(x), a cursor to be used to continue the iteration. If None, indicates reaching the
+    /// end of the iteration.
+    cursor: Option<Cursor>,
+
+    /// The keys discovered at this step of the iteration. May be empty even if there is more
+    /// iteration to be done. The cursor must be inspected to detect end-of-iteration.
+    keys: Vec<u8>,
 }
 
 /// Provides storage of key->value mappings of reasonable size with weakened semantics sufficient for
@@ -67,7 +81,7 @@ impl fmt::Display for StoreError {
 ///
 /// weak_iter() iterates over all keys in the store, with semantics similar to weak_get(). A
 /// complete iteration may fail to observe some items due to eventual consistency, but should
-/// otherwise be complete.
+/// otherwise be complete. More on iteration below.
 ///
 /// # Deletions and its complications
 ///
@@ -83,6 +97,27 @@ impl fmt::Display for StoreError {
 ///
 /// This problem is not solved here. Callers that rely on deletes, or are subject to deletes by
 /// others, must solve that coordination problem separately.
+///
+/// # Iterating over keys in a store
+///
+/// A WeakStore does not provide any atomic view of the entries that exists in the store. Instead,
+/// the process of iterating over keys is subject to the following contract:
+///
+/// * The "iteration process" refers to a sequence of calls to weak_iter() until the very end of
+///   iteration has bene reached as communicated by the returned IterationResult.
+/// * The store may be both written to and read from concurrently with an iteration process.
+/// * Any object written to the store prior to the start of iteration must be visible in the
+///   iteration *except* sa constrained by eventual consistency.
+/// * An object written to the store during iteration *may* be visible to the iteration. If a
+///   previously existing object is over-written, *either* the old or the new object must be
+///   visible. The only exception is eventual consistency (should the old object not yet be
+///   visible).
+/// * Keys may be exposed through iteration in any order that suits the ipmlementation.
+///
+/// The presumption is that iteration may be a very long running process that spans even hours or
+/// days on a large store.
+///
+/// There is currently no mechanism to allow concurrent iteration of a store.
 pub trait WeakStore<'a> {
     /// Get an object associated with the given key.
     ///
@@ -100,9 +135,21 @@ pub trait WeakStore<'a> {
 
     fn weak_delete(&mut self, key: &[u8]) -> Result<(), StoreError>;
 
-    /// Return an iterator over all keys in the store.
-    fn weak_iter(&mut self) -> Result<&'a Iterator<Item = [u8]>, StoreError>;
+    /// Perform an iteration step to discover keys in the store.
+    ///
+    /// If cursor is Some(x), it must be a cursor obtained by a previous invocation of this
+    /// method.
+    ///
+    /// If cursor is None, iteration will start at the beginning.
+    ///
+    /// max_items indicates the maximum number of keys to return. The iteration may return
+    /// any number of items equal to or less than that, including zero.
+    ///
+    /// See also: Iteration sectoin of class documentation.
+    /// See also: Documentation of IterationResult.
+    fn weak_iter(&mut self, cursor: Option<Cursor>, max_items: usize) -> Result<IterationResult, StoreError>;
 }
+
 
 /// Provides storage of key->value mappings of reasonable size with strongly consistent semantics.
 ///
