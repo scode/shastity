@@ -30,11 +30,11 @@ pub struct Cursor(Vec<u8>);
 pub struct IterationResult {
     /// If Some(x), a cursor to be used to continue the iteration. If None, indicates reaching the
     /// end of the iteration.
-    cursor: Option<Cursor>,
+    _cursor: Option<Cursor>,
 
     /// The keys discovered at this step of the iteration. May be empty even if there is more
     /// iteration to be done. The cursor must be inspected to detect end-of-iteration.
-    keys: Vec<u8>,
+    _keys: Vec<u8>,
 }
 
 /// Provides storage of key->value mappings of reasonable size with weakened semantics sufficient for

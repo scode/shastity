@@ -2,6 +2,7 @@ use kv;
 use std::collections::HashMap;
 
 /// A simple in-memory hash map based store for purposes of testing.
+#[derive(Default)]
 pub struct MemWeakStore {
     map: HashMap<Vec<u8>, Vec<u8>>,
 }
@@ -35,8 +36,8 @@ impl<'a> kv::WeakStore<'a> for MemWeakStore {
 
     fn weak_iter(
         &mut self,
-        cursor: Option<kv::Cursor>,
-        max_items: usize,
+        _cursor: Option<kv::Cursor>,
+        _max_items: usize,
     ) -> Result<kv::IterationResult, kv::StoreError> {
         unimplemented!()
     }
