@@ -33,7 +33,11 @@ impl<'a> kv::WeakStore<'a> for MemWeakStore {
         Ok(())
     }
 
-    fn weak_iter(&mut self, cursor: Option<kv::Cursor>, max_items: usize) -> Result<kv::IterationResult, kv::StoreError> {
+    fn weak_iter(
+        &mut self,
+        cursor: Option<kv::Cursor>,
+        max_items: usize,
+    ) -> Result<kv::IterationResult, kv::StoreError> {
         unimplemented!()
     }
 }

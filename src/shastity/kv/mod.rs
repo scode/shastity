@@ -147,9 +147,12 @@ pub trait WeakStore<'a> {
     ///
     /// See also: Iteration sectoin of class documentation.
     /// See also: Documentation of IterationResult.
-    fn weak_iter(&mut self, cursor: Option<Cursor>, max_items: usize) -> Result<IterationResult, StoreError>;
+    fn weak_iter(
+        &mut self,
+        cursor: Option<Cursor>,
+        max_items: usize,
+    ) -> Result<IterationResult, StoreError>;
 }
-
 
 /// Provides storage of key->value mappings of reasonable size with strongly consistent semantics.
 ///
