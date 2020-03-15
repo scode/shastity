@@ -9,11 +9,11 @@ use std::option::Option;
 pub struct StoreError {}
 
 impl Error for StoreError {
-    fn description(&self) -> &str {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         unimplemented!()
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn description(&self) -> &str {
         unimplemented!()
     }
 }

@@ -3,6 +3,7 @@
 name = "shastity"
 version = "0.0.0"
 authors = ["Peter Schuller <peter.schuller@infidyne.com>"]
+editio = "2018"
 
 [lib]
 name = "shastity"

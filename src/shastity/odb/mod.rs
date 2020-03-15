@@ -7,7 +7,7 @@ pub struct Content(Vec<u8>);
 
 #[derive(Debug)]
 pub struct OdbError {
-    cause: Option<Box<Error>>,
+    cause: Option<Box<dyn Error>>,
 }
 
 /// A content addressable object database.
@@ -31,9 +31,9 @@ pub struct OdbError {
 ///   - Callers cannot construct oids other than by giving the store the contents
 ///     to associate with the oid.
 pub trait Odb {
-    fn identify_object(content: &Content) -> Result<Oid, Box<Error>>;
-    fn put_object(content: &Content) -> Result<Oid, Box<Error>>;
-    fn get_object(oid: &Oid) -> Result<Content, Box<Error>>;
+    fn identify_object(content: &Content) -> Result<Oid, Box<dyn Error>>;
+    fn put_object(content: &Content) -> Result<Oid, Box<dyn Error>>;
+    fn get_object(oid: &Oid) -> Result<Content, Box<dyn Error>>;
 }
 
 impl Error for OdbError {
@@ -42,19 +42,19 @@ impl Error for OdbError {
         "Generic OdbError"
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
         self.cause.as_ref().map(|c| &**c)
     }
 }
 
 impl fmt::Display for OdbError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "OdbError: {}", self.description())?;
-        match self.cause() {
+        write!(f, "OdbError")?;
+        match self.source() {
             None => Ok(()),
-            Some(cause) => {
+            Some(source) => {
                 f.write_str(" caused by: ")?;
-                fmt::Display::fmt(cause, f)
+                fmt::Display::fmt(source, f)
             }
         }
     }
