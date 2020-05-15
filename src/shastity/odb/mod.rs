@@ -43,7 +43,7 @@ impl Error for OdbError {
     }
 
     fn source(&self) -> Option<&(dyn Error + 'static)> {
-        self.cause.as_ref().map(|c| &**c)
+        self.cause.as_deref()
     }
 }
 
