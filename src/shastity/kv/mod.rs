@@ -140,7 +140,7 @@ pub trait WeakStore<'a> {
     /// max_items indicates the maximum number of keys to return. The iteration may return
     /// any number of items equal to or less than that, including zero.
     ///
-    /// See also: Iteration sectoin of class documentation.
+    /// See also: Iteration section of class documentation.
     /// See also: Documentation of IterationResult.
     fn weak_iter(
         &mut self,
