@@ -14,7 +14,7 @@ impl MemWeakStore {
     }
 }
 
-impl<'a> super::WeakStore<'a> for MemWeakStore {
+impl super::WeakStore for MemWeakStore {
     fn weak_get(&mut self, key: &[u8]) -> Result<Option<Vec<u8>>, super::StoreError> {
         Ok(self.map.get(key).map(|v| v.to_vec()))
     }

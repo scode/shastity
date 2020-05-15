@@ -113,7 +113,7 @@ pub struct IterationResult {
 /// days on a large store.
 ///
 /// There is currently no mechanism to allow concurrent iteration of a store.
-pub trait WeakStore<'a> {
+pub trait WeakStore {
     /// Get an object associated with the given key.
     ///
     /// # Return value
