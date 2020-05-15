@@ -31,9 +31,9 @@ pub struct OdbError {
 ///   - Callers cannot construct oids other than by giving the store the contents
 ///     to associate with the oid.
 pub trait Odb {
-    fn identify_object(content: &Content) -> Result<Oid, Box<dyn Error>>;
-    fn put_object(content: &Content) -> Result<Oid, Box<dyn Error>>;
-    fn get_object(oid: &Oid) -> Result<Content, Box<dyn Error>>;
+    fn identify_object(content: &Content) -> Result<Oid, OdbError>;
+    fn put_object(content: &Content) -> Result<Oid, OdbError>;
+    fn get_object(oid: &Oid) -> Result<Content, OdbError>;
 }
 
 impl Error for OdbError {
