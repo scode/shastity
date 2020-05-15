@@ -3,3 +3,6 @@ build
 *.core
 *.class
 *.pyc
+Cargo.lock
+.idea
+target
