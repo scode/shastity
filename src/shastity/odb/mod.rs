@@ -37,11 +37,6 @@ pub trait Odb {
 }
 
 impl Error for OdbError {
-    fn description(&self) -> &str {
-        // TODO: be useful
-        "Generic OdbError"
-    }
-
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         self.cause.as_deref()
     }
