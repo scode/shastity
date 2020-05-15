@@ -4,16 +4,11 @@ use std::error::Error;
 use std::fmt;
 use std::option::Option;
 
-// TODO(scode): Distinguish transient from permanent.
 #[derive(Debug)]
 pub struct StoreError {}
 
 impl Error for StoreError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
-        unimplemented!()
-    }
-
-    fn description(&self) -> &str {
         unimplemented!()
     }
 }
