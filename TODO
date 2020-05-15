@@ -1,0 +1,3 @@
+* Figure out a unit test strategy that neither involves copy pasta for each trait implementation,
+  nor is opaque to an IDE nor requires external code-gen while still resulting in one test
+  per feature/trait impl combo.
