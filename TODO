@@ -4,3 +4,4 @@
 * Use non-exhaustive enums to describe general properties of errors.
 * Provide a stream/batch/txn based API for mutations to allow performance optimization when bulk
   writing.
+* Final decision on whether to use newtypes for stuff like Oid, Content.
