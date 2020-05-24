@@ -19,6 +19,73 @@ impl fmt::Display for StoreError {
     }
 }
 
+#[derive(Debug)]
+pub struct InvalidKeyError {}
+
+/**
+ * A *Key* with which values can be assocaited in a store.
+ *
+ * A key is a string guaranteed to contain only `[0-9a-fA-Z]`. This restriction is in
+ * place to simplify the implementation of stores, and Key guarantees this property.
+ */
+#[derive(Debug, Clone)]
+pub struct Key {
+    s: String,
+}
+
+impl Key {
+    /// Construct a new key from the given string. Fails if the string contains disallowed
+    /// characters.
+    ///
+    /// ```
+    /// # use shastity::kv::Key;
+    /// assert_eq!(String::from(Key::new("abcdef").unwrap()), "abcdef");
+    /// assert_eq!(String::from(Key::new("ABCDEF").unwrap()), "ABCDEF");
+    /// assert_eq!(String::from(Key::new("0123456789").unwrap()), "0123456789");
+    /// assert!(Key::new("z").is_err());
+    /// ```
+    pub fn new<T: Into<String>>(k: T) -> Result<Self, InvalidKeyError> {
+        let s = k.into();
+        for c in s.chars() {
+            if !c.is_digit(16) {
+                return Err(InvalidKeyError {});
+            }
+        }
+
+        Ok(Key { s })
+    }
+
+    pub fn as_str(&self) -> &str {
+        &self.s
+    }
+}
+
+impl AsRef<str> for Key {
+    fn as_ref(&self) -> &str {
+        &self.s
+    }
+}
+
+impl From<Key> for String {
+    /// ```
+    /// # use shastity::kv::Key;
+    /// assert_eq!(String::from(Key::new("abcdef").unwrap()), "abcdef");
+    /// ```
+    fn from(k: Key) -> String {
+        k.s
+    }
+}
+
+impl From<&Key> for String {
+    /// ```
+    /// # use shastity::kv::Key;
+    /// assert_eq!(String::from(Key::new("abcdef").unwrap()), "abcdef");
+    /// ```
+    fn from(k: &Key) -> String {
+        String::from(&k.s)
+    }
+}
+
 pub struct Cursor(Vec<u8>);
 
 /// The result of an iteration step against a store.
@@ -121,14 +188,14 @@ pub trait WeakStore {
     /// Ok(Some(x)) on success and the value exists.
     ///
     /// Ok(None) indicates the value does not exist, or it has not yet become readable.
-    fn weak_get(&mut self, key: &[u8]) -> Result<Option<Vec<u8>>, StoreError>;
+    fn weak_get(&mut self, key: &Key) -> Result<Option<Vec<u8>>, StoreError>;
 
-    fn weak_put(&mut self, key: &[u8], value: &[u8]) -> Result<(), StoreError>;
+    fn weak_put(&mut self, key: &Key, value: &[u8]) -> Result<(), StoreError>;
 
     /// Determine whether a given key is associated with a value in the store.
-    fn weak_exists(&mut self, key: &[u8]) -> Result<bool, StoreError>;
+    fn weak_exists(&mut self, key: &Key) -> Result<bool, StoreError>;
 
-    fn weak_delete(&mut self, key: &[u8]) -> Result<(), StoreError>;
+    fn weak_delete(&mut self, key: &Key) -> Result<(), StoreError>;
 
     /// Perform an iteration step to discover keys in the store.
     ///
@@ -158,11 +225,11 @@ pub trait WeakStore {
 /// put_if() is guaranteed to atomically put the new value provided only if the existing value
 /// (present or absent) matches the provided expected value.
 pub trait Store {
-    fn get(&mut self, key: &[u8]) -> Result<Option<Vec<u8>>, StoreError>;
+    fn get(&mut self, key: &Key) -> Result<Option<Vec<u8>>, StoreError>;
 
     /// Put a value in the store regardless of whether there currently exists a value associated
     /// with the same key. Any existing value is overwritten.
-    fn put(&mut self, key: &[u8], value: &[u8]) -> Result<(), StoreError>;
+    fn put(&mut self, key: &Key, value: &[u8]) -> Result<(), StoreError>;
 
     /// Put the given value into the store if and only if the current value associated with the
     /// key is expected_value (None means the value must be absent).
@@ -173,5 +240,5 @@ pub trait Store {
         new_value: &[u8],
     ) -> Result<(), StoreError>;
 
-    fn exists(&mut self, key: &[u8]) -> Result<bool, StoreError>;
+    fn exists(&mut self, key: &Key) -> Result<bool, StoreError>;
 }
