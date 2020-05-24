@@ -13,7 +13,7 @@ pub fn test_weak_get(store: &mut dyn kv::WeakStore) {
 }
 
 pub fn test_weak_put(store: &mut dyn kv::WeakStore) {
-    match store.weak_put(&k("abc"), "v".as_bytes()) {
+    match store.weak_put(&k("abc"), b"v") {
         Ok(()) => (),
         Err(e) => panic!("weak_put should have succeeded: {}", e),
     }
@@ -32,7 +32,7 @@ pub fn test_weak_exists(store: &mut dyn kv::WeakStore) {
         Err(e) => panic!("weak_exists should have succeeded: {}", e),
     }
 
-    match store.weak_put(&k("abc"), "v".as_bytes()) {
+    match store.weak_put(&k("abc"), b"v") {
         Ok(()) => (),
         Err(e) => panic!("weak_put should have succeeded: {}", e),
     }
@@ -45,7 +45,7 @@ pub fn test_weak_exists(store: &mut dyn kv::WeakStore) {
 }
 
 pub fn test_weak_delete(store: &mut dyn kv::WeakStore) {
-    match store.weak_put(&k("abc"), "v".as_bytes()) {
+    match store.weak_put(&k("abc"), b"v") {
         Ok(()) => (),
         Err(e) => panic!("weak_put should have succeeded: {}", e),
     }
