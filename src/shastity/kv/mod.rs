@@ -22,12 +22,18 @@ impl fmt::Display for StoreError {
 #[derive(Debug)]
 pub struct InvalidKeyError {}
 
-/**
- * A *Key* with which values can be assocaited in a store.
- *
- * A key is a string guaranteed to contain only `[0-9a-fA-Z]`. This restriction is in
- * place to simplify the implementation of stores, and Key guarantees this property.
- */
+/// A key with which values can be assocaited in a store.
+///
+/// A key is a string guaranteed to contain only `[0-9a-fA-Z]`. This invariant is enforced
+/// when a key is created.
+///
+/// # Examples
+///
+/// ```
+/// # use shastity::kv::Key;
+/// let key = Key::new("abcd").unwrap();
+/// let s = String::from(key);
+/// ```
 #[derive(Debug, Clone)]
 pub struct Key {
     s: String,
