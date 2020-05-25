@@ -19,8 +19,16 @@ impl fmt::Display for StoreError {
     }
 }
 
+/// The provided string was not a valid representation of a key.
 #[derive(Debug)]
-pub struct InvalidKeyError {}
+#[non_exhaustive]
+pub enum InvalidKeyError {
+    /// The provided string contained one or more disallowed characters.
+    InvalidCharacter,
+
+    /// The provided string was empty, which is not a valid key.
+    Empty,
+}
 
 /// A key with which values can be assocaited in a store.
 ///
@@ -54,12 +62,12 @@ impl Key {
         let s = k.into();
 
         if s.is_empty() {
-            return Err(InvalidKeyError {});
+            return Err(InvalidKeyError::Empty);
         }
 
         for c in s.chars() {
             if !c.is_digit(16) {
-                return Err(InvalidKeyError {});
+                return Err(InvalidKeyError::InvalidCharacter);
             }
         }
 
