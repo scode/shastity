@@ -24,8 +24,7 @@ pub struct InvalidKeyError {}
 
 /// A key with which values can be assocaited in a store.
 ///
-/// A key is a string guaranteed to contain only `[0-9a-fA-Z]`. This invariant is enforced
-/// when a key is created.
+/// A key is a string guaranteed to be non-empty and contain only `[0-9a-fA-Z]`.
 ///
 /// # Examples
 ///
@@ -41,7 +40,7 @@ pub struct Key {
 
 impl Key {
     /// Construct a new key from the given string. Fails if the string contains disallowed
-    /// characters.
+    /// characters, or is empty.
     ///
     /// ```
     /// # use shastity::kv::Key;
@@ -49,9 +48,15 @@ impl Key {
     /// assert_eq!(String::from(Key::new("ABCDEF").unwrap()), "ABCDEF");
     /// assert_eq!(String::from(Key::new("0123456789").unwrap()), "0123456789");
     /// assert!(Key::new("z").is_err());
+    /// assert!(Key::new("").is_err());
     /// ```
     pub fn new<T: Into<String>>(k: T) -> Result<Self, InvalidKeyError> {
         let s = k.into();
+
+        if s.is_empty() {
+            return Err(InvalidKeyError {});
+        }
+
         for c in s.chars() {
             if !c.is_digit(16) {
                 return Err(InvalidKeyError {});
