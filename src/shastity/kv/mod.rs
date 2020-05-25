@@ -111,17 +111,6 @@ impl From<&Key> for String {
 
 pub struct Cursor(Vec<u8>);
 
-/// The result of an iteration step against a store.
-pub struct IterationResult {
-    /// If Some(x), a cursor to be used to continue the iteration. If None, indicates reaching the
-    /// end of the iteration.
-    _cursor: Option<Cursor>,
-
-    /// The keys discovered at this step of the iteration. May be empty even if there is more
-    /// iteration to be done. The cursor must be inspected to detect end-of-iteration.
-    _keys: Vec<u8>,
-}
-
 /// Provides storage of key->value mappings of reasonable size with weakened semantics sufficient for
 /// use by a content addressable store, but maximally relaxed to allow implementation
 /// flexibility and efficiency.
@@ -188,21 +177,14 @@ pub struct IterationResult {
 /// A WeakStore does not provide any atomic view of the entries that exists in the store. Instead,
 /// the process of iterating over keys is subject to the following contract:
 ///
-/// * The "iteration process" refers to a sequence of calls to weak_iter() until the very end of
-///   iteration has bene reached as communicated by the returned IterationResult.
 /// * The store may be both written to and read from concurrently with an iteration process.
 /// * Any object written to the store prior to the start of iteration must be visible in the
-///   iteration *except* sa constrained by eventual consistency.
+///   iteration *except* as constrained by eventual consistency.
 /// * An object written to the store during iteration *may* be visible to the iteration. If a
 ///   previously existing object is over-written, *either* the old or the new object must be
 ///   visible. The only exception is eventual consistency (should the old object not yet be
 ///   visible).
-/// * Keys may be exposed through iteration in any order that suits the ipmlementation.
-///
-/// The presumption is that iteration may be a very long running process that spans even hours or
-/// days on a large store.
-///
-/// There is currently no mechanism to allow concurrent iteration of a store.
+/// * Keys may be exposed through iteration in any order that suits the implementation.
 pub trait WeakStore {
     /// Get an object associated with the given key.
     ///
@@ -220,23 +202,13 @@ pub trait WeakStore {
 
     fn weak_delete(&mut self, key: &Key) -> Result<(), StoreError>;
 
-    /// Perform an iteration step to discover keys in the store.
+    /// Provides an iterator over all keys in the store.
     ///
-    /// If cursor is Some(x), it must be a cursor obtained by a previous invocation of this
-    /// method.
+    /// Iteration is only successful if the iterator is finished *and* if all results
+    /// consumed were Ok().
     ///
-    /// If cursor is None, iteration will start at the beginning.
-    ///
-    /// max_items indicates the maximum number of keys to return. The iteration may return
-    /// any number of items equal to or less than that, including zero.
-    ///
-    /// See also: Iteration section of class documentation.
-    /// See also: Documentation of IterationResult.
-    fn weak_iter(
-        &mut self,
-        cursor: Option<Cursor>,
-        max_items: usize,
-    ) -> Result<IterationResult, StoreError>;
+    /// TODO: This interface does not allow for resumption nor concurrency, it should.
+    fn weak_iter(&mut self) -> Box<dyn Iterator<Item = Result<Key, StoreError>>>;
 }
 
 /// Provides storage of key->value mappings of reasonable size with strongly consistent semantics.

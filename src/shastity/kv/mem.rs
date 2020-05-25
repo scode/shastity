@@ -33,11 +33,7 @@ impl super::WeakStore for MemWeakStore {
         Ok(())
     }
 
-    fn weak_iter(
-        &mut self,
-        _cursor: Option<super::Cursor>,
-        _max_items: usize,
-    ) -> Result<super::IterationResult, super::StoreError> {
+    fn weak_iter(&mut self) -> Box<dyn Iterator<Item = Result<super::Key, super::StoreError>>> {
         unimplemented!()
     }
 }
