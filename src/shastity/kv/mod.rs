@@ -32,7 +32,7 @@ pub enum InvalidKeyError {
 
 /// A key with which values can be assocaited in a store.
 ///
-/// A key is a string guaranteed to be non-empty and contain only `[0-9a-fA-Z]`.
+/// A key is a string guaranteed to be non-empty and contain only `[0-9a-f]`.
 ///
 /// # Examples
 ///
@@ -53,10 +53,10 @@ impl Key {
     /// ```
     /// # use shastity::kv::Key;
     /// assert_eq!(String::from(Key::new("abcdef").unwrap()), "abcdef");
-    /// assert_eq!(String::from(Key::new("ABCDEF").unwrap()), "ABCDEF");
     /// assert_eq!(String::from(Key::new("0123456789").unwrap()), "0123456789");
-    /// assert!(Key::new("z").is_err());
+    /// assert!(Key::new("g").is_err());
     /// assert!(Key::new("").is_err());
+    /// assert!(Key::new("BBCDEF").is_err());
     /// ```
     pub fn new<T: Into<String>>(k: T) -> Result<Self, InvalidKeyError> {
         let s = k.into();
@@ -66,7 +66,11 @@ impl Key {
         }
 
         for c in s.chars() {
-            if !c.is_digit(16) {
+            if !match c {
+                '0'..='9' => true,
+                'a'..='f' => true,
+                _ => false,
+            } {
                 return Err(InvalidKeyError::InvalidCharacter);
             }
         }
